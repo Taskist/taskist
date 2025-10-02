@@ -1,0 +1,17 @@
+﻿<div class="sidebar sidebar-dark sidebar-fixed border-end" id="sidebar">
+    <div class="sidebar-header border-bottom">
+        <div class="sidebar-brand">
+            <a href="~/">
+                <img src="~/images/brand/logo.png" class="sidebar-brand-full" height="32" alt="Backlog" />
+            </a>
+            <a href="~/">
+                <img src="~/images/brand/logo_icon.png" class="sidebar-brand-narrow" width="32" height="32" alt="Backlog" />
+            </a>
+        </div>
+        <button class="btn-close d-lg-none" type="button" data-coreui-dismiss="offcanvas" data-coreui-theme="dark" aria-label="Close" onclick="coreui.Sidebar.getInstance(document.querySelector(&quot;#sidebar&quot;)).toggle()"></button>
+    </div>
+    @await Component.InvokeAsync("Menu")
+    <div class="sidebar-footer border-top d-none d-md-flex">
+        <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
+    </div>
+</div>

@@ -1,0 +1,47 @@
+﻿@model BacklogModel
+@{
+	ViewData["Title"] = Localize("BacklogPage.Title");
+}
+
+@if (!Model.CanEdit)
+{
+	<div class="alert alert-danger">You are not authorized to edit this task, please contact IT Support.</div>
+}
+
+<form asp-action="Edit" enctype="multipart/form-data" id="EditForm">
+	<div class="row">
+		<div class="col-md-8">
+			<div class="card">
+				<div class="card-body p-3">
+					@await Html.PartialAsync("_Form", Model)
+				</div>
+				<div class="card-footer text-end p-3">
+					<div class="row">
+						<div class="col-sm-12">
+							<a asp-action="Index" class="btn btn-secondary">
+								<i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")
+							</a>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-md-4">
+			<div class="card">
+				<div class="card-body p-3">
+					@await Html.PartialAsync("_FormStatus", Model)
+				</div>
+			</div>
+		</div>
+	</div>
+</form>
+<script>
+	$(function () {
+		let buttons = '';
+		JSManager.setPageTitle(`@Localize("BacklogPage.Title") #@Model.Id`);
+		buttons += `<a href="@Url.Action("Index")" title="@Localize("Button.Back")" class="btn btn-sm btn-secondary me-2"><i class="fas fa-chevron-left me-1"></i>@Localize("Button.Back")</a>`;
+		buttons += `<a href="javascript:JSManager.openOffCanvas('@Url.Action("History", new { Id = Model.Id })','@Localize("BacklogPage.Button.History")')" title="@Localize("BacklogPage.Button.History")" class="btn btn-sm btn-primary text-white me-2"><i class="fa-solid fa-history"></i></a>`;
+		buttons += `<a href="javascript:JSManager.openOffCanvas('@Url.Action("Comments", new { Id = Model.Id })','@Localize("BacklogPage.Button.Comments")')" title="@Localize("BacklogPage.Button.Comments")" class="btn btn-sm btn-success text-white me-2"><i class="fa-solid fa-comments"></i></a>`;
+		JSManager.setPageButtons(buttons);
+	});
+</script>

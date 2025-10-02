@@ -1,0 +1,331 @@
+﻿@model BacklogModel
+@{
+    var updateCssClassName = "";
+    if (Model.Id > 0 && Model.CanEdit)
+    {
+        updateCssClassName = "ajax-update";
+    }
+}
+<input type="hidden" asp-for="Id" />
+<div asp-validation-summary="ModelOnly" class="message-error"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Title" class="form-wc-label"></wc-label>
+            <input asp-for="Title" class="form-control form-control-maxlength @updateCssClassName" autocomplete="off" maxlength="500" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active text-info" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                    <i class="fas fa-sticky-note me-1"></i>@Localize("BacklogPage.DescriptionTabTitle")
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-success" id="devnotes-tab" data-bs-toggle="tab" data-bs-target="#devnotes" type="button" role="tab" aria-controls="devnotes" aria-selected="false">
+                    <i class="fas fa-code me-1"></i>@Localize("BacklogPage.DeveloperNotesTabTitle")
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-danger" id="qanotes-tab" data-bs-toggle="tab" data-bs-target="#qanotes" type="button" role="tab" aria-controls="qanotes" aria-selected="false">
+                    <i class="fas fa-bolt me-1"></i>@Localize("BacklogPage.QaNotesTabTitle")
+                </button>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade active show" id="description" role="tabpanel" aria-labelledby="description-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <textarea asp-for="Description"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-4 text-end">
+                        <button id="btnSaveDescription" type="button" class="btn btn-primary" style="display: none;">
+                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="devnotes" role="tabpanel" aria-labelledby="devnotes-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <textarea asp-for="DeveloperNotes"></textarea>
+                            <span asp-validation-for="DeveloperNotes" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-4 text-end">
+                        <button id="btnSaveDeveloperNotes" type="button" class="btn btn-primary" style="display: none;">
+                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="qanotes" role="tabpanel" aria-labelledby="qanotes-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <textarea asp-for="QualityNotes"></textarea>
+                            <span asp-validation-for="QualityNotes" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-12 mb-4 text-end">
+                        <button id="btnSaveQualityNotes" type="button" class="btn btn-primary" style="display: none;">
+                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="thumbnail-zone"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="dropzone-container" class="dropzone">
+            <div class="dz-message">
+                Drag and drop files here or click to upload
+            </div>
+        </div>
+    </div>
+</div>
+@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacementEnum.MainSection })
+<script>
+    let initialDescription = '';
+    let isDescriptionChanged = false;
+    let initialDeveloperNotes = '';
+    let isDeveloperNotesChanged = false;
+    let initialQualityNotes = '';
+    let isQualityNotesChanged = false;
+
+    $(function () {
+        Dropzone.autoDiscover = false;
+        let docs = [];
+
+        const myDropzone = $("div#dropzone-container").dropzone({
+            url: "@Url.Action("UploadDocument")",
+            autoProcessQueue: true,
+            maxFilesize: 2,
+            maxFiles: 5,
+            addRemoveLinks: true,
+            acceptedFiles: ".jpg,.png,.gif,.pdf,.docx,.txt",
+            init: function () {
+                this.on("addedfile", function (file) {
+                    const progressElement = file.previewElement.querySelector(".dz-progress");
+                    if (progressElement) {
+                        progressElement.remove();
+                    }
+                });
+
+                this.on("sending", function (file, xhr, formData) {
+                    formData.append("reference", "@Model.Id");
+                });
+
+                this.on("success", function (file, response) {
+                    file.serverFilePath = response.token;
+                    if (parseInt('@Model.Id') > 0) {
+                        this.removeFile(file);
+                        renderDocuments();
+                    } else {
+                        docs.push(response.token);
+                        $('#Token').val(JSON.stringify(docs));
+                    }
+                });
+
+                this.on("maxfilesexceeded", function (file) {
+                    this.removeFile(file);
+                    alert("You can only upload up to 5 files.");
+                });
+            }
+        });
+
+        tinymce.init({
+            selector: '#Description',
+            plugins: 'lists link image table code',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+            height: 250,
+            menubar: false,
+            setup: function (editor) {
+                if (parseInt('@Model.Id') > 0) {
+                    editor.on('init', function () {
+                        initialDescription = editor.getContent();
+                    });
+
+                    editor.on('keyup change', function () {
+                        checkDescriptionChange(editor.getContent());
+                    });
+                }
+            }
+        });
+
+        tinymce.init({
+            selector: '#DeveloperNotes',
+            plugins: 'lists link image table code',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+            height: 250,
+            menubar: false,
+            setup: function (editor) {
+                if (parseInt('@Model.Id') > 0) {
+                    editor.on('init', function () {
+                        initialDeveloperNotes= editor.getContent();
+                    });
+
+                    editor.on('keyup change', function () {
+                        checkDeveloperNotesChange(editor.getContent());
+                    });
+                }
+            }
+        });
+
+        tinymce.init({
+            selector: '#QualityNotes',
+            plugins: 'lists link image table code',
+            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
+            height: 250,
+            menubar: false,
+            setup: function (editor) {
+                if (parseInt('@Model.Id') > 0) {
+                    editor.on('init', function () {
+                        initialQualityNotes = editor.getContent();
+                    });
+
+                    editor.on('keyup change', function () {
+                        checkQualityNotesChange(editor.getContent());
+                    });
+                }
+            }
+        });
+
+        renderDocuments();
+
+        $('#btnSaveDescription').click(function () {
+            var id = '@Model.Id';
+            var value = tinymce.get('Description').getContent();
+            var name = 'Description';
+            var dto = {
+                id,
+                name,
+                value
+            };
+
+            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response) {
+                JSManager.showSuccess(response.message);
+                if (response.status === 2000) {
+                    const content = tinymce.get('Description').getContent();
+                    initialDescription = content;
+                    isDescriptionChanged = false;
+                    document.getElementById('btnSaveDescription').style.display = 'none';
+                }
+            });
+        });
+
+        $('#btnSaveDeveloperNotes').click(function () {
+            var id = '@Model.Id';
+            var value = tinymce.get('DeveloperNotes').getContent();
+            var name = 'DeveloperNotes';
+            var dto = {
+                id,
+                name,
+                value
+            };
+
+            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response) {
+                JSManager.showSuccess(response.message);
+                if (response.status === 2000) {
+                    const content = tinymce.get('DeveloperNotes').getContent();
+                    initialDeveloperNotes = content;
+                    isDeveloperNotesChanged = false;
+                    document.getElementById('btnSaveDeveloperNotes').style.display = 'none';
+                }
+            });
+        });
+
+        $('#btnSaveQualityNotes').click(function () {
+            var id = '@Model.Id';
+            var value = tinymce.get('QualityNotes').getContent();
+            var name = 'QualityNotes';
+            var dto = {
+                id,
+                name,
+                value
+            };
+
+            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response) {
+                JSManager.showSuccess(response.message);
+                if (response.status === 2000) {
+                    const content = tinymce.get('QualityNotes').getContent();
+                    initialQualityNotes = content;
+                    isQualityNotesChanged = false;
+                    document.getElementById('btnSaveQualityNotes').style.display = 'none';
+                }
+            });
+        });
+    });
+
+    function checkDescriptionChange(currentContent) {
+        const saveButton = document.getElementById('btnSaveDescription');
+        if (currentContent !== initialDescription) {
+            isDescriptionChanged = true;
+            saveButton.style.display = 'inline-block';
+        } else {
+            isDescriptionChanged = false;
+            saveButton.style.display = 'none';
+        }
+    }
+
+    function checkDeveloperNotesChange(currentContent) {
+        const saveButton = document.getElementById('btnSaveDeveloperNotes');
+        if (currentContent !== initialDeveloperNotes) {
+            isDeveloperNotesChanged = true;
+            saveButton.style.display = 'inline-block';
+        } else {
+            isDeveloperNotesChanged = false;
+            saveButton.style.display = 'none';
+        }
+    }
+
+    function checkQualityNotesChange(currentContent) {
+        const saveButton = document.getElementById('btnSaveQualityNotes');
+        if (currentContent !== initialQualityNotes) {
+            isQualityNotesChanged = true;
+            saveButton.style.display = 'inline-block';
+        } else {
+            isQualityNotesChanged = false;
+            saveButton.style.display = 'none';
+        }
+    }
+
+    function handlePageLeave(event) {
+        if (isDescriptionChanged) {
+            event.preventDefault();
+            Swal.fire({
+                title: 'You have unsaved changes!',
+                text: 'Do you want to save your changes?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, save it!',
+                cancelButtonText: 'No, discard changes',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    saveContent();
+                }
+                window.location.href = event.target.href;
+            });
+        }
+    }
+
+    document.querySelectorAll('a').forEach(anchor => {
+        anchor.addEventListener('click', handlePageLeave);
+    });
+
+    function renderDocuments() {
+        JSManager.renderPartial('@Url.Action("Documents")', { id: @Model.Id }, 'thumbnail-zone');
+    }
+</script>

@@ -1,0 +1,22 @@
+﻿@using StackExchange.Profiling
+
+@addTagHelper *, MiniProfiler.AspNetCore.Mvc
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@addTagHelper *, Taskist.Web
+
+@inherits Taskist.Web.Helpers.Razor.LocalizeRazorPage<TModel>
+@inject IWorkContext workContext
+
+@using Taskist.Web
+@using Taskist.Web.Models
+@using Taskist.Core
+@using Taskist.Core.Common
+@using Taskist.Web.Models.Common
+@using Taskist.Web.Models.Datatable
+@using Taskist.Web.Models.Masters
+@using Taskist.Web.Models.Users
+@using Taskist.Web.Models.Dashboard
+@using Taskist.Web.Models.Localization
+@using Taskist.Web.Models.WorkItems
+@using Taskist.Core.Extensions
+@using Taskist.Web.Helpers.Localization

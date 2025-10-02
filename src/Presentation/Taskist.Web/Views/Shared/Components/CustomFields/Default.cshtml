@@ -1,0 +1,71 @@
+﻿@model CustomFieldsViewModel
+
+@{
+    var updateCssClassName = "";
+    if (Model.BacklogId > 0)
+    {
+        updateCssClassName = "ajax-update-custom-field";
+    }
+}
+
+@for (int i = 0; i < Model.CustomFields.Count; i++)
+{
+    var field = Model.CustomFields[i];
+    var fieldValue = Model.Values.FirstOrDefault(f => f.CustomFieldId == field.Id)?.Value ?? "";
+    <input type="hidden" name="fieldValues[@i].CustomFieldId" value="@field.Id" />
+    <div class="@field.ColumnClass">
+        @if (field.FieldType == (int)FieldTypeEnum.TextBox)
+        {
+            <div class="mb-3">
+                <label class="form-label">@Localize(field.ResourceKey)</label>
+                <input type="text" class="form-control @updateCssClassName" data-reference="@field.Id" name="fieldValues[@i].Value" value="@fieldValue" data-val="@field.Mandatory.ToString().ToLower()" />
+            </div>
+
+        }
+        else if (field.FieldType == (int)FieldTypeEnum.Dropdown)
+        {
+            var optionsArr = (field.Options ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+            <div class="mb-3">
+                <label class="form-label">@Localize(field.ResourceKey)</label>
+                <select class="form-control select2" name="fieldValues[@i].Value" id="select_@field.Id" data-val="@field.Mandatory.ToString().ToLower()">
+                    @foreach (var option in optionsArr)
+                    {
+                        <option value="@option" selected="@(fieldValue == option ? "selected" : null)">@option</option>
+                    }
+                </select>
+                <span class="text-danger" data-valmsg-for="select_@field.Id" data-valmsg-replace="true"></span>
+            </div>
+        }
+        else if (field.FieldType == (int)FieldTypeEnum.Checkbox)
+        {
+            <input type="checkbox" name="fieldValues[@i].Value" value="true" @(fieldValue == "true" ? "checked" : "") />
+        }
+        else if (field.FieldType == (int)FieldTypeEnum.Radio)
+        {
+            @foreach (var option in field.Options.Split(','))
+            {
+                <input type="radio" name="fieldValues[@i].Value" value="@option" @(fieldValue == option ? "checked" : "") /> @option
+            }
+        }
+    </div>
+}
+
+<script>
+    $(function () {
+        $('.@updateCssClassName').change(function () {
+            debugger
+            let id = '@Model.BacklogId';
+            let reference = parseInt($(this).data('reference'));
+            let value = $(this).val();
+            let dto = {
+                id,
+                reference,
+                value
+            };
+
+            JSManager.ajaxPatch('@Url.Action("UpdateCustomField")', dto, undefined, undefined, function (response){
+                JSManager.showSuccess(response.message);
+            });
+        });
+    });
+</script>

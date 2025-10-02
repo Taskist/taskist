@@ -1,0 +1,46 @@
+﻿@{
+    var user = await workContext.GetCurrentUserAsync();
+    var avatar = "avatar_male.png";
+}
+
+<div class="alert alert-info shadow-lg">
+    <div class="greeting-container">
+        <img src="@Url.Content($"~/images/{avatar}")" alt="@user.Name" class="avatar-card" />
+        <h6 class="greeting-text" id="greetingMessage">Welcome back, User!</h6>
+    </div>
+    <p class="mb-0"><i class="fas fa-calendar-alt me-1"></i><span id="dateTime"></span></i></p>
+</div>
+
+<script>
+    function updateDateTime() {
+     const now = new Date();
+      let hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const seconds = now.getSeconds().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+
+      const day = now.getDate().toString().padStart(2, '0');
+      const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+      const month = monthNames[now.getMonth()];
+      const year = now.getFullYear();
+
+      const formattedDateTime = `${day}-${month}-${year} ${hours}:${minutes}:${seconds} ${ampm}`;
+
+      let greeting = '';
+
+      if (hours <= 12) {
+        greeting = 'Good Morning';
+      } else if (hours <= 18) {
+        greeting = 'Good Afternoon';
+      } else {
+        greeting = 'Good Evening';
+      }
+
+      document.getElementById('greetingMessage').innerText = `${greeting}, @user.Name!`;
+      document.getElementById('dateTime').innerText = 'Today, ' + formattedDateTime;
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+</script>

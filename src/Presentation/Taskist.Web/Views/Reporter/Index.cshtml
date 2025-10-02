@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = Localize("ReporterPage.Title");
+}
+
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "ReporterGrid",
+    Title = Localize("ReporterPage.Title").Text,
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("DataRead"),
+    HeaderActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.AddNew").Text,
+            Url = Url.Action("Create"),
+            Text = Localize("Button.AddNew").Text,
+            Icon = "fas fa-plus",
+            HyperLinkType = HyperLinkTypeEnum.BUTTON_TEXT_ICON,
+            NavigationType = NavigationTypeEnum.MODAL,
+            ButtonColor = ButtonColorEnum.PRIMARY
+        }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.Edit").Text,
+            Url = Url.Action("Edit"),
+            Text = Localize("Button.Edit").Text,
+            Icon = "far fa-edit",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkTypeEnum.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationTypeEnum.MODAL,
+            ButtonColor = ButtonColorEnum.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("Button.Delete").Text,
+            Url = Url.Action("Delete"),
+            Text =  Localize("Button.Delete").Text,
+            AuxText =  Localize("Button.Cancel").Text,
+            Icon = "fas fa-trash",
+            ReferenceParameter = "Id",
+            DeleteConfirmBox = true,
+            DeleteConfirmBoxMsg = Localize("Confirmation.Delete").Text,
+            HyperLinkType = HyperLinkTypeEnum.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationTypeEnum.MODAL,
+            ButtonColor = ButtonColorEnum.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("ReporterGrid.Name").Text, DataColumn = "Name" },
+        new ColumnModel { Title = Localize("ReporterGrid.Active").Text, DataColumn = "Active", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = OperatorEnum.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = OperatorEnum.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+        }}
+    }
+})

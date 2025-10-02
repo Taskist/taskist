@@ -1,0 +1,11 @@
+﻿@model IList<BacklogCommentGridModel>
+
+<div class="timeline">
+    @foreach(var comment in Model){
+        <div class="timeline-item">
+            <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>@comment.CommentBy</div>
+            <div class="time text-muted"><i class="far fa-clock me-1"></i>@comment.CommentOn.ToString("dd-MM-yyyy hh:mm")</div>
+            <div class="details">@Html.Raw(comment.Comment)</div>
+        </div>
+    }
+</div>

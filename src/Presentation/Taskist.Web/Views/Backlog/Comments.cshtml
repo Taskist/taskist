@@ -1,0 +1,85 @@
+﻿@model BacklogCommentModel
+
+<div class="comments-container" id="comments">
+    @if (Model.Comments.Count > 0)
+    {
+        <div id="timeline" class="timeline">
+            @foreach (var comment in Model.Comments)
+            {
+                <div class="timeline-item">
+                    <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>@comment.CommentBy</div>
+                    <div class="time text-muted"><i class="far fa-clock me-1"></i>@comment.CommentOn.ToString("dd-MM-yyyy hh:mm")</div>
+                    <div class="details">@Html.Raw(comment.Comment)</div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info">Nobody commented yet!</div>
+    }
+</div>
+<div class="comment-box" id="comment-box">
+    <div class="input-group">
+        <input type="text" id="tbComment" class="form-control" placeholder="Write a comment...">
+        <button class="btn btn-primary" id="btnAddComment"><i class="far fa-paper-plane"></i></button>
+    </div>
+</div>
+<style>
+    .offcanvas {
+        height: 100vh;
+    }
+
+    .offcanvas-body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .comments-container {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding-bottom: 10px;
+    }
+
+    .comment-box {
+        background: white;
+        padding: 10px;
+        border-top: 1px solid #ddd;
+    }
+</style>
+
+<script>
+    $(function() {
+        $("#btnAddComment").click(function() {
+            addComment();
+        });
+
+      $("#tbComment").keypress(function(event) {
+        if (event.which === 13) {
+          event.preventDefault();
+          addComment();
+        }
+      });
+
+      $("#pdOffCanvas").on("shown.bs.offcanvas", function() {
+        $("#tbComment").focus();
+      });
+    })
+
+    function addComment() {
+        let comment = $("#tbComment").val().trim();
+        if (comment) {
+            const dto = {
+                id: @Model.BackLogId,
+                comment
+            };
+
+            JSManager.ajaxPost('@Url.Action("CommentCreate")', dto, 'comment-box', 'Processing...', function(response) {
+                $("#tbComment").val("").focus();
+                const html = `<div class="timeline-item"> <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>${response.commentby}</div> <div class="time text-muted"><i class="far fa-clock me-1"></i>${response.commenton}</div> <div class="details">${comment}</div> </div>`;
+                $('#timeline').prepend(html);
+            });
+        }
+    }
+</script>

@@ -1,0 +1,9 @@
+﻿@model SeverityModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<form asp-action="Edit" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+    @await Html.PartialAsync("_Form", Model)
+    <partial name="_ModalButton" />
+</form>

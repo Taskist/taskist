@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Copyright>Copyright © Taskist</Copyright>
+		<Authors>Somaraj N</Authors>
+		<Version>1.0</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="linq2db" Version="5.3.2" />
+		<PackageReference Include="EFCore.BulkExtensions" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Taskist.Core\Taskist.Core.csproj" />
+	</ItemGroup>
+
+</Project>

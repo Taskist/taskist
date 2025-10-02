@@ -1,0 +1,43 @@
+﻿@model SprintModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Name" />
+            <input asp-for="Name" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Description" />
+            <input asp-for="Description" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ProjectId" />
+            <select asp-for="ProjectId" asp-items="Model.AvailableProjects" class="form-control select2"></select>
+            <span asp-validation-for="ProjectId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="StartDate" />
+            <input asp-for="StartDate" class="form-control datepicker-from" autocomplete="off" />
+            <span asp-validation-for="StartDate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="EndDate" />
+            <input asp-for="EndDate" class="form-control datepicker-to" autocomplete="off" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+    </div>
+</div>

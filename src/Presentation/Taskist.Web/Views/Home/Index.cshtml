@@ -1,0 +1,113 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+Layout = "~/Views/Shared/_LayoutHome.cshtml";
+}
+
+@await Html.PartialAsync("Sections/_WelcomeCard")
+
+@await Component.InvokeAsync("CardWithCounts")
+
+<div class="row row-cols-2">
+    <div class="col">
+        <div class="card mt-4 mb-4">
+            <div class="card-body">
+                <canvas id="canvas-1"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card mt-4 mb-4">
+            <div class="card-body">
+                <canvas id="canvas-3"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        const random = () => Math.round(Math.random() * 100);
+
+        // eslint-disable-next-line no-unused-vars
+        const lineChart = new Chart(document.getElementById('canvas-1'), {
+            type: 'line',
+            data: {
+                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+                datasets: [{
+                    label: 'My First dataset',
+                    backgroundColor: 'rgba(220, 220, 220, 0.2)',
+                    borderColor: 'rgba(220, 220, 220, 1)',
+                    pointBackgroundColor: 'rgba(220, 220, 220, 1)',
+                    pointBorderColor: '#fff',
+                    data: [random(), random(), random(), random(), random(), random(), random()]
+                }, {
+                    label: 'My Second dataset',
+                    backgroundColor: 'rgba(151, 187, 205, 0.2)',
+                    borderColor: 'rgba(151, 187, 205, 1)',
+                    pointBackgroundColor: 'rgba(151, 187, 205, 1)',
+                    pointBorderColor: '#fff',
+                    data: [random(), random(), random(), random(), random(), random(), random()]
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+
+        // const doughnutChart = new Chart(document.getElementById('canvas-3'), {
+        //     type: 'doughnut',
+        //     data: {
+        //         labels: ['Red', 'Green', 'Yellow'],
+        //         datasets: [{
+        //             data: [300, 50, 100],
+        //             backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+        //             hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+        //         }]
+        //     },
+        //     options: {
+        //         responsive: true
+        //     }
+        // });
+        const ctx = document.getElementById('canvas-3').getContext('2d');
+        const myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow'],
+                datasets: [{
+                    data: [300, 50, 100],
+                    backgroundColor: ['red', 'blue', 'yellow'],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        var $sked = $('#sked').skedTape({
+            caption: 'Cities',
+            start: new Date(), // Timeline starts this date-time
+            end: new Date(),       // Timeline ends this date-time
+            showEventTime: true,     // Whether to show event start-end time
+            showEventDuration: true, // Whether to show event duration
+            locations: [
+                { id: 1, name: 'San Francisco' }, // required properties only
+                {
+                    id: 'london',
+                    name: 'Sydney',
+                    order: 1, // optional sorting order
+                    tzOffset: -10 * 60, // individual timezone (notice that minus sign)
+                    userData: {} // optional some custom data to store
+                },
+            ],
+            events: [
+                {
+                    name: 'Meeting 1',
+                    location: 'london',
+                    start: new Date(),
+                    end: new Date()
+                }
+            ]
+        });
+    })
+</script>

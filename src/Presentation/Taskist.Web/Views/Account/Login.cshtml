@@ -1,0 +1,46 @@
+﻿@model LoginModel
+@{
+	ViewData["Title"] = "Login";
+	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+<div class="row justify-content-center">
+	<div class="col-lg-4">
+		<div class="card-group d-block d-md-flex row">
+			<div class="card col-md-7 p-4 mb-0">
+				<div class="card-body">
+					<div class="text-center mb-4">
+						<img src="~/images/brand/logo.png" class="mb-2" />
+						<div class="text-line-container">
+							<span class="text-line">Sign In to your account</span>
+						</div>
+					</div>
+					<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
+						<div asp-validation-summary="ModelOnly" class="message-error"></div>
+						<div class="mb-3">
+							<label asp-for="Email" class="form-label"></label>
+							<input asp-for="Email" type="text" class="form-control" placeholder="Enter your username" autofocus />
+							<span asp-validation-for="Email" class="text-danger"></span>
+						</div>
+						<div class="mb-3">
+							<label asp-for="Password" class="form-label"></label>
+							<input asp-for="Password" type="password" class="form-control" placeholder="***********************" />
+							<span asp-validation-for="Password" class="text-danger"></span>
+						</div>
+						<div class="row">
+							<div class="col-8">
+								<div class="form-check">
+									<input class="form-check-input" asp-for="RememberMe" type="checkbox" />
+									<label class="form-check-label" asp-for="RememberMe"></label>
+								</div>
+							</div>
+							<div class="col-4">
+								<button type="submit" class="btn btn-primary btn-block">Sign In</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

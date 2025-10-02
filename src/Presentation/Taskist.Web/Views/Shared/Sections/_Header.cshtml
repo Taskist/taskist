@@ -1,0 +1,102 @@
+﻿@{
+	var user = await workContext.GetCurrentUserAsync();
+	var avatar = "avatar_male.png";
+}
+
+<header class="header header-sticky p-0 mb-4">
+	<div class="container-fluid border-bottom px-4">
+		<button class="header-toggler" type="button" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()" style="margin-inline-start: -14px;">
+			<i class="icon icon-lg fas fa-bars"></i>
+		</button>
+		<ul class="header-nav d-md-flex">
+
+		</ul>
+		<ul class="header-nav ms-auto">
+			<li class="nav-item">
+				@await Component.InvokeAsync("ProjectSelector")
+			</li>
+			<li class="nav-item dropdown">
+				<a class="nav-link" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+					<i class="icon icon-lg my-1 mx-2 fas fa-bell">
+					</i><span class="badge rounded-pill position-absolute top-0 end-0 bg-danger">5</span>
+				</a>
+				<div class="dropdown-menu dropdown-menu-end dropdown-menu-lg pt-0" style="">
+					<div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2" data-coreui-i18n="notificationsCounter, { 'counter': 5 }">You have 5 notifications</div><a class="dropdown-item" href="#">
+						<svg class="icon me-2 text-success">
+							<use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-user-follow"></use>
+						</svg><span data-coreui-i18n="newUserRegistered">New user registered</span>
+					</a><a class="dropdown-item" href="#">
+						<svg class="icon me-2 text-danger">
+							<use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-user-unfollow"></use>
+						</svg><span data-coreui-i18n="userDeleted">User deleted</span>
+					</a><a class="dropdown-item" href="#">
+						<svg class="icon me-2 text-info">
+							<use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-chart"></use>
+						</svg><span data-coreui-i18n="salesReportIsReady">Sales report is ready</span>
+					</a><a class="dropdown-item" href="#">
+						<svg class="icon me-2 text-success">
+							<use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-basket"></use>
+						</svg><span data-coreui-i18n="newClient">New client</span>
+					</a><a class="dropdown-item" href="#">
+						<svg class="icon me-2 text-warning">
+							<use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-speedometer"></use>
+						</svg><span data-coreui-i18n="serverOverloaded">Server overloaded</span>
+					</a>
+					<div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold my-2" data-coreui-i18n="server">Server</div><a class="dropdown-item d-block py-2" href="#">
+						<div class="text-uppercase small fw-semibold mb-1" data-coreui-i18n="cpuUsage">CPU Usage</div>
+						<div class="progress progress-thin">
+							<div class="progress-bar bg-info-gradient" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<div class="small text-body-secondary" data-coreui-i18n="cpuUsageDescription, { 'number_of_processes': 358, 'number_of_cores': '1/4' }">358 processes. 1/4 cores</div>
+					</a><a class="dropdown-item d-block py-2" href="#">
+						<div class="text-uppercase small fw-semibold mb-1" data-coreui-i18n="memoryUsage">Memory Usage</div>
+						<div class="progress progress-thin">
+							<div class="progress-bar bg-warning-gradient" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<div class="small text-body-secondary">11444MB/16384MB</div>
+					</a><a class="dropdown-item d-block py-2" href="#">
+						<div class="text-uppercase small fw-semibold mb-1" data-coreui-i18n="ssdUsage">SSD Usage</div>
+						<div class="progress progress-thin">
+							<div class="progress-bar bg-danger-gradient" role="progressbar" style="width: 95%" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
+						</div>
+						<div class="small text-body-secondary">243GB/256GB</div>
+					</a>
+				</div>
+			</li>
+		</ul>
+		<ul class="header-nav">
+			<li class="nav-item py-1">
+				<div class="vr h-100 mx-2 text-body text-opacity-75"></div>
+			</li>
+			<li class="nav-item dropdown">
+				<a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+					<div class="avatar avatar-md">
+						<img class="avatar-img" src="@Url.Content($"~/images/{avatar}")" alt="@user.Name" />
+					</div>
+				</a>
+				<div class="dropdown-menu dropdown-menu-end pt-0">
+					<div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">
+						<i class="icon fas fa-user me-2"></i>@user.Name
+					</div>
+					<a class="dropdown-item" href="#">
+						<i class="icon fas fa-id-card me-2"></i>Profile
+					</a>
+					<div class="dropdown-divider"></div>
+					<a asp-route="ResetCache" class="dropdown-item">
+						<i class="icon fas fa-sync me-2"></i>Reset Cache
+					</a>
+					<a asp-route="Logout" class="dropdown-item">
+						<i class="icon fas fa-sign-out-alt me-2"></i>Logout
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div class="container-fluid border-bottom px-4">
+		<div class="subheader-title">
+			<i class="icon icon-lg fas fa-folder-open me-2"></i><span id="pageTitle"></span>
+		</div>
+		<div class="py-0 pe-0" id="pageButtons">
+		</div>
+	</div>
+</header>

@@ -1,0 +1,68 @@
+﻿@model StatusModel
+@{
+    var isDisabled = Model.Id > 0 && Model.SystemDefined;
+}
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Name" />
+            <input asp-for="Name" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="100" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Description" />
+            <input asp-for="Description" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="250" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="GroupId" />
+            <select asp-for="GroupId" asp-items="Html.GetEnumSelectList<StatusGroupEnum>()" disabled="@isDisabled" class="form-control"></select>
+            <span asp-validation-for="GroupId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="TextColor" />
+            <input asp-for="TextColor" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="20" />
+            <span asp-validation-for="TextColor" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="BackgroundColor" />
+            <input asp-for="BackgroundColor" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="20" />
+            <span asp-validation-for="BackgroundColor" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="IconClass" />
+            <input asp-for="IconClass" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="50" />
+            <span asp-validation-for="IconClass" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="Active" disabled="@isDisabled">
+                <wc-label asp-for="Active" />
+            </label>
+        </div>
+    </div>
+</div>

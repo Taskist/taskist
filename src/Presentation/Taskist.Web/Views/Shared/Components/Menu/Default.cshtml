@@ -1,0 +1,40 @@
+﻿@model MenuModel
+@{
+    var controllerName = ViewContext.RouteData.Values["controller"].ToString();
+}
+
+<ul class="sidebar-nav" data-coreui="navigation" data-simplebar="">
+    @foreach (var parent in Model.MenuItems.Where(x => x.ParentCode == 0))
+    {
+        var menuItems = Model.MenuItems.Where(x => x.ParentCode == parent.Code).ToList();
+        var activeParentClass = menuItems.Any(x => x.ControllerName == controllerName) ? "show" : "";
+        if (menuItems.Any())
+        {
+            <li class="nav-group @activeParentClass">
+                <a class="nav-link nav-group-toggle" href="#">
+                    <i class="nav-icon @parent.Icon"></i>@parent.Name
+                </a>
+                <ul class="nav-group-items compact">
+                    @foreach (var menu in menuItems)
+                    {
+                        var activeClass = parent.ControllerName == controllerName ? "active" : "";
+                        <li class="nav-item">
+                            <a class="nav-link @activeClass" asp-action="@menu.ActionName" asp-controller="@menu.ControllerName">
+                                <span class="nav-icon"><span class="nav-icon-bullet"></span></span>@menu.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </li>
+        }
+        else
+        {
+            var activeClass = parent.ControllerName == controllerName ? "active" : "";
+            <li class="nav-item">
+                <a class="nav-link" asp-action="@parent.ActionName" asp-controller="@parent.ControllerName">
+                    <i class="nav-icon @parent.Icon"></i>@parent.Name
+                </a>
+            </li>
+        }
+    }
+</ul>

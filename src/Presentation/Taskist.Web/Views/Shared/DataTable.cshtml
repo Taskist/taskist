@@ -1,0 +1,171 @@
+@using System.Text
+@using Taskist.Web.Helpers.Razor
+@using Taskist.Web.Models.Datatable
+@model DataTableModel
+@{
+
+    var sbActions = new StringBuilder();
+    var sbButtons = new StringBuilder();
+    var btnClassArr = new[] { "btn-sm btn-primary", "btn-sm btn-secondary", "btn-sm btn-success", "btn-sm btn-danger text-white", "btn-sm btn-info", "btn-sm btn-warning", "btn-sm btn-light", "btn-sm btn-dark", "btn-sm btn-outline-primary", "btn-sm btn-outline-secondary", "btn-sm btn-outline-success", "btn-sm btn-outline-danger", "btn-sm btn-outline-info", "btn-sm btn-outline-warning", "btn-sm btn-outline-light", "btn-sm btn-outline-dark" };
+    var gridName = !string.IsNullOrEmpty(Model.Name) ? Model.Name : "grid";
+    var headerJson = Json.Serialize(Model.HeaderActions);
+    var filterParameters = Json.Serialize(Model.FilterParameters);
+    var buttonElement = Model.AddButtonToHeader ? $"header_{@gridName}" : "pageButtons";
+}
+
+@if (!Model.RenderOnlyTable)
+{
+    <div class="card card-datatable">
+        @if (Model.AddButtonToHeader) {
+            <div class="card-header text-end" id="header_@gridName"></div>
+        }
+        <div class="card-body">
+            <table class="table table-sm table-bordered text-nowrap" style="width:100%" id="@gridName"></table>
+        </div>
+    </div>
+
+    if (Model.HeaderActions.Any())
+    {
+        foreach (var action in Model.HeaderActions)
+        {
+            var btnClass = btnClassArr[action.ButtonColor.ToInt()];
+
+            if (!string.IsNullOrEmpty(action.Url))
+            {
+                var url = action.Url;
+                if (action.NavigationType != NavigationTypeEnum.STANDARD)
+                {
+                    url = $"javascript:JSManager.openOffCanvas('{url}','{Model.Title}');";
+                }
+                if (action.HyperLinkType == HyperLinkTypeEnum.BUTTON_ICON)
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"btn @btnClass me-2\"><i class=\"@action.Icon\"></i></a>');
+                    </script>
+                }
+                else if (action.HyperLinkType == HyperLinkTypeEnum.BUTTON_TEXT)
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"btn @btnClass me-2\">@action.Text</a>');
+                    </script>
+                }
+                else if (action.HyperLinkType == HyperLinkTypeEnum.BUTTON_TEXT_ICON)
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"btn @btnClass me-2\"><i class=\"@action.Icon\ me-1"></i>@action.Text</a>');
+                    </script>
+                }
+                else if (action.HyperLinkType == HyperLinkTypeEnum.HYPERLINK_TEXT)
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\">@action.Text</a>');
+                    </script>
+                }
+                else if (action.HyperLinkType == HyperLinkTypeEnum.HYPERLINK_ICON)
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\"><i class=\"@action.Icon\"></i></a>');
+                    </script>
+                }
+                else if (action.HyperLinkType == HyperLinkTypeEnum.HYPERLINK_TEXT_ICON)
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\"><i class=\"@action.Icon me-1\"></i>@action.Text</a>');
+                    </script>
+                }
+                else
+                {
+                    <script>
+                        $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\">@action.Text</a>');
+                    </script>
+                }
+            }
+        }
+    }
+}
+else
+{
+    <table class="table table-bordered table-striped table-sm" id="@gridName"></table>
+}
+<script>
+    $(document).ready(function () {
+        JSManager.setPageTitle('@Model.Title');
+        var table = $("#@gridName").DataTable({
+            processing: true,
+            serverSide: @Model.ServerSide.ToString().ToLower(),
+            stateSave: false,
+            info: true,
+            autoWidth: false,
+            filter: false,
+            lengthChange: @Model.LengthChange.ToString().ToLower(),
+            pageLength: 10,
+            searching: @Model.Searching.ToString().ToLower(),
+            ordering: @Model.Sorting.ToString().ToLower(),
+            initComplete: function (settings, json) {
+                var jsonArr = JSON.parse('@Html.Raw(headerJson)');
+                for (var i = 0; i < jsonArr.length; i++) {
+                    var obj = jsonArr[i];
+                    if (!JSManager.hasValue(obj.HideReferenceParameter) || json.data.length <= 0)
+                        continue;
+                    var refValue = json.data[0][obj.HideReferenceParameter];
+                    if (parseInt(refValue) === 0) {
+                        $('#' + obj.Id).remove();
+                    }
+                }
+
+                $('.btn-hidden').each(function () {
+                    $(this).removeClass('btn-hidden');
+                });
+
+                $('[data-toggle="popover"]').popover();
+            },
+            language: {
+                search: '<span>@Localize("Grid.SearchLabel").Text</span> _INPUT_',
+                searchPlaceholder: '@Localize("Grid.SearchPlaceholder").Text',
+                lengthMenu: '_MENU_ @Localize("Grid.LengthChangeLabel").Text',
+                paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
+                zeroRecords: '@Localize("Grid.ZeroRecords").Text',
+                info: '@Localize("Grid.FooterInfo").Text',
+                infoEmpty: '@Localize("Grid.FooterInfoWhenEmpty").Text'
+            },
+            ajax: {
+                url: "@Model.UrlRead",
+                type: "POST",
+                datatype: "json",
+                data: function (dto) {
+                    var filterParameters = '@Model.FilterParameters';
+                    if (JSManager.hasValue(filterParameters)) {
+                        var parameters = JSON.parse('@Html.Raw(filterParameters)');
+                        for (var i = 0; i < parameters.length; i++) {
+                            var parm = parameters[i];
+                            dto[parm.Parameter] = $('#' + parm.Element).val();
+                        }
+                    }
+                    JSManager.addAntiForgeryToken(dto);
+                }
+            },
+            columns: [
+                @foreach (var column in Model.Columns)
+                {
+                    if (column.Conditions.Any())
+                    {
+                        @Html.Raw($"{{title:'{column.Title}',sortable: {column.Sorting.ToString().ToLower()},data: '{column.DataColumn}',render: function(data, type, row) {{return DataTable.RenderCondition(data,{Html.Raw(Json.Serialize(column.Conditions))},{column.Capitalize.ToString().ToLower()},{column.MaxLength},{column.IsDate.ToString().ToLower()},{column.IsRating.ToString().ToLower()},{column.IsColor.ToString().ToLower()},{column.IsIconClass.ToString().ToLower()});}}}},")
+                    }
+                    else
+                    {
+                        @Html.Raw($"{{title:'{column.Title}',sortable: {column.Sorting.ToString().ToLower()},data:'{column.DataColumn}',render: function(data, type, row) {{return DataTable.RenderText(data,{column.Capitalize.ToString().ToLower()},{column.MaxLength},{column.IsDate.ToString().ToLower()},{column.IsRating.ToString().ToLower()},{column.IsColor.ToString().ToLower()},{column.IsIconClass.ToString().ToLower()});}}}},")
+                    }
+                }
+
+                @if (Model.ColumnActions.Any())
+                {
+                    @Html.Raw($"{{title:'Actions',sortable: false,render: function(data, type, row) {{return DataTable.RenderActions(row,{Html.Raw(Json.Serialize(Model.ColumnActions))});}}}}")
+                }
+            ]
+        });
+        $('#@gridName').on('draw.dt', function (e, settings, len) {
+            //
+        });
+        $("#@gridName").closest('div').addClass("table-responsive");
+    });
+</script>

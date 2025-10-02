@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Copyright>Copyright © Taskist</Copyright>
+		<Authors>Somaraj N</Authors>
+		<Version>1.0</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Taskist.Core\Taskist.Core.csproj" />
+	  <ProjectReference Include="..\Taskist.Data\Taskist.Data.csproj" />
+	</ItemGroup>
+
+</Project>

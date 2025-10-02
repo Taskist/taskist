@@ -1,0 +1,33 @@
+﻿@model List<ProjectSelectorModel>
+@{
+    var projectName = "No project mapped";
+    var selected = Model.FirstOrDefault(x => x.Selected);
+    if (selected != null)
+    {
+        projectName = selected.Name;
+        if (projectName.Length > 20)
+        {
+            projectName = $"{projectName.Substring(0, 20)}...";
+        }
+    }
+}
+
+<li class="nav-item dropdown">
+    <button class="btn btn-link text-danger nav-link py-2 px-2 d-flex align-items-center" type="button" aria-expanded="false" data-coreui-toggle="dropdown">
+        <i class="fas fa-briefcase icon"></i><span class="ms-2">@projectName</span>
+    </button>
+    @if (Model.Any())
+    {
+        <ul class="dropdown-menu dropdown-menu-end">
+            @foreach (var project in Model)
+            {
+                var activeClass = selected?.Id == project.Id ? "active" : "";
+                <li>
+                    <a class="dropdown-item d-flex align-items-center @activeClass" asp-route="SetActiveProject" asp-route-id="@project.Id">
+                        @project.Name
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</li>

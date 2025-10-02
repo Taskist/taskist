@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="./">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>@ViewData["Title"] - Backlog</title>
+    <link rel="icon" href="~/images/brand/favicon.ico" type="image/x-icon" />
+    @await Html.PartialAsync("Sections/_Styles")
+    @await Html.PartialAsync("Sections/_ScriptsHeader")
+</head>
+
+<body>
+    <div class="bg-login bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
+      <div class="container">
+        @RenderBody()
+      </div>
+    </div>
+
+    <script>
+        const header = document.querySelector('header.header');
+        document.addEventListener('scroll', () => {
+            if (header) {
+                header.classList.toggle('shadow-sm', document.documentElement.scrollTop > 0);
+            }
+        });
+    </script>
+    @await Html.PartialAsync("Sections/_Scripts")
+</body>
+</html>

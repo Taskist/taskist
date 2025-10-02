@@ -1,0 +1,59 @@
+﻿@model IList<BacklogDocumentGridModel>
+
+@if (Model.Count > 0)
+{
+    <div class="thumbnail-container">
+        @foreach (var doc in Model)
+        {
+            var iconColorClass = "none";
+            var iconClass = "none";
+
+            switch (doc.ContentType)
+            {
+                case "image/png":
+                case "image/jpeg":
+                    iconColorClass = "img";
+                    iconClass = "fas fa-file-image";
+                    break;
+                case "application/pdf":
+                    iconColorClass = "pdf";
+                    iconClass = "fas fa-file-pdf";
+                    break;
+            }
+
+            <div id="file-icon-container-@doc.Id" class="file-icon-container">
+                <a asp-action="ViewDocument" asp-route-token="@doc.Id" target="_blank">
+                    <div class="file-icon @iconColorClass">
+                        <i class="@iconClass"></i>
+                    </div>
+                </a>
+                <div class="file-icon-delete" data-token="@doc.Id">
+                    <i class="fas fa-times text-red"></i> Delete
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<script>
+    $(function(){
+        $(".file-icon-delete").click(function() {
+            let token = $(this).data('token');
+            JSManager.confirm("Are you sure you want to delete this file?", function() {
+                let container=`file-icon-container-${token}`;
+                let dto = {
+                    token
+                };
+
+                JSManager.ajaxPost('@Url.Action("DeleteDocument")', dto, container, 'Deleting...', function(response) {
+                    $(`#${container}`).remove();
+
+                    if(response.success)
+                        JSManager.showSuccess(response.message);
+                    else
+                        JSManager.showError(response.message);
+                });
+            });
+        });
+    })
+</script>

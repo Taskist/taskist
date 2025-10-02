@@ -1,0 +1,12 @@
+﻿@model LanguageModel
+@{
+    ViewData["Title"] = Localize("LanguagePage.Title");
+}
+
+<div class="card">
+    <div class="card-body p-2">
+        <form asp-action="Edit">
+            @await Html.PartialAsync("_Form", Model)
+        </form>
+    </div>
+</div>

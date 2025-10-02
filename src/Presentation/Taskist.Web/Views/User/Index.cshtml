@@ -1,0 +1,59 @@
+﻿@{
+    ViewData["Title"] = Localize("UserPage.Title");
+}
+
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "UserGrid",
+    Title = Localize("UserPage.Title").Text,
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("DataRead"),
+    HeaderActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.AddNew").Text,
+            Url = Url.Action("Create"),
+            Text = Localize("Button.AddNew").Text,
+            Icon = "fas fa-plus",
+            HyperLinkType = HyperLinkTypeEnum.BUTTON_TEXT_ICON,
+            NavigationType = NavigationTypeEnum.STANDARD,
+            ButtonColor = ButtonColorEnum.PRIMARY
+        }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.Edit").Text,
+            Url = Url.Action("Edit"),
+            Text = Localize("Button.Edit").Text,
+            Icon = "far fa-edit",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkTypeEnum.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationTypeEnum.STANDARD,
+            ButtonColor = ButtonColorEnum.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("ButtonUser.ResetPassword").Text,
+            Url = Url.Action("ResetPassword"),
+            Text = Localize("ButtonUser.ResetPassword").Text,
+            Icon = "fas fa-key",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkTypeEnum.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationTypeEnum.MODAL,
+            ButtonColor = ButtonColorEnum.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("UserGrid.UserNumber").Text, DataColumn = "UserNumber" },
+        new ColumnModel { Title = Localize("UserGrid.FirstName").Text, DataColumn = "FirstName" },
+        new ColumnModel { Title = Localize("UserGrid.LastName").Text, DataColumn = "LastName" },
+        new ColumnModel { Title = Localize("UserGrid.Email").Text, DataColumn = "Email" },
+        new ColumnModel { Title = Localize("UserGrid.MobileNumber").Text, DataColumn = "MobileNumber" }
+    }
+})

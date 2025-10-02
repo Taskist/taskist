@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = Localize("PageNotFound.Title");
+Layout = "~/Views/Shared/_LayoutError.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="clearfix">
+            <div class="text-center mb-3">
+                <img src="~/images/error-404.png" alt="Backlog" class="img-fluid" />
+            </div>
+            <p class="text-body-secondary text-center">
+                @Localize("PageNotFound.Description")
+            </p>
+            <div class="text-center">
+                <a href="~/" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i>
+                    @Localize("Home.Menu")
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

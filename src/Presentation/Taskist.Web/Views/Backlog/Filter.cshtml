@@ -1,0 +1,100 @@
+﻿@model BacklogModel
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="CreatedById" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="CreatedById" asp-items="Model.AvailableAssignees" multiple="multiple"></select>
+            <span asp-validation-for="CreatedById" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="ModuleId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="ModuleId" asp-items="Model.AvailableModules" multiple="multiple"></select>
+            <span asp-validation-for="ModuleId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="SubModuleId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="SubModuleId" asp-items="Model.AvailableSubModules" multiple="multiple"></select>
+            <span asp-validation-for="SubModuleId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="TaskTypeId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="TaskTypeId" asp-items="Model.AvailableTaskTypes" multiple="multiple"></select>
+            <span asp-validation-for="TaskTypeId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="SeverityId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="SeverityId" asp-items="Model.AvailableSeverities" multiple="multiple"></select>
+            <span asp-validation-for="SeverityId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="ReporterId" />
+            <select class="form-control kendo-select" asp-for="ReporterId" asp-items="Model.AvailableReporters" multiple="multiple"></select>
+            <span asp-validation-for="ReporterId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="AssigneeId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="AssigneeId" asp-items="Model.AvailableAssignees" multiple="multiple"></select>
+            <span asp-validation-for="AssigneeId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="StatusId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="StatusId" asp-items="Model.AvailableStatus" multiple="multiple"></select>
+            <span asp-validation-for="StatusId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="SprintId" />
+            <select class="form-control kendo-select kendo-select-filter" asp-for="SprintId" asp-items="Model.AvailableSprints" multiple="multiple"></select>
+            <span asp-validation-for="SprintId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="text-end">
+            <button type="button" class="btn btn-primary" id="btnSearch">@Localize("Button.Search")</button>
+            <button type="button" class="btn btn-secondary" id="btnReset">@Localize("Button.Reset")</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function() {
+        $(".kendo-select").kendoMultiSelect({
+            autoClose: false,
+            tagMode: "single"
+        });
+
+        $('#btnSearch').click(function(){
+            JSManager.reloadGrid('BacklogGrid');
+        });
+        $('#btnReset').click(function(){
+            $(".kendo-select-filter").each(function() {
+                var multiSelect = $(this).data("kendoMultiSelect");
+                if (multiSelect) {
+                    multiSelect.value([]);
+                    multiSelect.refresh();
+                }
+            });
+            JSManager.reloadGrid('BacklogGrid');
+        });
+
+        JSManager.reloadGrid('BacklogGrid');
+    });
+</script>

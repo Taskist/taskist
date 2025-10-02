@@ -1,0 +1,454 @@
+﻿@model BacklogPageModel
+@{
+	ViewData["Title"] = Localize("BacklogPage.Title");
+}
+
+@section PageStyles {
+	<link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.4.0/css/rowGroup.dataTables.min.css">
+}
+
+@section PageScripts {
+	<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
+	<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.bootstrap5.js"></script>
+}
+
+<div class="card mb-2">
+	<div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#filterContent" aria-expanded="false" aria-controls="filterContent" id="filterTitle">
+		<div class="d-flex justify-content-between align-items-center">
+			<h6 class="mb-1 mt-1"><i class="fas fa-filter me-1"></i>Filter</h6>
+			<i class="fas fa-plus" id="filterIcon"></i>
+		</div>
+	</div>
+	<div id="filterContent" class="collapse">
+		<div class="card-body">
+			<div id="filter-container"></div>
+		</div>
+	</div>
+</div>
+
+<div class="card">
+	<div class="card-header d-flex justify-content-between align-items-center">
+		<div class="d-flex gap-2 ms-auto">
+			<button id="btnExcelExport" type="button" class="btn btn-success btn-sm text-white">
+				<i class="fa-solid fa-file-excel me-1"></i>Download
+			</button>
+			<div class="dropdown">
+				<button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="groupingToggleBtn" data-bs-toggle="dropdown">
+					Group By
+				</button>
+				<ul class="dropdown-menu dropdown-menu-sm" id="groupingToggleMenu">
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="TaskType.Name" data-columnname="TaskType" /> @Localize("BacklogGrid.TaskType")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="Severity.Name" data-columnname="Severity" /> @Localize("BacklogGrid.Severity")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="Status.Name" data-columnname="Status" /> @Localize("BacklogGrid.Status")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="Project" data-columnname="Project" /> @Localize("BacklogGrid.Project")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="Module" data-columnname="Module" /> @Localize("BacklogGrid.Module")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="SubModule" data-columnname="SubModule" /> @Localize("BacklogGrid.SubModule")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="Assignee" data-columnname="Assignee" /> @Localize("BacklogGrid.Assignee")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="DueDate" data-columnname="DueDate" /> @Localize("BacklogGrid.DueDate")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="CreatedBy" data-columnname="CreatedBy" /> @Localize("BacklogGrid.CreatedBy")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" value="CreatedOn" data-columnname="CreatedOn" /> @Localize("BacklogGrid.CreatedOn")
+						</label>
+					</li>
+					<li><hr class="dropdown-divider"></li>
+					<li><button class="dropdown-item text-danger" id="resetGroupBy">Reset Grouping</button></li>
+				</ul>
+			</div>
+			<div class="dropdown">
+				<button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="columnToggleBtn" data-bs-toggle="dropdown">
+					Showing 10/10 Columns
+				</button>
+				<ul class="dropdown-menu dropdown-menu-sm" id="columnToggleMenu">
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="2" data-columnname="TaskType" checked /> @Localize("BacklogGrid.TaskType")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="3" data-columnname="Severity" checked /> @Localize("BacklogGrid.Severity")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="4" data-columnname="Status" checked /> @Localize("BacklogGrid.Status")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="5" data-columnname="Project" checked /> @Localize("BacklogGrid.Project")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="6" data-columnname="Module" checked /> @Localize("BacklogGrid.Module")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="7" data-columnname="SubModule" checked /> @Localize("BacklogGrid.SubModule")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="8" data-columnname="Assignee" checked /> @Localize("BacklogGrid.Assignee")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="9" data-columnname="DueDate" checked /> @Localize("BacklogGrid.DueDate")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="10" data-columnname="CreatedBy" checked /> @Localize("BacklogGrid.CreatedBy")
+						</label>
+					</li>
+					<li>
+						<label class="dropdown-item">
+							<input type="checkbox" data-column="11" data-columnname="CreatedOn" checked /> @Localize("BacklogGrid.CreatedOn")
+						</label>
+					</li>
+					<li><hr class="dropdown-divider"></li>
+					<li><button class="dropdown-item text-danger" id="resetColumn">Show All</button></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div class="card-body p-3">
+		<table class="table table-bordered table-condensed table-striped nowrap" id="BacklogGrid"></table>
+	</div>
+</div>
+
+<script>
+	let filterLoaded = false;
+	$(document).ready(function () {
+		JSManager.setPageTitle('@Localize("BacklogPage.Title").Text');
+		let canReport = JSON.parse('@Model.CanReport.ToString().ToLower()');
+		let canEdit = JSON.parse('@Model.CanEdit.ToString().ToLower()');
+
+		filterLoaded = true;
+		JSManager.renderPartial('@Url.Action("Filter", new { filterMode = Model.FilterMode })', {}, 'filter-container');
+
+		if (canReport) {
+			$('#pageButtons').append(`<a href="@Url.Action("Create")" class="btn btn-sm btn-primary me-2"><i class="fas fa-plus me-1"></i>Add New</a>`);
+		}
+
+		var table = $("#BacklogGrid").DataTable({
+			processing: true,
+			serverSide: true,
+			stateSave: false,
+			info: true,
+			autoWidth: false,
+			filter: false,
+			lengthChange: true,
+			pageLength: 10,
+			searching: false,
+			ordering: true,
+			rowGroup: {
+				dataSrc: [],
+				enable: false,
+				startRender: function (rows, group, level) {
+					var count = rows.count();
+					var indent = "&nbsp;&nbsp;&nbsp;".repeat(level);
+					return $(`<tr class="group-header"><td colspan="4">${indent}<strong>${group} (${count})</strong></td></tr>`);
+				},
+				endRender: function(){
+					$('#columnToggleMenu input[type="checkbox"]').trigger('change');
+				}
+			},
+			initComplete: function (settings, json) {
+			},
+			language: {
+				search: '<span>@Localize("Grid.SearchLabel").Text</span> _INPUT_',
+				searchPlaceholder: '@Localize("Grid.SearchPlaceholder").Text',
+				lengthMenu: '_MENU_ @Localize("Grid.LengthChangeLabel").Text',
+				paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
+				zeroRecords: '@Localize("Grid.ZeroRecords").Text',
+				info: '@Localize("Grid.FooterInfo").Text',
+				infoEmpty: '@Localize("Grid.FooterInfoWhenEmpty").Text'
+			},
+			ajax: {
+				url: "@Url.Action("DataRead")",
+				type: "POST",
+				datatype: "json",
+				data: function (dto) {
+					setFilterParam(dto);
+					JSManager.addAntiForgeryToken(dto);
+				}
+			},
+			columns: [{
+				title: '@Localize("BacklogGrid.TaskId")',
+				data: 'Id',
+				sortable: true,
+				render: function (data, type, row) {
+					let html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}">${row.Id}</a>`
+					return data;
+				}
+			},{
+				title: '@Localize("BacklogGrid.Title")',
+				data: 'Title',
+				sortable: true,
+				render: function (data, type, row) {
+					if(data.length > 50) {
+						let truncatedText = data.substr(0, 50) + "...";
+						return `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}"><span class="dt-truncate"
+								 tabindex="0"
+								 role="button"
+								 data-bs-toggle="popover"
+								 data-bs-trigger="hover focus"
+								 data-bs-content="${data}">
+								${truncatedText}
+							</span></a>`;
+					}
+
+					return `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}">${data}</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.TaskType")',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<span class="badge" style="color:${row.TaskType.TextColor};background-color:${row.TaskType.BackgroundColor};"><i class="${row.TaskType.IconClass} me-1"></i>${row.TaskType.Name}</span>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Severity")',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<span class="badge" style="color:${row.Severity.TextColor};background-color:${row.Severity.BackgroundColor};"><i class="${row.Severity.IconClass} me-1"></i>${row.Severity.Name}</span>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Status")',
+				sortable: true,
+				render: function (data, type, row) {
+					let reopenCounter = '';
+					if (parseInt(row.ReOpenCount) > 2) {
+						reopenCounter = `<span class="badge rounded-pill bg-danger me-1" title="Reopened count">${row.ReOpenCount}</span>`;
+					}else if (parseInt(row.ReOpenCount) > 0) {
+						reopenCounter = `<span class="badge rounded-pill bg-warning me-1" title="Reopened count">${row.ReOpenCount}</span>`;
+					}else {
+						reopenCounter = '';
+					}
+					return `${reopenCounter}<span class="badge" style="color:${row.Status.TextColor};background-color:${row.Status.BackgroundColor};"><i class="${row.Status.IconClass} me-1"></i>${row.Status.Name}</span>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Project")',
+				data: 'Project',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Module")',
+				data: 'Module',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.SubModule")',
+				data: 'SubModule',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Assignee")',
+				data: 'Assignee',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.DueDate")',
+				data: 'DueDate',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)) {
+						  const today = moment();
+						  const targetDate = moment(data);
+						  const dayDifference = targetDate.diff(today, "days");
+						  if (dayDifference < 0) {
+							  return `<i class="far fa-calendar-times text-danger me-1" title="Overdue by ${Math.abs(dayDifference)} days"></i>${moment(data).format('DD-MMM-YYYY')}`;
+						  } else if (dayDifference === 0) {
+							  return `<i class="far fa-calendar-check text-success me-1" title="${dayDifference} Due today!"></i>${moment(data).format('DD-MMM-YYYY')}`;
+						  } else {
+							  return `<i class="far fa-calendar-plus text-primary me-1" title="${dayDifference} days remaining"></i>${moment(data).format('DD-MMM-YYYY')}`;
+						  }
+					}
+					else
+						return 'Not set';
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.CreatedBy")',
+				data: 'CreatedBy',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.CreatedOn")',
+				data: 'CreatedOn',
+				sortable: true,
+				render: function (data, type, row) {
+					return moment(data).format('DD-MMM-YYYY');
+				}
+			}]
+		});
+
+		if (!$.fn.dataTable.RowGroup) {
+			console.error("RowGroup is NOT loaded. Check your script imports.");
+		}
+
+		$('#groupingToggleMenu input[type="checkbox"]').on('change', function () {
+			updateColumnGrouping();
+		});
+
+		$('#columnToggleMenu input[type="checkbox"]').on('change', function () {
+			updateColumnVisibility();
+		});
+
+		function updateColumnGrouping() {
+			var selectedGroups = $('#groupingToggleMenu input[type="checkbox"]:checked').map(function () {
+				 return $(this).val();
+			 }).get();
+
+			 if(selectedGroups.length > 0){
+				 table.rowGroup().dataSrc(selectedGroups).enable(true).draw();
+			 }else {
+				table.rowGroup().dataSrc([]).enable(false).draw();
+			 }
+
+			 var selectedCount = selectedGroups.length;
+			 $('#groupingToggleBtn').text(`Group By (${selectedCount})`);
+		}
+
+		function updateColumnVisibility() {
+			$('#columnToggleMenu input[type="checkbox"]').each(function () {
+				var column = table.column($(this).data('column'));
+				column.visible($(this).prop('checked'));
+			});
+
+			let selectedCount = $('#columnToggleMenu input[type="checkbox"]:checked').length;
+			$('#columnToggleBtn').text(`Showing ${selectedCount}/10 Columns`);
+		}
+
+		$("#BacklogGrid").closest('div').addClass("table-responsive");
+
+		$('#BacklogGrid').on('draw.dt', function () {
+			let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+			let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+				return new bootstrap.Popover(popoverTriggerEl)
+			})
+		});
+
+		$('#filterContent').on('shown.bs.collapse', function () {
+			$('#filterIcon').removeClass('fa-plus').addClass('fa-minus');
+			if (!filterLoaded) {
+				filterLoaded = true;
+				JSManager.renderPartial('@Url.Action("Filter")', {}, 'filter-container');
+			}
+		});
+
+		$('#filterContent').on('hidden.bs.collapse', function () {
+			$('#filterIcon').removeClass('fa-minus').addClass('fa-plus');
+		});
+
+		$('#resetGroupBy').on('click', function() {
+			 $('#groupingToggleMenu input[type="checkbox"]').prop('checked', false);
+			 updateColumnGrouping();
+		})
+
+		$('#resetColumn').on('click', function() {
+			 $('#columnToggleMenu input[type="checkbox"]').prop('checked', true);
+			 updateColumnVisibility();
+		})
+
+		$('#btnExcelExport').on('click', function() {
+			let visibleColumns = [];
+			let groupByColumns = [];
+
+			$('#columnToggleMenu input:checked').each(function () {
+				visibleColumns.push($(this).data('columnname'));
+			});
+
+			$('#groupingToggleMenu input:checked').each(function () {
+				groupByColumns.push($(this).data('columnname'));
+			});
+
+			let exportUrl = "@Url.Action("ExportToExcel")"
+						+ "?columns=" + visibleColumns.join(',')
+						+ "&createdby=" + $('#CreatedById').val()
+						+ "&module=" + $('#ModuleId').val()
+						+ "&subModule=" + $('#SubModuleId').val()
+						+ "&taskType=" + $('#TaskTypeId').val()
+						+ "&severity=" + $('#SeverityId').val()
+						+ "&reporter=" + $('#ReporterId').val()
+						+ "&assignee=" + $('#AssigneeId').val()
+						+ "&status=" + $('#StatusId').val()
+						+ "&sprint=" + $('#SprintId').val()
+						+ "&groups=" + groupByColumns.join(',');
+
+			window.location.href=exportUrl;
+		});
+	});
+
+	function setFilterParam(dto) {
+		dto.createdby = $('#CreatedById').val();
+		dto.module = $('#ModuleId').val();
+		dto.subModule = $('#SubModuleId').val();
+		dto.taskType = $('#TaskTypeId').val();
+		dto.severity = $('#SeverityId').val();
+		dto.reporter = $('#ReporterId').val();
+		dto.assignee = $('#AssigneeId').val();
+		dto.status = $('#StatusId').val();
+		dto.sprint = $('#SprintId').val();
+		return dto;
+	}
+</script>

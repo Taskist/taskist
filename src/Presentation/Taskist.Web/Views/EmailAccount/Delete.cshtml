@@ -1,0 +1,35 @@
+﻿@model EmailAccountModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+@if (Model.EmailTemplates.Any())
+{
+    <div class="alert alert-danger">@Localize("EmailAccountModel.UnableToDeleteMsg")</div>
+    <ul>
+        @foreach (var template in Model.EmailTemplates)
+    {
+        <li>@template.Name</li>
+    }
+    </ul>
+    <div class="float-end">
+        <div class="btn-icon-list">
+            <button type="button" class="btn ripple btn-dark btn-with-icon close-form"><i class="fe fe-slash"></i>@Localize("Button.Cancel")</button>
+        </div>
+    </div>
+}
+else
+{
+    <form asp-action="Delete" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+        <input type="hidden" asp-for="Id" />
+        <div class="alert alert-danger text-center">@Localize("Confirmation.Delete")</div>
+        <div class="float-end">
+            <div class="btn-icon-list">
+                <button type="submit" class="btn ripple btn-danger btn-with-icon"><i class="fe fe-save"></i>@Localize("Button.Delete")</button>
+                <button type="button" class="btn ripple btn-dark btn-with-icon close-form">
+                    <i class="fe fe-slash"></i>@Localize("Button.Cancel")
+                </button>
+            </div>
+        </div>
+    </form>
+}

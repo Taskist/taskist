@@ -1,0 +1,78 @@
+﻿@model CustomFieldModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="ProjectId" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Label" />
+            <input asp-for="Label" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            <span asp-validation-for="Label" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ResourceKey" />
+            <input asp-for="ResourceKey" class="form-control form-control-maxlength" autocomplete="off" readonly />
+            <span asp-validation-for="ResourceKey" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="FieldType" />
+            <select class="form-control select2" data-style="btn-default" asp-for="FieldType" asp-items="Html.GetEnumSelectList<FieldTypeEnum>()"></select>
+            <span asp-validation-for="ResourceKey" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="ColumnClass" />
+            <select class="form-control select2" data-style="btn-default" asp-for="ColumnClass" asp-items="Model.AvailableColumnClasses"></select>
+            <span asp-validation-for="ColumnClass" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="Placement" />
+            <select class="form-control select2" data-style="btn-default" asp-for="Placement" asp-items="Html.GetEnumSelectList<CustomFieldPlacementEnum>()"></select>
+            <span asp-validation-for="Placement" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Options" />
+            <textarea asp-for="Options" class="form-control form-control-maxlength" autocomplete="off" rows="2"></textarea>
+            <span asp-validation-for="Options" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="Mandatory">
+                <wc-label asp-for="Mandatory" />
+            </label>
+        </div>
+    </div>
+</div>
+<script>
+    $(function() {
+        $("#Label").on("input", function() {
+            let prefix = "@Model.ProjectName";
+            prefix = prefix.replace(/[^a-zA-Z0-9]/g, '') + '.';
+            let input = $(this).val();
+            let output = input.replace(/[^a-zA-Z0-9]/g, '');
+            $("#ResourceKey").val(prefix + output);
+        });
+    });
+</script>

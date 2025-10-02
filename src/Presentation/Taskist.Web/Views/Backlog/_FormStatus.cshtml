@@ -1,0 +1,128 @@
+﻿@model BacklogModel
+@{
+    var updateCssClassName = "";
+    var updateCssClassNameModule = "";
+    if (Model.Id > 0 && Model.CanEdit)
+    {
+        updateCssClassName = "ajax-update";
+        updateCssClassNameModule = "ajax-update-module";
+    }
+}
+<input type="hidden" asp-for="Id" />
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ModuleId" />
+            <select class="form-control select2 @updateCssClassNameModule" asp-for="ModuleId" asp-items="Model.AvailableModules"></select>
+            <span asp-validation-for="ModuleId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="SubModuleId" />
+            <select class="form-control select2 @updateCssClassNameModule" asp-for="SubModuleId" asp-items="Model.AvailableSubModules"></select>
+            <span asp-validation-for="SubModuleId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="TaskTypeId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="TaskTypeId" asp-items="Model.AvailableTaskTypes"></select>
+            <span asp-validation-for="TaskTypeId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="SeverityId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="SeverityId" asp-items="Model.AvailableSeverities"></select>
+            <span asp-validation-for="SeverityId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ReporterId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="ReporterId" asp-items="Model.AvailableReporters"></select>
+            <span asp-validation-for="ReporterId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="AssigneeId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="AssigneeId" asp-items="Model.AvailableAssignees"></select>
+            <span asp-validation-for="AssigneeId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="StatusId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="StatusId" asp-items="Model.AvailableStatus"></select>
+            <span asp-validation-for="StatusId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="DueDate" />
+            <input asp-for="DueDate" class="form-control datepicker @updateCssClassName" autocomplete="off" type="text" maxlength="15" />
+            <span asp-validation-for="DueDate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="SprintId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="SprintId" asp-items="Model.AvailableSprints"></select>
+            <span asp-validation-for="SprintId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="ParentId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="ParentId"></select>
+            <span asp-validation-for="ParentId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacementEnum.StatusSection })
+<script>
+    $(function () {
+        $("#ModuleId").change(function () {
+            var dto = {
+                module: $(this).val(),
+            };
+            JSManager.bindSelect("SubModuleId", "@Url.Action("GetSubModules", "SubModule")", dto);
+        });
+
+        $('.@updateCssClassNameModule').change(function () {
+            if(!$("#EditForm").valid()) {
+                return;
+            }
+
+            $('.@updateCssClassNameModule').each(function(){
+                let id = '@Model.Id';
+                let value = $(this).val();
+                let name = $(this).attr('Name');
+                let dto = {
+                    id,
+                    name,
+                    value
+                };
+
+                JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name);
+            });
+        });
+
+        $('.@updateCssClassName').change(function () {
+            let id = '@Model.Id';
+            let value = $(this).val();
+            let name = $(this).attr('Name');
+            let dto = {
+                id,
+                name,
+                value
+            };
+
+            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response){
+                JSManager.showSuccess(response.message);
+            });
+        });
+    });
+</script>

@@ -1,0 +1,44 @@
+﻿@using Taskist.Service.Common
+@using Taskist.Service.Messages
+@using Newtonsoft.Json
+@using Taskist.Web.Helpers.Razor
+@{
+    //Get messages from TempData
+var notes = TempData.ContainsKey(ServiceConstant.NotificationListKey)
+    ? JsonConvert.DeserializeObject<IList<NotifyData>>(TempData[ServiceConstant.NotificationListKey].ToString())
+    : null;
+if (notes != null)
+{
+    foreach (var note in notes)
+    {
+        var cssStyle = "";
+        switch (note.Type)
+        {
+            case NotifyType.Success:
+                cssStyle = "alert-success";
+                break;
+            case NotifyType.Error:
+                cssStyle = "alert-danger";
+                break;
+            case NotifyType.Warning:
+                cssStyle = "alert-warning";
+                break;
+        }
+        <div class="alert @cssStyle alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+                @if (note.Encode)
+            {
+                <text>
+                        @note.Message
+                    </text>
+            }
+            else
+            {
+                <text>
+                        @Html.Raw(note.Message)
+                    </text>
+            }
+            </div>
+    }
+}
+}

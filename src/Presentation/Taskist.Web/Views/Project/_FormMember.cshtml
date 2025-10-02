@@ -1,0 +1,72 @@
+﻿@model UserProjectModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="ProjectId" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="UserId" />
+            <select asp-for="UserId" asp-items="Model.AvailableUsers" class="form-control select2"></select>
+            <span asp-validation-for="UserId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanReport">
+                <wc-label asp-for="CanReport" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanEdit">
+                <wc-label asp-for="CanEdit" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanClose">
+                <wc-label asp-for="CanClose" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanReOpen">
+                <wc-label asp-for="CanReOpen" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanComment">
+                <wc-label asp-for="CanComment" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanViewOthersTask">
+                <wc-label asp-for="CanViewOthersTask" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="CanEditOthersTask">
+                <wc-label asp-for="CanEditOthersTask" />
+            </label>
+        </div>
+    </div>
+</div>

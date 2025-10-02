@@ -1,0 +1,50 @@
+﻿@model ErrorModel
+@{
+    ViewData["Title"] = Localize("ErrorPage.Title");
+}
+
+<div class="row sidemenu-height">
+    <div class="col-md-12">
+        <div class="construction1 text-center details">
+            <div class="">
+                <div class="col-lg-12">
+                    <h1 class="tx-140 mb-0">
+                        <img id="imgToggleError" src="~/images/error-500.png" alt="Web Admin" />
+                    </h1>
+                </div>
+                <div class="col-lg-12 ">
+                    <h2>Oops, something went wrong!</h2>
+                    <div class="tx-15 mt-3 mb-4 text-muted">
+                        The server encountered an internal error or misconfiguration and was unable to complete your request!
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Message))
+                {
+                    <div id="divError" class="alert alert-warning hidden" role="alert">
+                            <div class="d-flex">
+                                <div>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon alert-icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                        <path d="M12 9v4"></path>
+                                        <path d="M10.363 3.591l-8.106 13.534a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636 -2.87l-8.106 -13.536a1.914 1.914 0 0 0 -3.274 0z"></path>
+                                        <path d="M12 16h.01"></path>
+                                    </svg>
+                                </div>
+                                <div class="text-start">
+                                    @Model.Message
+                                </div>
+                            </div>
+                        </div>
+                }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function () {
+        $('#imgToggleError').click(function () {
+            $('#divError').toggleClass('hidden');
+        });
+    })
+</script>

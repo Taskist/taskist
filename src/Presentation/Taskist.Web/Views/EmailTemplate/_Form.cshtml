@@ -1,0 +1,46 @@
+﻿@model EmailTemplateModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Name" />
+            <input asp-for="Name" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="EmailSubject" />
+            <input asp-for="EmailSubject" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="EmailSubject" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="EmailAccountId" />
+            <select asp-for="EmailAccountId" asp-items="Model.AvailableEmailAccounts" class="form-control"></select>
+            <span asp-validation-for="EmailAccountId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="EmailBody" />
+            <textarea asp-for="EmailBody" class="form-control" rows="15"></textarea>
+            <span asp-validation-for="EmailBody" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="Active">
+                <wc-label asp-for="Active" />
+            </label>
+        </div>
+    </div>
+</div>

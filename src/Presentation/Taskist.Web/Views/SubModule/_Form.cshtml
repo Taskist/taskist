@@ -1,0 +1,44 @@
+﻿@model SubModuleModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Name" />
+            <input asp-for="Name" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Description" />
+            <input asp-for="Description" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ModuleId" />
+            <select asp-for="ModuleId" asp-items="Model.AvailableModules" class="form-control select2"></select>
+            <span asp-validation-for="ModuleId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="OwnerId" />
+            <select asp-for="OwnerId" asp-items="Model.AvailableOwners" class="form-control select2"></select>
+            <span asp-validation-for="OwnerId" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="Active">
+                <wc-label asp-for="Active" />
+            </label>
+        </div>
+    </div>
+</div>

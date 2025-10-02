@@ -1,0 +1,78 @@
+﻿@model EmailAccountModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Name" />
+            <input asp-for="Name" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Description" />
+            <input asp-for="Description" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="UserName" />
+            <input asp-for="UserName" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="UserName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Password" />
+            <input asp-for="Password" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Host" />
+            <input asp-for="Host" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="Host" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="Port" />
+            <input asp-for="Port" class="form-control form-control-maxlength" autocomplete="off" maxlength="5" />
+            <span asp-validation-for="Port" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="FromName" />
+            <input asp-for="FromName" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="FromName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="FromEmail" />
+            <input asp-for="FromEmail" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="FromEmail" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="EnableSsl">
+                <wc-label asp-for="EnableSsl" />
+            </label>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="Active">
+                <wc-label asp-for="Active" />
+            </label>
+        </div>
+    </div>
+</div>

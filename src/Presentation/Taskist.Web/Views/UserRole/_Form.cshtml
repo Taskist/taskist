@@ -1,0 +1,38 @@
+﻿@model UserRoleModel
+@Html.AntiForgeryToken()
+@{
+    var isDisabled = Model.Id > 0 && Model.SystemDefined;
+}
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Name" />
+            <input asp-for="Name" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="50" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="SystemName" />
+            <input asp-for="SystemName" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="50" />
+            <span asp-validation-for="SystemName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <input asp-for="Description" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="250" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="Active">
+                <wc-label asp-for="Active" />
+            </label>
+        </div>
+    </div>
+</div>

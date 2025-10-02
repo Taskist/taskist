@@ -1,0 +1,39 @@
+﻿@model UserRolePermissionGridModel
+@{
+	Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+	var canModify = true;
+	if (Model.SystemRole && !Model.IsAdmin)
+	{
+		canModify = false;
+	}
+}
+@if (!canModify)
+{
+	<div class="alert alert-warning">@Localize("UserRoleModal.SystemRoleMsg")</div>
+}
+<form asp-action="SavePermission" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+	<input type="hidden" asp-for="RoleId" />
+	<div class="row">
+		@foreach (var permission in Model.UserRolePermission)
+		{
+			var isChecked = Model.UserRolePermissionMap.Any(x => x.PermissionId == permission.Id && x.UserRoleId == Model.RoleId);
+			<div class="col-md-6">
+				<div class="form-group">
+					<label class="ckbox">
+						<input type="checkbox" id="per_@permission.Id" name="per_@permission.Id"
+						@Html.Raw(isChecked ? "checked" : null)
+						@Html.Raw(!canModify ? "disabled" : null) />
+						<span>@permission.Name</span>
+					</label>
+				</div>
+			</div>
+		}
+	</div>
+	<div class="mt-4">
+		@if (canModify)
+		{
+			<button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button>
+		}
+		<button type="button" class="btn btn-secondary" data-bs-dismiss="offcanvas"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")</button>
+	</div>
+</form>

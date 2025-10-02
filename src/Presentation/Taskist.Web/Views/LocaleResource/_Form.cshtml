@@ -1,0 +1,21 @@
+﻿@model LocaleResourceModel
+@Html.AntiForgeryToken()
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="LanguageId" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ResourceKey" />
+            <input asp-for="ResourceKey" class="form-control form-control-maxlength" autocomplete="off" maxlength="750" />
+            <span asp-validation-for="ResourceKey" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ResourceValue" />
+            <input asp-for="ResourceValue" class="form-control form-control-maxlength" autocomplete="off" maxlength="750" />
+            <span asp-validation-for="ResourceValue" class="text-danger"></span>
+        </div>
+    </div>
+</div>
