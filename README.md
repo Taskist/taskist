@@ -5,6 +5,10 @@ A web-based **Task, Change Request (CR), and Bug Management System** built with 
 
 This system helps teams manage tasks, track bugs, handle change requests, and organize projects efficiently.
 
+
+![License](https://img.shields.io/github/license/taskist/taskist)
+![Issues](https://img.shields.io/github/issues/taskist/taskist)
+![Stars](https://img.shields.io/github/stars/taskist/taskist) 
 ---
 
 ## 📑 Table of Contents
