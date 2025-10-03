@@ -1,11 +1,12 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Localization;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -44,11 +45,9 @@ public class LocaleResourceController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
     public async Task<IActionResult> Create(int languageId)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLocaleResource))
-            return AccessDenied();
-
         var model = new LocaleResourceModel
         {
             LanguageId = languageId
@@ -58,11 +57,9 @@ public class LocaleResourceController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
     public async Task<IActionResult> Create(LocaleResourceModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLocaleResource))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<LocaleResource>(model);
@@ -85,11 +82,9 @@ public class LocaleResourceController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLocaleResource))
-            return AccessDenied();
-
         var entity = await _localizationService.GetByIdAsync(id);
         if (entity == null)
             return RedirectToAction("Index");
@@ -100,11 +95,9 @@ public class LocaleResourceController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
     public async Task<IActionResult> Edit(LocaleResourceModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLocaleResource))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var entity = await _localizationService.GetByIdAsync(model.Id);
@@ -134,11 +127,9 @@ public class LocaleResourceController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
     public async Task<IActionResult> DataRead(DataTableRequest request, int languageId)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLocaleResource))
-            return AccessDeniedDataRead();
-
         var data = await _localizationService.GetPagedListAsync(languageId, request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

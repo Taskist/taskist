@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -49,30 +50,24 @@ public class SeverityController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDeniedPartial();
-
         var model = new SeverityModel();
 
         return PartialView(model);
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> Create(SeverityModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<Severity>(model);
@@ -95,11 +90,9 @@ public class SeverityController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDeniedPartial();
-
         var entity = await _severityService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
@@ -110,11 +103,9 @@ public class SeverityController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> Edit(SeverityModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = await _severityService.GetByIdAsync(model.Id);
@@ -140,11 +131,9 @@ public class SeverityController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDeniedPartial();
-
         var entity = await _severityService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
@@ -168,11 +157,9 @@ public class SeverityController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_SEVERITY)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageSeverity))
-            return AccessDeniedDataRead();
-
         var data = await _severityService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

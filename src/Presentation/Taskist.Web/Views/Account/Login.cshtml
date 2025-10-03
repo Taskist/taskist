@@ -10,10 +10,9 @@
 			<div class="card col-md-7 p-4 mb-0">
 				<div class="card-body">
 					<div class="text-center mb-4">
-						<img src="~/images/brand/logo.png" class="mb-2" />
-						<div class="text-line-container">
-							<span class="text-line">Sign In to your account</span>
-						</div>
+						<img src="~/images/brand/logo.png" alt="Taskist"/>
+						<hr class="hr-text" data-content="Sign In to your account" />
+
 					</div>
 					<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
 						<div asp-validation-summary="ModelOnly" class="message-error"></div>

@@ -1,14 +1,15 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
-using Taskist.Service.Users;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
+using Taskist.Service.Users;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -54,19 +55,15 @@ public class ReporterController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDeniedPartial();
-
         var model = new ReporterModel();
         await InitModelAsync(model);
 
@@ -74,11 +71,9 @@ public class ReporterController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Create(ReporterModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<Reporter>(model);
@@ -103,11 +98,9 @@ public class ReporterController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDeniedPartial();
-
         var entity = await _reporterService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
@@ -119,11 +112,9 @@ public class ReporterController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Edit(ReporterModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = await _reporterService.GetByIdAsync(model.Id);
@@ -149,11 +140,9 @@ public class ReporterController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDeniedPartial();
-
         var entity = await _reporterService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
@@ -177,11 +166,9 @@ public class ReporterController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageReporter))
-            return AccessDeniedDataRead();
-
         var data = await _reporterService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

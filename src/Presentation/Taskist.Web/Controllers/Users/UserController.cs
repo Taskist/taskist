@@ -58,19 +58,15 @@ public class UserController : BaseController
 
     #region Action
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDenied();
-
         var model = new UserRegistrationModel();
         await InitModelAsync(model);
 
@@ -78,11 +74,9 @@ public class UserController : BaseController
     }
 
     [HttpPost, FormName("save-continue", "continueEditing")]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Create(UserRegistrationModel model, bool continueEditing)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var loggedUser = await _workContext.GetCurrentUserAsync();
@@ -112,11 +106,9 @@ public class UserController : BaseController
         return View(model);
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDenied();
-
         var entity = await _userService.GetByIdAsync(id);
         if (entity == null)
             return RedirectToAction("Index");
@@ -134,14 +126,11 @@ public class UserController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Edit(UserRegistrationModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
-
             var entity = await _userService.GetByIdAsync(model.User.Id);
             entity = _mapper.Map(model.User, entity);
 
@@ -174,22 +163,18 @@ public class UserController : BaseController
         return View(model);
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> ResetPassword(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDenied();
-
         var model = new ResetPasswordModel { Id = id };
 
         return PartialView(model);
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             await _userService.ResetPasswordAsync(model.Id, model.Password);
@@ -217,12 +202,9 @@ public class UserController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
-            return AccessDeniedDataRead();
-
-
         var data = await _userService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

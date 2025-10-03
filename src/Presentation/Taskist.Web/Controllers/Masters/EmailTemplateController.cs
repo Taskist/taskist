@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -55,19 +56,15 @@ public class EmailTemplateController : BaseController
 
     #region Action
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageEmailTemplate))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageEmailTemplate))
-            return AccessDeniedPartial();
-
         var entity = await _emailTemplateService.GetByIdAsync(id);
         if (entity == null)
             return RedirectToAction("Index");
@@ -79,11 +76,9 @@ public class EmailTemplateController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Edit(EmailTemplateModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageEmailTemplate))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = await _emailTemplateService.GetByIdAsync(model.Id);
@@ -108,11 +103,9 @@ public class EmailTemplateController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Reset()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageEmailTemplate))
-            return AccessDeniedPartial();
-
         var model = new PageModel
         {
             Valid = true
@@ -130,12 +123,9 @@ public class EmailTemplateController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Reset(IFormCollection formCollection)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageEmailTemplate))
-            return AccessDeniedPartial();
-
-        //var user = _workContext.ActiveUser;
         var defaultEmailAccount = await _emailAccountService.GetFirstActiveAsync();
 
         if (defaultEmailAccount == null)
@@ -204,11 +194,9 @@ public class EmailTemplateController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageEmailTemplate))
-            return AccessDeniedDataRead();
-
         var data = await _emailTemplateService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

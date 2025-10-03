@@ -96,22 +96,18 @@ public class BacklogController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Index(int filter = 0)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDenied();
-
         var model = await GetProjectAccess();
         model.FilterMode = filter;
 
         return View(model);
     }
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDenied();
-
         var projectAccess = await GetProjectAccess();
         if (projectAccess == null || !projectAccess.CanReport && !projectAccess.CanEdit && !projectAccess.CanClose)
             return AccessDenied();
@@ -123,11 +119,9 @@ public class BacklogController : BaseController
     }
 
     [HttpPost, FormName("save-continue", "addNew")]
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Create(BacklogModel model, List<CustomFieldValueModel> fieldValues, bool addNew)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDenied();
-
         var loggedUser = await _workContext.GetCurrentUserAsync();
         var lastAccessedProjectId = await _genericAttributeService.GetAttributeAsync<int>(loggedUser, Constant.ActiveProjectSession);
         var fieldValuesErrors = false;
@@ -194,11 +188,9 @@ public class BacklogController : BaseController
         return View(model);
     }
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDenied();
-
         var projectAccess = await GetProjectAccess();
         if (projectAccess == null || !projectAccess.CanReport && !projectAccess.CanEdit && !projectAccess.CanClose)
             return AccessDenied();
@@ -294,11 +286,9 @@ public class BacklogController : BaseController
 
     #region Actions For History
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> History(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDeniedPartial();
-
         var data = await _backlogItemService.GetAllHistoryAsync(id);
         var model = data.Select(s => new BacklogCommentGridModel
         {
@@ -314,11 +304,9 @@ public class BacklogController : BaseController
 
     #region Actions For Comments
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Comments(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDeniedPartial();
-
         var data = await _backlogItemService.GetAllCommentsAsync(id);
         var model = new BacklogCommentModel()
         {
@@ -335,11 +323,9 @@ public class BacklogController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> CommentCreate(int id, string comment)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDeniedPartial();
-
         var loggedUser = await _workContext.GetCurrentUserAsync();
         await _backlogItemService.InsertCommentAsync(id, comment, loggedUser.Id);
 
@@ -356,6 +342,7 @@ public class BacklogController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> DataRead(DataTableRequest request,
         int[] createdby,
         int[] module,
@@ -367,9 +354,6 @@ public class BacklogController : BaseController
         int[] status,
         int[] sprint)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
-            return AccessDeniedDataRead();
-
         var model = await GetProjectAccess();
         var loggedUser = await _workContext.GetCurrentUserAsync();
         var lastAccessedProjectId = await _genericAttributeService.GetAttributeAsync<int>(loggedUser, Constant.ActiveProjectSession);

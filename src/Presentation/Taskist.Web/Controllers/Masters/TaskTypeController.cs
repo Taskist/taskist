@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -49,30 +50,24 @@ public class TaskTypeController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDeniedPartial();
-
         var model = new TaskTypeModel();
 
         return PartialView(model);
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> Create(TaskTypeModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<TaskType>(model);
@@ -95,11 +90,9 @@ public class TaskTypeController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDeniedPartial();
-
         var entity = await _taskTypeService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
@@ -110,11 +103,9 @@ public class TaskTypeController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> Edit(TaskTypeModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = await _taskTypeService.GetByIdAsync(model.Id);
@@ -140,11 +131,9 @@ public class TaskTypeController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDeniedPartial();
-
         var entity = await _taskTypeService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
@@ -168,11 +157,9 @@ public class TaskTypeController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_TASK_TYPE)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageTaskType))
-            return AccessDeniedDataRead();
-
         var data = await _taskTypeService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

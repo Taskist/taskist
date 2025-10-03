@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
-using Taskist.Service.Users;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
+using Taskist.Service.Users;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -48,30 +49,24 @@ public class UserRoleController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDenied();
-
         var model = new UserRoleModel();
 
         return PartialView(model);
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> Create(UserRoleModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<UserRole>(model);
@@ -96,11 +91,9 @@ public class UserRoleController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDenied();
-
         var entity = await _userService.GetUserRoleByIdAsync(id);
         if (entity == null)
             return RedirectToAction("Index");
@@ -111,11 +104,9 @@ public class UserRoleController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> Edit(UserRoleModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var entity = await _userService.GetUserRoleByIdAsync(model.Id);
@@ -148,11 +139,9 @@ public class UserRoleController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> Permission(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDenied();
-
         var loggedUser = await _workContext.GetCurrentUserAsync();
         var permissions = await _permissionService.GetAllUserRolePermissionsAsync();
         var permissionMaps = await _userService.GetAllUserRolePermissionMapsAsync();
@@ -174,12 +163,9 @@ public class UserRoleController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER_ROLE)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageUserRole))
-            return AccessDeniedDataRead();
-
-
         var data = await _userService.GetPagedListUserRoleAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

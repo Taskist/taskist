@@ -1,10 +1,10 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Localization;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
@@ -48,30 +48,24 @@ public class LanguageController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDenied();
-
         var model = new LanguageModel();
 
         return View(model);
     }
 
     [HttpPost, FormName("save-continue", "continueEditing")]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Create(LanguageModel model, bool continueEditing)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<Language>(model);
@@ -86,11 +80,9 @@ public class LanguageController : BaseController
         return View(model);
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDeniedPartial();
-
         var entity = await _languageService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
@@ -101,11 +93,9 @@ public class LanguageController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Edit(LanguageModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = await _languageService.GetByIdAsync(model.Id);
@@ -122,11 +112,9 @@ public class LanguageController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDenied();
-
         if (ModelState.IsValid)
         {
             var entity = await _languageService.GetByIdAsync(id);
@@ -155,11 +143,9 @@ public class LanguageController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageLanguage))
-            return AccessDeniedDataRead();
-
         var data = await _languageService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 

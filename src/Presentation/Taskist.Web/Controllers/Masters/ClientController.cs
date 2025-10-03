@@ -7,6 +7,7 @@ using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Security;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
@@ -49,30 +50,24 @@ public class ClientController : BaseController
 
     #region Actions
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> Index()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDenied();
-
         return View();
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> Create()
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDeniedPartial();
-
         var model = new ClientModel();
 
         return PartialView(model);
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> Create(ClientModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = _mapper.Map<Client>(model);
@@ -97,11 +92,9 @@ public class ClientController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> Edit(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDeniedPartial();
-
         var entity = await _clientService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
@@ -112,11 +105,9 @@ public class ClientController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> Edit(ClientModel model)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDeniedPartial();
-
         if (ModelState.IsValid)
         {
             var entity = await _clientService.GetByIdAsync(model.Id);
@@ -142,11 +133,9 @@ public class ClientController : BaseController
     }
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> Delete(int id)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDeniedPartial();
-
         var entity = await _clientService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
@@ -170,11 +159,9 @@ public class ClientController : BaseController
     #region Data
 
     [HttpPost]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_CLIENT)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
-        if (!await _permissionService.AuthorizeAsync(PermissionProvider.ManageClient))
-            return AccessDeniedDataRead();
-
         var data = await _clientService.GetPagedListAsync(request.SearchValue, request.Start,
             request.Length, request.SortColumn, request.SortDirection);
 
