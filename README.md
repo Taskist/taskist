@@ -9,7 +9,6 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 ![License](https://img.shields.io/github/license/taskist/taskist)
 ![Issues](https://img.shields.io/github/issues/taskist/taskist)
 ![Stars](https://img.shields.io/github/stars/taskist/taskist) 
----
 
 ## 📑 Table of Contents
 
@@ -24,8 +23,6 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 9. [🐛 GitHub Issues & Contribution](#-github-issues--contribution)  
 10. [📄 License](#-license)  
 
----
-
 ## ✨ Features
 
 - 👤 User authentication and authorization with roles & permissions.  
@@ -34,8 +31,6 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 - 📆 Sprint and backlog management.  
 - 🧩 Modular system design with configurable menus and settings.  
 - 📊 Full audit and tracking for project activities.  
-
----
 
 ## 🏛 Master Modules
 
@@ -54,16 +49,12 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 | 📜 Menu              | Configurable navigation menu items. |
 | ⚙️ Setting           | Application or system-wide settings. |
 
----
-
 ## ⚡ Transaction Modules
 
 | Module     | Description |
 |------------|-------------|
 | 📋 Backlog | Manage pending tasks, CRs, and bugs. |
 | 🏃 Sprint  | Plan, track, and close sprints. |
-
----
 
 ## 🗂 Module Hierarchy
 
@@ -89,8 +80,6 @@ Transaction Modules
 
 💡 **Note:** Master modules define core entities. Transaction modules handle activities/records based on master data.
 
----
-
 ## 🛠 Technology Stack
 
 - **Backend:** ASP.NET Core MVC (.NET 8)  
@@ -98,8 +87,6 @@ Transaction Modules
 - **Database:** MS SQL Server or MySQL  
 - **ORM:** Entity Framework Core  
 - **Version Control:** Git & GitHub  
-
----
 
 ## 🚀 Project Setup
 
@@ -117,8 +104,6 @@ cd Taskist
 ```powershell
 dotnet restore
 ```
-
----
 
 ## 💾 Database Migrations
 
@@ -150,8 +135,6 @@ dotnet ef migrations remove --startup-project ..\..\Presentation\Taskist.Web
 
 **Tip:** Make sure your `appsettings.json` connection string in the Web project points to **SQL Server or MySQL**.
 
----
-
 ## ▶️ Running the Project
 
 ```powershell
@@ -161,8 +144,6 @@ dotnet run
 
 - Open your browser and navigate to `https://localhost:5001` (or the port shown in console).  
 - Admin user can be seeded in the database using initial migration or `SeedData` class.
-
----
 
 ## 🐛 GitHub Issues & Contribution
 
@@ -205,8 +186,27 @@ git push origin feature/YourFeatureName
 - Keep methods short and modular.  
 - Use Entity Framework migrations for DB changes.  
 
----
-
 ## 📄 License
 
 This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.  
+
+## 💖 Open Source Sponsors & Partners
+
+We gratefully acknowledge the generous support of the following providers who offer free licenses or services to our open-source project:
+<p style="background-color:#f6f8fa; padding:20px; border-radius:12px;">
+   <a href="https://sentry.io/for/open-source/" target="_blank" title="Sentry – Free error tracking for open-source projects">
+     <img width="400" height="119" alt="Sentry" src="https://github.com/user-attachments/assets/26cf273a-de2d-46e8-bc3e-51efc1d42c9b" /></a> </p> <p align="center">
+
+## 🌟 Support the Project
+
+If you find **Taskist** helpful, please consider supporting it! ❤️ 
+Your support helps keep the project growing and maintained.
+### 🪙 Ways to Support
+- ⭐ **Star this repository** on GitHub to show appreciation  
+- 🪙 **Share it** with other developers or teams  
+- ☕ **Buy Me a Coffee** to support ongoing development  
+<p>
+  <a href="https://www.buymeacoffee.com/yourusername" target="_blank">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200">
+  </a>
+</p>
