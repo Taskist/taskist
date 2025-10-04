@@ -206,7 +206,5 @@ Your support helps keep the project growing and maintained.
 - 🪙 **Share it** with other developers or teams  
 - ☕ **Buy Me a Coffee** to support ongoing development  
 <p>
-  <a href="https://www.buymeacoffee.com/yourusername" target="_blank">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="200">
-  </a>
+  <a href="https://www.buymeacoffee.com/somaraj" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 </p>
