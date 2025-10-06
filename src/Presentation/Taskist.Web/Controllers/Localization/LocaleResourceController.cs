@@ -45,7 +45,7 @@ public class LocaleResourceController : BaseController
 
     #region Actions
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Create(int languageId)
     {
         var model = new LocaleResourceModel
@@ -57,7 +57,7 @@ public class LocaleResourceController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Create(LocaleResourceModel model)
     {
         if (ModelState.IsValid)
@@ -82,7 +82,7 @@ public class LocaleResourceController : BaseController
         });
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _localizationService.GetByIdAsync(id);
@@ -95,7 +95,7 @@ public class LocaleResourceController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Edit(LocaleResourceModel model)
     {
         if (ModelState.IsValid)
@@ -127,7 +127,7 @@ public class LocaleResourceController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LOCALE_RESOURCE)]
+    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> DataRead(DataTableRequest request, int languageId)
     {
         var data = await _localizationService.GetPagedListAsync(languageId, request.SearchValue, request.Start,

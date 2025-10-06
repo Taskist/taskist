@@ -13,7 +13,6 @@ public class PermissionProvider
         public const string MANAGE_USER_ROLE = $"{nameof(Configuration)}.ManageUserRole";
         public const string MANAGE_REPORTER = $"{nameof(Configuration)}.ManageReporter";
         public const string MANAGE_LANGUAGE = $"{nameof(Configuration)}.ManageLanguage";
-        public const string MANAGE_LOCALE_RESOURCE = $"{nameof(Configuration)}.ManageLocaleResource";
         public const string MANAGE_SETTINGS = $"{nameof(Configuration)}.ManageSetting";
         public const string MANAGE_SEVERITY = $"{nameof(Configuration)}.ManageSeverity";
         public const string MANAGE_STATUS = $"{nameof(Configuration)}.ManageStatus";
@@ -22,8 +21,8 @@ public class PermissionProvider
         public const string MANAGE_SUB_MODULE = $"{nameof(Configuration)}.ManageSubModule";
         public const string MANAGE_CLIENT = $"{nameof(Configuration)}.ManageClient";
         public const string MANAGE_PROJECT = $"{nameof(Configuration)}.ManageProject";
-        public const string MANAGE_EMAIL_ACCOUNTS = $"{nameof(Configuration)}.ManageEmailAccounts";
-        public const string MANAGE_EMAIL_TEMPLATE = $"{nameof(Configuration)}.ManageEmailTemplates";
+        public const string MANAGE_EMAIL_ACCOUNTS = $"{nameof(Configuration)}.ManageEmailAccount";
+        public const string MANAGE_EMAIL_TEMPLATE = $"{nameof(Configuration)}.ManageEmailTemplate";
     }
 
     public partial class WorkItem

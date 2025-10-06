@@ -1,13 +1,6 @@
 ﻿@model UserRegistrationModel
 <input type="hidden" asp-for="User.Id" />
-<div class="row">
-	<div class="col-md-2">
-		<div class="mb-3">
-			<wc-label asp-for="User.UserNumber" class="form-wc-label"></wc-label>
-			<input asp-for="User.UserNumber" class="form-control form-control-maxlength" autocomplete="off" maxlength="20" />
-			<span asp-validation-for="User.UserNumber" class="text-danger"></span>
-		</div>
-	</div>
+<div class="row">	
 	<div class="col-md-3">
 		<div class="mb-3">
 			<wc-label asp-for="User.FirstName" class="form-wc-label"></wc-label>
@@ -36,7 +29,7 @@
 			<span asp-validation-for="User.GenderId" class="text-danger"></span>
 		</div>
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-2">
 		<div class="mb-3">
 			<wc-label asp-for="User.LanguageId" />
 			<select class="form-control select2" data-style="btn-default" asp-for="User.LanguageId" asp-items="Model.AvailableLanguages"></select>
@@ -50,7 +43,7 @@
 			<span asp-validation-for="User.Status" class="text-danger"></span>
 		</div>
 	</div>
-	<div class="col-sm-12">
+	<div class="col-sm-8">
 		<div class="mb-3">
 			<wc-label asp-for="User.SelectedRoleIds" />
 			<select asp-for="User.SelectedRoleIds" asp-items="Model.AvailableRoles" class="form-control select2" multiple></select>

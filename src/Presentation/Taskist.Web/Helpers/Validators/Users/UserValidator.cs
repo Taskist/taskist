@@ -11,10 +11,6 @@ public class UserValidator : AbstractValidator<UserModel>
     public UserValidator(ILocalizationService localizationService,
         IUserService userService)
     {
-        RuleFor(r => r.UserNumber)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.UserNumber.RequiredMsg"))
-            .MaximumLength(20).WithMessageAwait(localizationService.GetResourceAsync("UserModel.UserNumber.MaxLengthMsg"));
-
         RuleFor(r => r.FirstName)
             .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.FirstName.RequiredMsg"))
             .MaximumLength(50).WithMessageAwait(localizationService.GetResourceAsync("UserModel.FirstName.MaxLengthMsg"));
@@ -26,7 +22,7 @@ public class UserValidator : AbstractValidator<UserModel>
         RuleFor(r => r.Email)
             .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.RequiredMsg"))
             .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.MaxLengthMsg"))
-            .EmailAddress().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.InvalidEmailMsg"))
+            .EmailAddress().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.InvalidMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -41,6 +37,10 @@ public class UserValidator : AbstractValidator<UserModel>
         RuleFor(r => r.GenderId)
             .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Gender.RequiredMsg"))
             .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Gender.RequiredMsg"));
+
+        RuleFor(r => r.LanguageId)
+           .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Language.RequiredMsg"))
+           .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Language.RequiredMsg"));
 
         RuleFor(r => r.SelectedRoleIds)
             .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Role.RequiredMsg"));

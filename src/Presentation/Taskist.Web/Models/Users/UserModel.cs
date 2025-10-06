@@ -14,9 +14,6 @@ public class UserModel : BaseModel
         EmailWelcomeKit = true;
     }
 
-    [LocalizedDisplayName("UserModel.UserNumber")]
-    public string UserNumber { get; set; }
-
     [LocalizedDisplayName("UserModel.FirstName")]
     public string FirstName { get; set; }
 

@@ -95,7 +95,7 @@ public class UserController : BaseController
             if (status == RegistrationResultEnum.Successful)
             {
                 await _userActivityService.InsertAsync("User", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), userEntity.Name), userEntity);
-                return continueEditing ? RedirectToAction("Edit", new { id = userEntity.Id }) : RedirectToAction("Index");
+                return continueEditing ? RedirectToAction("Create") : RedirectToAction("Index");
             }
 
             await _userActivityService.InsertAsync("User", string.Format(await _localizationService.GetResourceAsync("Log.RecordError"), userEntity.Name), userEntity);

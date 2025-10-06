@@ -25,6 +25,10 @@ public class ProjectValidator : AbstractValidator<ProjectModel>
                 return entity == null;
             }).WithMessageAwait(localizationService.GetResourceAsync("ProjectModel.Name.UniqueMsg"));
 
+        RuleFor(r => r.ClientId)
+            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("ProjectModel.Client.RequiredMsg"))
+            .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("ProjectModel.Client.RequiredMsg"));
+
         RuleFor(r => r.Description)
             .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("ProjectModel.Description.MaxLengthMsg"));
     }

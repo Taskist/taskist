@@ -91,7 +91,7 @@ public class ProjectController : BaseController
             await _projectService.InsertAsync(entity);
 
             await _userActivityService.InsertAsync("Project", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), entity.Name), entity);
-            return continueEditing ? RedirectToAction("Edit", new { id = entity.Id }) : RedirectToAction("Index");
+            return continueEditing ? RedirectToAction("Create") : RedirectToAction("Index");
         }
 
         ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Error.Failed"));
