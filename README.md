@@ -193,9 +193,22 @@ This project is licensed under the **MIT License** – see the [LICENSE](LICENSE
 ## 💖 Open Source Sponsors & Partners
 
 We gratefully acknowledge the generous support of the following providers who offer free licenses or services to our open-source project:
-<p style="background-color:#f6f8fa; padding:20px; border-radius:12px;">
-   <a href="https://sentry.io/for/open-source/" target="_blank" title="Sentry – Free error tracking for open-source projects">
-     <img width="400" height="119" alt="Sentry" src="https://github.com/user-attachments/assets/26cf273a-de2d-46e8-bc3e-51efc1d42c9b" /></a> </p> <p align="center">
+<table>
+<tbody>
+<tr>
+<td>
+    <a href="https://sentry.io/for/open-source/" target="_blank" title="Sentry – Free error tracking for open-source projects">
+        <img src="assets/sentry.png" alt="Sentry" />
+    </a>
+</td>
+<td>
+    <a href="https://www.atlassian.com/software/confluence" target="_blank" title="Atlassian Confluence">
+        <img src="assets/confluence.png" alt="Atlassian Confluence" />
+    </a>
+ </td>
+</tr>
+</tbody>
+</table>
 
 ## 🌟 Support the Project
 
