@@ -97,6 +97,18 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 
+var sentryEnabled = builder.Configuration.GetValue<bool>("Sentry:Enabled");
+
+if (sentryEnabled)
+{
+    builder.WebHost.UseSentry(o =>
+    {
+        o.Dsn = builder.Configuration["Sentry:Dsn"];
+        o.Debug = builder.Configuration.GetValue<bool>("Sentry:Debug");
+        o.TracesSampleRate = builder.Configuration.GetValue<double>("Sentry:TracesSampleRate");
+    });
+}
+
 var mvcBuilder = builder.Services.AddControllersWithViews(options =>
 {
     options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true;
