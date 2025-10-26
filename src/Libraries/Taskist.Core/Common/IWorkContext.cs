@@ -8,4 +8,6 @@ public interface IWorkContext
     Task<User> GetCurrentUserAsync();
 
     Task<Language> GetCurrentUserLanguageAsync();
+
+    Task SetCurrentUserAsync(User? user = null);
 }

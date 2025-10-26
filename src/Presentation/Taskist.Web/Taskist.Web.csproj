@@ -10,6 +10,17 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Logs\**" />
+	  <Compile Remove="wwwroot\uploads\**" />
+	  <Content Remove="Logs\**" />
+	  <Content Remove="wwwroot\uploads\**" />
+	  <EmbeddedResource Remove="Logs\**" />
+	  <EmbeddedResource Remove="wwwroot\uploads\**" />
+	  <None Remove="Logs\**" />
+	  <None Remove="wwwroot\uploads\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<PackageReference Include="EPPlus" Version="7.6.1" />
 		<PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.8.1" />

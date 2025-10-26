@@ -35,6 +35,8 @@ public class User : BaseEntity, ISoftDeletedEntity
 
     public DateTime LastActivityDate { get; set; }
 
+    public int AvatarVersion { get; set; }
+
     public bool Locked { get; set; }
 
     public int Status { get; set; }

@@ -1,0 +1,50 @@
+﻿@model ProfileDetailModel
+<form asp-action="Edit" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin"
+      data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+    <input type="hidden" asp-for="Id" />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="mb-3">
+                <wc-label asp-for="FirstName" />
+                <input asp-for="FirstName" class="form-control form-control-maxlength track" autocomplete="off" maxlength="100" />
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <wc-label asp-for="LastName" />
+                <input asp-for="LastName" class="form-control form-control-maxlength track" autocomplete="off" maxlength="100" />
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="mb-3">
+                <wc-label asp-for="Email" />
+                <input asp-for="Email" class="form-control form-control-maxlength track" autocomplete="off" maxlength="100" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <wc-label asp-for="GenderId" />
+                <select asp-for="GenderId" asp-items="Model.AvailableGenders" class="form-control track"></select>
+                <span asp-validation-for="GenderId" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3">
+                <wc-label asp-for="LanguageId" />
+                <select asp-for="LanguageId" asp-items="Model.AvailableLanguages" class="form-control track"></select>
+                <span asp-validation-for="LanguageId" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <div class="float-end">
+        <button type="submit" class="btn btn-primary btn-sm savebtn">
+            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
+        </button>
+        <button type="button" class="btn btn-secondary close-form btn-sm">
+            <i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")
+        </button>
+    </div>
+</form>

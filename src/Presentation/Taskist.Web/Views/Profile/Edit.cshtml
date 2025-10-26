@@ -1,0 +1,177 @@
+﻿@model ProfileModel
+
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<label class="form-label">Photo</label>
+<div class="d-flex align-items-center gap-3 mb-3">
+    <div class="avatar-wrapper">
+        <img src="@Url.Action("GetAvatar", "Profile")?v=@Model.AvatarVersion" alt="@Model.DisplayName" id="userAvatar" />
+    </div>
+    <div class="d-flex flex gap-2">
+        <div class="avatar-actions">
+            <label class="btn btn-primary btn-sm mb-0">
+                Change
+                <input type="file" accept="image/*" hidden id="avatarInput" />
+            </label>
+            <button class="btn btn-success btn-sm" id="saveAvatar">Save</button>
+        </div>
+    </div>
+</div>
+<ul class="nav nav-tabs mb-2" data-bs-toggle="tabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <a href="#tabDetails" class="nav-link active" data-bs-toggle="tab" aria-selected="false" role="tab">
+            <i class="far fa-address-card me-2"></i>@Localize("ProfilePage.Details").Text
+        </a>
+    </li>
+    <li class="nav-item" role="presentation">
+        <a href="#tabPassword" class="nav-link" data-bs-toggle="tab" aria-selected="true" role="tab">
+            <i class="fas fa-key me-2"></i>@Localize("ProfilePage.Password").Text
+        </a>
+    </li>
+</ul>
+<div class="tab-content p-2">
+    <div class="tab-pane active show section" id="tabDetails" role="tabpanel">
+        <partial name="_ProfileDetailForm" model="Model.Detail" />
+    </div>
+    <div class="tab-pane section" id="tabPassword" role="tabpanel">
+        <partial name="_ChangePasswordForm" model="Model.Password" />
+    </div>
+</div>
+
+<script src="~/lib/cropper/js/cropper.min.js"></script>
+<link href="~/lib/cropper/css/cropper.min.css" rel="stylesheet" />
+
+<script>
+    $(function () {
+        JSManager.initTrackableSections();
+
+        const cropSize = 128;
+        let cropper;
+        let newImageData = null;
+        let isChanged = false;
+
+        function showSaveButton() {
+            $("#saveAvatar").show();
+        }
+
+        $("#avatarInput").on("change", function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                newImageData = event.target.result;
+                const oldImageData = $("#userAvatar").attr("src");
+
+                if (newImageData === oldImageData) {
+                    JSManager.showWarning('@Localize("ProfilePage.SameImageMsg")');
+                    return;
+                }
+
+                const img = new Image();
+                img.onload = function () {
+                    if (img.width < cropSize || img.height < cropSize) {
+                        JSManager.showError(`@Localize("ProfilePage.SizeMsg") ${cropSize}×${cropSize}px`);
+                        return;
+                    }
+
+                    isChanged = true;
+
+                    $.confirm({
+                        title: 'Crop your avatar',
+                        columnClass: 'medium',
+                        content: `<div class="text-center"><img id="cropImage" src="${newImageData}"></div>`,
+                        buttons: {
+                            cancel: {
+                                text: "Cancel",
+                                btnClass: "btn-secondary",
+                                action: function () {
+                                    if (cropper) cropper.destroy();
+                                }
+                            },
+                            done: {
+                                text: "Done",
+                                btnClass: "btn-primary",
+                                action: function () {
+                                    const canvas = cropper.getCroppedCanvas({ width: cropSize, height: cropSize });
+                                    newImageData = canvas.toDataURL("image/png");
+                                    $("#userAvatar").attr("src", newImageData);
+                                    cropper.destroy();
+                                    showSaveButton();
+                                }
+                            }
+                        },
+                        onContentReady: function () {
+                            const imageEl = this.$content.find("#cropImage")[0];
+                            cropper = new Cropper(imageEl, {
+                                aspectRatio: 1,
+                                viewMode: 1,
+                                autoCropArea: 1,
+                                cropBoxResizable: false,
+                                cropBoxMovable: false,
+                                movable: true,
+                                zoomable: true,
+                                ready: function () {
+                                    const container = cropper.getContainerData();
+                                    cropper.setCropBoxData({
+                                        width: cropSize,
+                                        height: cropSize,
+                                        left: (container.width - cropSize) / 2,
+                                        top: (container.height - cropSize) / 2
+                                    });
+                                }
+                            });
+                        },
+                        onClose: function () {
+                            if (cropper) cropper.destroy();
+                        }
+                    });
+
+                };
+                img.src = newImageData;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        $("#saveAvatar").on("click", function () {
+            if (!isChanged || !newImageData) return;
+
+            function dataURLtoBlob(dataurl) {
+                let arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while (n--) { u8arr[n] = bstr.charCodeAt(n); }
+                return new Blob([u8arr], { type: mime });
+            }
+
+            const blob = dataURLtoBlob(newImageData);
+            const formData = new FormData();
+            formData.append("avatar", blob);
+
+            var key = Object.keys(JSManager.addAntiForgeryToken())[0];
+            var token = JSManager.addAntiForgeryToken()[key];
+
+            formData.append(key, token);
+            $.ajax({
+                url: "@Url.Action("UploadAvatar")",
+                method: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        JSManager.showSuccess('@Localize("ProfilePage.SuccessMsg")');
+                        isChanged = false;
+                        $("#saveAvatar").hide();
+                        $('#userAvatar').attr('src', '@Url.Action("GetAvatar", "Profile")?v=' + response.version);
+                        $('.avatar-img').attr('src', '@Url.Action("GetAvatar", "Profile")?v=' + response.version);
+                    }
+                },
+                error: function () {
+                    JSManager.showError('Upload failed');
+                }
+            });
+        });
+    });
+</script>

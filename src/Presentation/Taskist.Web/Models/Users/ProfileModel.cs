@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using Taskist.Web.Helpers.Attributes;
+using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
@@ -9,64 +8,47 @@ public class ProfileModel
 {
     public ProfileModel()
     {
-        AvailableGenders = new List<SelectListItem> {
-            new SelectListItem { Value = "1", Text = "Male" },
-            new SelectListItem { Value = "2", Text = "Female" }
-        };
+        Detail = new ProfileDetailModel();
+        Password = new ChangePasswordModel();
     }
 
-    [ScaffoldColumn(false)]
-    public int Id { get; set; }
+    public ProfileDetailModel Detail { get; set; }
 
-    [Display(Name = "First Name")]
-    [Required(ErrorMessage = "First name is required")]
+    public ChangePasswordModel Password { get; set; }
+
+    public int AvatarVersion { get; set; }
+
+    public string DisplayName { get; set; }
+}
+
+public class ProfileDetailModel : BaseModel
+{
+    public ProfileDetailModel()
+    {
+        AvailableGenders = [
+            new SelectListItem { Value = "1", Text = "Male" },
+            new SelectListItem { Value = "2", Text = "Female" }
+        ];
+
+        AvailableLanguages = [];
+    }
+
+    [LocalizedDisplayName("ProfileModel.FirstName")]
     public string FirstName { get; set; }
 
-    [Display(Name = "Last Name")]
-    [Required(ErrorMessage = "Last name is required")]
+    [LocalizedDisplayName("ProfileModel.LastName")]
     public string LastName { get; set; }
 
-    [Display(Name = "Mobile Number")]
-    public string MobileNumber { get; set; }
-
-    [Display(Name = "Email")]
+    [LocalizedDisplayName("ProfileModel.Email")]
     public string Email { get; set; }
 
-    [Display(Name = "Gender")]
-    public int? Gender { get; set; }
+    [LocalizedDisplayName("ProfileModel.Gender")]
+    public int GenderId { get; set; }
 
-    [Display(Name = "Date Of Birth")]
-    public DateTime? DateOfBirth { get; set; }
-
-    [ScaffoldColumn(false)]
-    public string DateOfBirthString { get; set; }
-
-    [Display(Name = "Communication Address")]
-    public string Address { get; set; }
-
-    [Display(Name = "About Me")]
-    public string Introduction { get; set; }
-
-    [Display(Name = "Facebook")]
-    [RegularExpression(@"((?:https?\:\/\/|\/.)(?:[-a-z0-9]+\.)*[-a-z0-9]+.*)", ErrorMessage = "Provide a valid url")]
-    public string FaceBookUrl { get; set; }
-
-    [Display(Name = "Twitter")]
-    [RegularExpression(@"((?:https?\:\/\/|\/.)(?:[-a-z0-9]+\.)*[-a-z0-9]+.*)", ErrorMessage = "Provide a valid url")]
-    public string TwitterUrl { get; set; }
-
-    [Display(Name = "LinkedIn")]
-    [RegularExpression(@"((?:https?\:\/\/|\/.)(?:[-a-z0-9]+\.)*[-a-z0-9]+.*)", ErrorMessage = "Provide a valid url")]
-    public string LinkedInUrl { get; set; }
-
-    [Display(Name = "Google Scholar")]
-    [RegularExpression(@"((?:https?\:\/\/|\/.)(?:[-a-z0-9]+\.)*[-a-z0-9]+.*)", ErrorMessage = "Provide a valid url")]
-    public string GoogleScholarUrl { get; set; }
-
-    public string Name => $"{FirstName} {LastName}";
-
-    public bool HasSocialMediaLinks => !string.IsNullOrEmpty(FaceBookUrl) || !string.IsNullOrEmpty(TwitterUrl)
-        || !string.IsNullOrEmpty(LinkedInUrl) || !string.IsNullOrEmpty(GoogleScholarUrl);
+    [LocalizedDisplayName("ProfileModel.Language")]
+    public int LanguageId { get; set; }
 
     public IList<SelectListItem> AvailableGenders { get; set; }
+
+    public IList<SelectListItem> AvailableLanguages { get; set; }
 }

@@ -397,5 +397,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /src/.cr
-src/Presentation/Taskist.Web/App_Data/DataProtectionKeys/*
+/src/Presentation/Taskist.Web/App_Data/DataProtectionKeys/*
 /src/Presentation/Taskist.Web/Logs
+/src/Presentation/Taskist.Web/wwwroot/uploads

@@ -187,23 +187,16 @@ let AppJS = (function () {
                     containerFluid: true,
                     buttons: {
                         yes: {
-                            text: buttonText,
-                            btnClass: 'btn-blue',
-                            icon: 'fa fa-user',
-                            isHidden: (mode === 4 || mode === 3),
-                            action: function () {
-                                $('.jconfirm-content form').submit();
-                                return false;
-                            }
+                            isHidden: true
                         },
                         no: {
-                            text: '<i class="fa fa-ban mr-1"></i>Cancel',
-                            btnClass: 'btn-secondary'
+                            isHidden: true
                         }
                     },
                     escapeKey: false,
                     backgroundDismiss: false,
                     onContentReady: function () {
+                        $('.jconfirm-buttons').remove();
                         if (callbackContentReady !== undefined)
                             callbackContentReady();
                     }
@@ -563,6 +556,28 @@ let AppJS = (function () {
                     }
                 }
                 return result;
+            },
+            initTrackableSections: function (sectionSelector = 'section', trackSelector = 'track', saveBtnSelector = 'savebtn') {
+                const sectionClass = '.' + sectionSelector;
+                const trackClass = '.' + trackSelector;
+                const saveBtnClass = '.' + saveBtnSelector;
+
+                $(sectionClass).each(function () {
+                    const section = $(this);
+                    const elements = section.find(trackClass);
+                    const saveBtn = section.find(saveBtnClass);
+
+                    saveBtn.prop('disabled', true);
+
+                    elements.each(function () {
+                        $(this).data('originalValue', $(this).val());
+                    });
+
+                    section.on('input change', trackClass, function () {
+                        const isChanged = elements.toArray().some(el => $(el).val() !== $(el).data('originalValue'));
+                        saveBtn.prop('disabled', !isChanged);
+                    });
+                });
             },
             generateLink: function (row, curAction) {
                 let url = curAction.Url;

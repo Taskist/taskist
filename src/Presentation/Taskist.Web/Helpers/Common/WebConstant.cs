@@ -10,5 +10,9 @@ public static class WebConstant
 
     public static int UserCookieExpires => 2;
 
+    public static string AvatarFolderDefault => "images";
+
+    public static string AvatarFolder => "uploads/avatars";
+
     #endregion
 }

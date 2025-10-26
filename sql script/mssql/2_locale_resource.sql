@@ -2742,4 +2742,149 @@ BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
         VALUES(@LanguageId,'TaskTypePage.Title','Task Type')
     END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileModel.FirstName')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileModel.FirstName','First Name')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileModel.LastName')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileModel.LastName','Last Name')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileModel.Email')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileModel.Email','Email')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileModel.Gender')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileModel.Gender','Gender')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileModel.Language')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileModel.Language','Language')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfilePage.Details')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfilePage.Details','Details')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfilePage.Password')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfilePage.Password','Password')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.RequiredMsg','Enter current password')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.MaxLengthMsg','The length must be 100 characters or fewer')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.NotMatchMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.NotMatchMsg','Current password provided is not valid!')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.NewPassword.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.NewPassword.RequiredMsg','New password is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.NewPassword.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.NewPassword.MaxLengthMsg','The length must be 100 characters or fewer')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmPassword.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.ConfirmPassword.RequiredMsg','Confirm password is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmPassword.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.ConfirmPassword.MaxLengthMsg','The length must be 100 characters or fewer')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmPassword.NotMatchMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ChangePasswordModel.ConfirmPassword.NotMatchMsg','Passwords do not match')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.FirstName.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.FirstName.RequiredMsg','First name is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.FirstName.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.FirstName.MaxLengthMsg','The length must be 100 characters or fewer')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.LastName.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.LastName.RequiredMsg','Last name is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.LastName.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.LastName.MaxLengthMsg','The length must be 100 characters or fewer')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.Email.RequiredMsg','Email is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.Email.MaxLengthMsg','The length must be 250 characters or fewer')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.InvalidMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.Email.InvalidMsg','Invalid email address')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.UniqueMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.Email.UniqueMsg','Email already in use')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Gender.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.Gender.RequiredMsg','Gender is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Language.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfileDetailModel.Language.RequiredMsg','Language is required')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'User.Profile')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'User.Profile','Profile')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfilePage.SameImageMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfilePage.SameImageMsg','You selected the same image.')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfilePage.SizeMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfilePage.SizeMsg','Image must be at least')
+    END
+    IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfilePage.SuccessMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ProfilePage.SuccessMsg','Avatar uploaded successfully!')
+    END
 END
