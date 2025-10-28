@@ -8,6 +8,22 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 ![Issues](https://img.shields.io/github/issues/taskist/taskist)
 ![Stars](https://img.shields.io/github/stars/taskist/taskist)
 
+## 💬 Join the Discussion on Zulip
+
+Stay connected with the Taskist community on **[Zulip](https://taskist.zulipchat.com)** — our hub for collaboration, support, and ideas.
+
+[![Chat on Zulip](https://img.shields.io/badge/chat-on%20Zulip-3C7EBB?logo=zulip&logoColor=white)](https://taskist.zulipchat.com)
+
+| Channel | Purpose | Link |
+|----------|----------|------|
+| 📢 **General** | General discussions, announcements, and community updates. | [Join #general](https://taskist.zulipchat.com/#narrow/channel/539615-general) |
+| 💻 **Development** | Development discussions, code reviews, and architecture planning. | [Join #dev](https://taskist.zulipchat.com/#narrow/channel/539614-dev) |
+| 🛠️ **Support** | Get help setting up Taskist, report bugs, or troubleshoot issues. | [Join #support](https://taskist.zulipchat.com/#narrow/channel/539613-support) |
+
+📝 **Tip:**  
+You can join directly with your GitHub or email account — no setup required.  
+All discussions are public and searchable to help new contributors learn quickly.
+
 ## 📑 Table of Contents
 
 1. [✨ Features](#-features)
