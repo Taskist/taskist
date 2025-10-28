@@ -227,8 +227,8 @@ We gratefully acknowledge the generous support of the following providers who of
     </a>
  </td>
  <td>
-    <a href="https://www.atlassian.com/software/confluence" target="_blank" title="Atlassian Confluence">
-        <img src="assets/zulip-icon.png" alt="Atlassian Confluence" />
+    <a href="https://zulip.com" target="_blank" title="Zulip - Organized team chat app">
+        <img src="assets/zulip-icon.png" alt="Zulip - Organized team chat app" />
     </a>
  </td>
 </tr>
