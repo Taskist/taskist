@@ -14,11 +14,11 @@ Stay connected with the Taskist community on **[Zulip](https://taskist.zulipchat
 
 [![Chat on Zulip](https://img.shields.io/badge/chat-on%20Zulip-3C7EBB?logo=zulip&logoColor=white)](https://taskist.zulipchat.com)
 
-| Channel | Purpose | Link |
-|----------|----------|------|
-| 📢 **General** | General discussions, announcements, and community updates. | [Join #general](https://taskist.zulipchat.com/#narrow/channel/539615-general) |
-| 💻 **Development** | Development discussions, code reviews, and architecture planning. | [Join #dev](https://taskist.zulipchat.com/#narrow/channel/539614-dev) |
-| 🛠️ **Support** | Get help setting up Taskist, report bugs, or troubleshoot issues. | [Join #support](https://taskist.zulipchat.com/#narrow/channel/539613-support) |
+| Channel            | Purpose                                                           | Link                                                                          |
+| ------------------ | ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| 📢 **General**     | General discussions, announcements, and community updates.        | [Join #general](https://taskist.zulipchat.com/#narrow/channel/539615-general) |
+| 💻 **Development** | Development discussions, code reviews, and architecture planning. | [Join #dev](https://taskist.zulipchat.com/#narrow/channel/539614-dev)         |
+| 🛠️ **Support**     | Get help setting up Taskist, report bugs, or troubleshoot issues. | [Join #support](https://taskist.zulipchat.com/#narrow/channel/539613-support) |
 
 📝 **Tip:**  
 You can join directly with your GitHub or email account — no setup required.  
@@ -228,7 +228,7 @@ We gratefully acknowledge the generous support of the following providers who of
  </td>
  <td>
     <a href="https://zulip.com" target="_blank" title="Zulip - Organized team chat app">
-        <img src="assets/zulip-icon.png" alt="Zulip - Organized team chat app" />
+        <img src="assets/zulip.png" alt="Zulip - Organized team chat app" />
     </a>
  </td>
 </tr>
