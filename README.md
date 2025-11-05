@@ -8,6 +8,11 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 ![Issues](https://img.shields.io/github/issues/taskist/taskist)
 ![Stars](https://img.shields.io/github/stars/taskist/taskist)
 
+## 🚀 Live Demo
+
+Experience Taskist in action: 👉 [**demo.taskist.org**](https://demo.taskist.org)
+
+
 ## 💬 Join the Discussion on Zulip
 
 Stay connected with the Taskist community on **[Zulip](https://taskist.zulipchat.com)** — our hub for collaboration, support, and ideas.
