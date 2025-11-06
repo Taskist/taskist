@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "name": "C#: Taskist.Web [Default Configuration]",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}\\src\\Presentation\\Taskist.Web\\Taskist.Web.csproj"
+        }
+    ]
+}

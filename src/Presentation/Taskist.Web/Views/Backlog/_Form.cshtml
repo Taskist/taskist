@@ -6,83 +6,29 @@
         updateCssClassName = "ajax-update";
     }
 }
-<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="Id"/>
 <div asp-validation-summary="ModelOnly" class="message-error"></div>
 <div class="row">
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="Title" class="form-wc-label"></wc-label>
-            <input asp-for="Title" class="form-control form-control-maxlength @updateCssClassName" autocomplete="off" maxlength="500" />
+            <input asp-for="Title" class="form-control form-control-maxlength @updateCssClassName" autocomplete="off" maxlength="500"/>
             <span asp-validation-for="Title" class="text-danger"></span>
         </div>
     </div>
 </div>
 <div class="row">
     <div class="col-md-12">
-        <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active text-info" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
-                    <i class="fas fa-sticky-note me-1"></i>@Localize("BacklogPage.DescriptionTabTitle")
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link text-success" id="devnotes-tab" data-bs-toggle="tab" data-bs-target="#devnotes" type="button" role="tab" aria-controls="devnotes" aria-selected="false">
-                    <i class="fas fa-code me-1"></i>@Localize("BacklogPage.DeveloperNotesTabTitle")
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link text-danger" id="qanotes-tab" data-bs-toggle="tab" data-bs-target="#qanotes" type="button" role="tab" aria-controls="qanotes" aria-selected="false">
-                    <i class="fas fa-bolt me-1"></i>@Localize("BacklogPage.QaNotesTabTitle")
-                </button>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade active show" id="description" role="tabpanel" aria-labelledby="description-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <textarea asp-for="Description"></textarea>
-                            <span asp-validation-for="Description" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mb-4 text-end">
-                        <button id="btnSaveDescription" type="button" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="devnotes" role="tabpanel" aria-labelledby="devnotes-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <textarea asp-for="DeveloperNotes"></textarea>
-                            <span asp-validation-for="DeveloperNotes" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mb-4 text-end">
-                        <button id="btnSaveDeveloperNotes" type="button" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="qanotes" role="tabpanel" aria-labelledby="qanotes-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <textarea asp-for="QualityNotes"></textarea>
-                            <span asp-validation-for="QualityNotes" class="text-danger"></span>
-                        </div>
-                    </div>
-                    <div class="col-md-12 mb-4 text-end">
-                        <button id="btnSaveQualityNotes" type="button" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div class="mb-3">
+            <wc-label asp-for="Description" class="form-wc-label"></wc-label>
+            <textarea asp-for="Description"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
         </div>
+    </div>
+    <div class="col-md-12 mb-4 text-end">
+        <button id="btnSaveDescription" type="button" class="btn btn-primary" style="display: none;">
+            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
+        </button>
     </div>
 </div>
 <div id="thumbnail-zone"></div>
