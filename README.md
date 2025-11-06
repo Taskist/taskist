@@ -236,6 +236,11 @@ We gratefully acknowledge the generous support of the following providers who of
         <img src="assets/zulip.png" alt="Zulip - Organized team chat app" />
     </a>
  </td>
+ <td>
+    <a href="https://gitbook.com" target="_blank" title="Create and publish beautiful documentation">
+        <img src="assets/gitbook.png" alt="Create and publish beautiful documentation" />
+    </a>
+ </td>
 </tr>
 </tbody>
 </table>
