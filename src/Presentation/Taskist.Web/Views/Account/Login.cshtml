@@ -12,7 +12,6 @@
 					<div class="text-center mb-4">
 						<img src="~/images/brand/logo.png" alt="Taskist"/>
 						<hr class="hr-text" data-content="Sign In to your account" />
-
 					</div>
 					<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
 						<div asp-validation-summary="ModelOnly" class="message-error"></div>
