@@ -270,7 +270,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogModel.Title.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'BacklogModel.Title.MaxLengthMsg','The length of title must be 500 characters or fewer')
+        VALUES(@LanguageId,'BacklogModel.Title.MaxLengthMsg','The length of title must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogModel.Title.RequiredMsg')
     BEGIN
@@ -340,7 +340,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmNewPassword.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ChangePasswordModel.ConfirmNewPassword.MaxLengthMsg','The length of confirm password must be 100 characters or fewer')
+        VALUES(@LanguageId,'ChangePasswordModel.ConfirmNewPassword.MaxLengthMsg','The length of confirm password must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmNewPassword.NotMatch')
     BEGIN
@@ -360,7 +360,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.MaxLengthMsg','The length of current password must be 100 characters or fewer')
+        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.MaxLengthMsg','The length of current password must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.RequiredMsg')
     BEGIN
@@ -380,7 +380,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.NewPassword.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ChangePasswordModel.NewPassword.MaxLengthMsg','The length of new password must be 100 characters or fewer')
+        VALUES(@LanguageId,'ChangePasswordModel.NewPassword.MaxLengthMsg','The length of new password must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.NewPassword.RequiredMsg')
     BEGIN
@@ -430,7 +430,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.ContactPerson.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ClientModel.ContactPerson.MaxLengthMsg','The length of contact person must be 100 characters or fewer')
+        VALUES(@LanguageId,'ClientModel.ContactPerson.MaxLengthMsg','The length of contact person must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Description')
     BEGIN
@@ -440,7 +440,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ClientModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'ClientModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Email')
     BEGIN
@@ -455,7 +455,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Email.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ClientModel.Email.MaxLengthMsg','The length of email must be 250 characters or fewer')
+        VALUES(@LanguageId,'ClientModel.Email.MaxLengthMsg','The length of email must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Name')
     BEGIN
@@ -465,7 +465,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ClientModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'ClientModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.Name.RequiredMsg')
     BEGIN
@@ -485,7 +485,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.PhoneNumber.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ClientModel.PhoneNumber.MaxLengthMsg','The length of phone no must be 100 characters or fewer')
+        VALUES(@LanguageId,'ClientModel.PhoneNumber.MaxLengthMsg','The length of phone no must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.WebSite')
     BEGIN
@@ -495,7 +495,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientModel.WebSite.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ClientModel.WebSite.MaxLengthMsg','The length of website must be 750 characters or fewer')
+        VALUES(@LanguageId,'ClientModel.WebSite.MaxLengthMsg','The length of website must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ClientPage.Title')
     BEGIN
@@ -510,7 +510,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.ContactPerson.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CompanyModel.ContactPerson.MaxLengthMsg','The length of contact person must be 100 characters or fewer')
+        VALUES(@LanguageId,'CompanyModel.ContactPerson.MaxLengthMsg','The length of contact person must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.ContactPerson.RequiredMsg')
     BEGIN
@@ -535,7 +535,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.Email.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CompanyModel.Email.MaxLengthMsg','The length of email must be 250 characters or fewer')
+        VALUES(@LanguageId,'CompanyModel.Email.MaxLengthMsg','The length of email must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.Language')
     BEGIN
@@ -555,7 +555,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.PhoneNumber.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CompanyModel.PhoneNumber.MaxLengthMsg','The length of phone number must be 20 characters or fewer')
+        VALUES(@LanguageId,'CompanyModel.PhoneNumber.MaxLengthMsg','The length of phone number must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.PhoneNumber.RequiredMsg')
     BEGIN
@@ -570,7 +570,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.RegisteredName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CompanyModel.RegisteredName.MaxLengthMsg','The length of registered name must be 750 characters or fewer')
+        VALUES(@LanguageId,'CompanyModel.RegisteredName.MaxLengthMsg','The length of registered name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.RegisteredName.RequiredMsg')
     BEGIN
@@ -595,7 +595,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.TradeName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CompanyModel.TradeName.MaxLengthMsg','The length of trade name must be 750 characters or fewer')
+        VALUES(@LanguageId,'CompanyModel.TradeName.MaxLengthMsg','The length of trade name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CompanyModel.TradeName.RequiredMsg')
     BEGIN
@@ -675,7 +675,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CurrencyModel.CurrencyCode.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CurrencyModel.CurrencyCode.MaxLengthMsg','The length of Code must be 10 characters or fewer')
+        VALUES(@LanguageId,'CurrencyModel.CurrencyCode.MaxLengthMsg','The length of Code must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CurrencyModel.CurrencyCode.RequiredMsg')
     BEGIN
@@ -710,7 +710,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CurrencyModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CurrencyModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'CurrencyModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CurrencyModel.DisplayOrder')
     BEGIN
@@ -730,7 +730,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CurrencyModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CurrencyModel.Name.MaxLengthMsg','The length of Name must be 100 characters or fewer')
+        VALUES(@LanguageId,'CurrencyModel.Name.MaxLengthMsg','The length of Name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CurrencyModel.Name.RequiredMsg')
     BEGIN
@@ -810,7 +810,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CustomFieldModel.Label.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'CustomFieldModel.Label.MaxLengthMsg','The length of label must be 100 characters or fewer')
+        VALUES(@LanguageId,'CustomFieldModel.Label.MaxLengthMsg','The length of label must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'CustomFieldModel.Label.RequiredMsg')
     BEGIN
@@ -910,7 +910,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailAccountModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'EmailAccountModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.EmailAccount')
     BEGIN
@@ -945,7 +945,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.FromEmail.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailAccountModel.FromEmail.MaxLengthMsg','The length of from email must be 250 characters or fewer')
+        VALUES(@LanguageId,'EmailAccountModel.FromEmail.MaxLengthMsg','The length of from email must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.FromEmail.RequiredMsg')
     BEGIN
@@ -960,7 +960,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.FromName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailAccountModel.FromName.MaxLengthMsg','The length of from name must be 250 characters or fewer')
+        VALUES(@LanguageId,'EmailAccountModel.FromName.MaxLengthMsg','The length of from name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.FromName.RequiredMsg')
     BEGIN
@@ -985,7 +985,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailAccountModel.Name.MaxLengthMsg','The length of Name must be 100 characters or fewer')
+        VALUES(@LanguageId,'EmailAccountModel.Name.MaxLengthMsg','The length of Name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.Name.RequiredMsg')
     BEGIN
@@ -1005,7 +1005,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.Password.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailAccountModel.Password.MaxLengthMsg','The length of password must be 250 characters or fewer')
+        VALUES(@LanguageId,'EmailAccountModel.Password.MaxLengthMsg','The length of password must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.Password.RequiredMsg')
     BEGIN
@@ -1040,7 +1040,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.UserName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailAccountModel.UserName.MaxLengthMsg','The length of user name must be 250 characters or fewer')
+        VALUES(@LanguageId,'EmailAccountModel.UserName.MaxLengthMsg','The length of user name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.UserName.RequiredMsg')
     BEGIN
@@ -1110,7 +1110,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailTemplateModel.EmailSubject.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailTemplateModel.EmailSubject.MaxLengthMsg','The length of email subject must be 250 characters or fewer')
+        VALUES(@LanguageId,'EmailTemplateModel.EmailSubject.MaxLengthMsg','The length of email subject must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailTemplateModel.EmailSubject.RequiredMsg')
     BEGIN
@@ -1125,7 +1125,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailTemplateModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'EmailTemplateModel.Name.MaxLengthMsg','The length of Name must be 100 characters or fewer')
+        VALUES(@LanguageId,'EmailTemplateModel.Name.MaxLengthMsg','The length of Name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailTemplateModel.Name.RequiredMsg')
     BEGIN
@@ -1215,7 +1215,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserModel.FirstName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'UserModel.FirstName.MaxLengthMsg','The length of first name must be 50 characters or fewer')
+        VALUES(@LanguageId,'UserModel.FirstName.MaxLengthMsg','The length of first name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserModel.FirstName.RequiredMsg')
     BEGIN
@@ -1240,7 +1240,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserModel.LastName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'UserModel.LastName.MaxLengthMsg','The length of last name must be 50 characters or fewer')
+        VALUES(@LanguageId,'UserModel.LastName.MaxLengthMsg','The length of last name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserModel.LastName.RequiredMsg')
     BEGIN
@@ -1370,7 +1370,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'UserRoleModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'UserRoleModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.Name')
     BEGIN
@@ -1380,7 +1380,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'UserRoleModel.Name.MaxLengthMsg','The length of name must be 250 characters or fewer')
+        VALUES(@LanguageId,'UserRoleModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.Name.RequiredMsg')
     BEGIN
@@ -1400,7 +1400,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.SystemName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'UserRoleModel.SystemName.MaxLengthMsg','The length of system name must be 250 characters or fewer')
+        VALUES(@LanguageId,'UserRoleModel.SystemName.MaxLengthMsg','The length of system name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.SystemName.RequiredMsg')
     BEGIN
@@ -1595,7 +1595,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LanguageModel.LanguageCulture.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'LanguageModel.LanguageCulture.MaxLengthMsg','The length of Culture must be 10 characters or fewer')
+        VALUES(@LanguageId,'LanguageModel.LanguageCulture.MaxLengthMsg','The length of Culture must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LanguageModel.LanguageCulture.RequiredMsg')
     BEGIN
@@ -1615,7 +1615,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LanguageModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'LanguageModel.Name.MaxLengthMsg','The length of Name must be 100 characters or fewer')
+        VALUES(@LanguageId,'LanguageModel.Name.MaxLengthMsg','The length of Name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LanguageModel.Name.RequiredMsg')
     BEGIN
@@ -1670,7 +1670,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LocaleResourceModel.ResourceKey.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'LocaleResourceModel.ResourceKey.MaxLengthMsg','The length of Resource Key must be 150 characters or fewer')
+        VALUES(@LanguageId,'LocaleResourceModel.ResourceKey.MaxLengthMsg','The length of Resource Key must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LocaleResourceModel.ResourceKey.RequiredMsg')
     BEGIN
@@ -1690,7 +1690,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LocaleResourceModel.ResourceValue.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'LocaleResourceModel.ResourceValue.MaxLengthMsg','The length of Resource Value must be 100 characters or fewer')
+        VALUES(@LanguageId,'LocaleResourceModel.ResourceValue.MaxLengthMsg','The length of Resource Value must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'LocaleResourceModel.ResourceValue.RequiredMsg')
     BEGIN
@@ -1785,7 +1785,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ModuleModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ModuleModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'ModuleModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ModuleModel.Name')
     BEGIN
@@ -1795,7 +1795,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ModuleModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ModuleModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'ModuleModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ModuleModel.Name.RequiredMsg')
     BEGIN
@@ -1960,7 +1960,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProjectModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ProjectModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'ProjectModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProjectModel.EndDate')
     BEGIN
@@ -1980,7 +1980,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProjectModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ProjectModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'ProjectModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProjectModel.Name.RequiredMsg')
     BEGIN
@@ -2090,7 +2090,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SprintModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'SprintModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.Name')
     BEGIN
@@ -2150,7 +2150,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.Version.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SprintModel.Version.MaxLengthMsg','The length of version must be 50 characters or fewer')
+        VALUES(@LanguageId,'SprintModel.Version.MaxLengthMsg','The length of version must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.Version.RequiredMsg')
     BEGIN
@@ -2190,7 +2190,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ReporterModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ReporterModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'ReporterModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ReporterModel.Name')
     BEGIN
@@ -2200,7 +2200,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ReporterModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ReporterModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'ReporterModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ReporterModel.Name.RequiredMsg')
     BEGIN
@@ -2255,7 +2255,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SettingModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SettingModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'SettingModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SettingModel.Name')
     BEGIN
@@ -2265,7 +2265,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SettingModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SettingModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'SettingModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SettingModel.Value')
     BEGIN
@@ -2275,7 +2275,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SettingModel.Value.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SettingModel.Value.MaxLengthMsg','The length of value must be 250 characters or fewer')
+        VALUES(@LanguageId,'SettingModel.Value.MaxLengthMsg','The length of value must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityGrid.Active')
     BEGIN
@@ -2325,7 +2325,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.BackgroundColor.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SeverityModel.BackgroundColor.MaxLengthMsg','The length of background color must be 20 characters or fewer')
+        VALUES(@LanguageId,'SeverityModel.BackgroundColor.MaxLengthMsg','The length of background color must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.Description')
     BEGIN
@@ -2335,7 +2335,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SeverityModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'SeverityModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.Group')
     BEGIN
@@ -2355,7 +2355,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.IconClass.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SeverityModel.IconClass.MaxLengthMsg','The length of icon class must be 50 characters or fewer')
+        VALUES(@LanguageId,'SeverityModel.IconClass.MaxLengthMsg','The length of icon class must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.Name')
     BEGIN
@@ -2365,7 +2365,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SeverityModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'SeverityModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.Name.RequiredMsg')
     BEGIN
@@ -2385,7 +2385,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityModel.TextColor.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SeverityModel.TextColor.MaxLengthMsg','The length of text color must be 20 characters or fewer')
+        VALUES(@LanguageId,'SeverityModel.TextColor.MaxLengthMsg','The length of text color must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SeverityPage.Title')
     BEGIN
@@ -2445,7 +2445,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.BackgroundColor.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'StatusModel.BackgroundColor.MaxLengthMsg','The length of background color must be 20 characters or fewer')
+        VALUES(@LanguageId,'StatusModel.BackgroundColor.MaxLengthMsg','The length of background color must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.Description')
     BEGIN
@@ -2455,7 +2455,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'StatusModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'StatusModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.ExternalUse')
     BEGIN
@@ -2480,7 +2480,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.IconClass.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'StatusModel.IconClass.MaxLengthMsg','The length of icon class must be 50 characters or fewer')
+        VALUES(@LanguageId,'StatusModel.IconClass.MaxLengthMsg','The length of icon class must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.Name')
     BEGIN
@@ -2490,7 +2490,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'StatusModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'StatusModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.Name.RequiredMsg')
     BEGIN
@@ -2550,7 +2550,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusModel.TextColor.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'StatusModel.TextColor.MaxLengthMsg','The length of text color must be 20 characters or fewer')
+        VALUES(@LanguageId,'StatusModel.TextColor.MaxLengthMsg','The length of text color must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'StatusPage.SystemDefinedMsg')
     BEGIN
@@ -2590,7 +2590,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SubModuleModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SubModuleModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'SubModuleModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SubModuleModel.Module')
     BEGIN
@@ -2605,7 +2605,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SubModuleModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'SubModuleModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'SubModuleModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SubModuleModel.Name.RequiredMsg')
     BEGIN
@@ -2675,7 +2675,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.BackgroundColor.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'TaskTypeModel.BackgroundColor.MaxLengthMsg','The length of background color must be 20 characters or fewer')
+        VALUES(@LanguageId,'TaskTypeModel.BackgroundColor.MaxLengthMsg','The length of background color must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.Description')
     BEGIN
@@ -2685,7 +2685,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.Description.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'TaskTypeModel.Description.MaxLengthMsg','The length of description must be 250 characters or fewer')
+        VALUES(@LanguageId,'TaskTypeModel.Description.MaxLengthMsg','The length of description must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.Group')
     BEGIN
@@ -2705,7 +2705,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.IconClass.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'TaskTypeModel.IconClass.MaxLengthMsg','The length of icon class must be 50 characters or fewer')
+        VALUES(@LanguageId,'TaskTypeModel.IconClass.MaxLengthMsg','The length of icon class must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.Name')
     BEGIN
@@ -2715,7 +2715,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.Name.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'TaskTypeModel.Name.MaxLengthMsg','The length of name must be 100 characters or fewer')
+        VALUES(@LanguageId,'TaskTypeModel.Name.MaxLengthMsg','The length of name must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.Name.RequiredMsg')
     BEGIN
@@ -2735,7 +2735,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypeModel.TextColor.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'TaskTypeModel.TextColor.MaxLengthMsg','The length of text color must be 20 characters or fewer')
+        VALUES(@LanguageId,'TaskTypeModel.TextColor.MaxLengthMsg','The length of text color must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'TaskTypePage.Title')
     BEGIN
@@ -2785,7 +2785,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.MaxLengthMsg','The length must be 100 characters or fewer')
+        VALUES(@LanguageId,'ChangePasswordModel.CurrentPassword.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.CurrentPassword.NotMatchMsg')
     BEGIN
@@ -2800,7 +2800,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.NewPassword.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ChangePasswordModel.NewPassword.MaxLengthMsg','The length must be 100 characters or fewer')
+        VALUES(@LanguageId,'ChangePasswordModel.NewPassword.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmPassword.RequiredMsg')
     BEGIN
@@ -2810,7 +2810,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmPassword.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ChangePasswordModel.ConfirmPassword.MaxLengthMsg','The length must be 100 characters or fewer')
+        VALUES(@LanguageId,'ChangePasswordModel.ConfirmPassword.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ChangePasswordModel.ConfirmPassword.NotMatchMsg')
     BEGIN
@@ -2825,7 +2825,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.FirstName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ProfileDetailModel.FirstName.MaxLengthMsg','The length must be 100 characters or fewer')
+        VALUES(@LanguageId,'ProfileDetailModel.FirstName.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.LastName.RequiredMsg')
     BEGIN
@@ -2835,7 +2835,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.LastName.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ProfileDetailModel.LastName.MaxLengthMsg','The length must be 100 characters or fewer')
+        VALUES(@LanguageId,'ProfileDetailModel.LastName.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.RequiredMsg')
     BEGIN
@@ -2845,7 +2845,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.MaxLengthMsg')
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
-        VALUES(@LanguageId,'ProfileDetailModel.Email.MaxLengthMsg','The length must be 250 characters or fewer')
+        VALUES(@LanguageId,'ProfileDetailModel.Email.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
     END
     IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ProfileDetailModel.Email.InvalidMsg')
     BEGIN
@@ -2886,5 +2886,160 @@ BEGIN
     BEGIN
         INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
         VALUES(@LanguageId,'ProfilePage.SuccessMsg','Avatar uploaded successfully!')
+    END	
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.Module.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.Module.RequiredMsg','Module is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.Severity.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.Severity.RequiredMsg','Severity is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.Status.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.Status.RequiredMsg','Status is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.SubModule.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.SubModule.RequiredMsg','Sub module is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.TaskType.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.TaskType.RequiredMsg','Task type is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.Title.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.Title.RequiredMsg','Title is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'BacklogTaskModel.Title.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'BacklogTaskModel.Title.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.EmailBody')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'EmailAccountModel.EmailBody','Email Body')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'EmailAccountModel.Host.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'EmailAccountModel.Host.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'Error.UnableToCreateTask')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'Error.UnableToCreateTask','Unable to create the task. Please try again.')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'Error.UnableToRegisterUser')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'Error.UnableToRegisterUser','Unable to register user. Please try again.')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'Error.UnableToUpdateUser')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'Error.UnableToUpdateUser','Unable to update user details. Please try again.')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ResetPasswordModel.Password.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ResetPasswordModel.Password.RequiredMsg','Password is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'ResetPasswordModel.Password.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'ResetPasswordModel.Password.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserModel.Email.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserModel.Email.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserModel.Language.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserModel.Language.RequiredMsg','Language is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRoleModel.SystemDefined')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserRoleModel.SystemDefined','System Defined')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRolePermissionModel.Name')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserRolePermissionModel.Name','Name')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRolePermissionModel.RoleGroup')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserRolePermissionModel.RoleGroup','Role Group')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRolePermissionModel.SystemName')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserRolePermissionModel.SystemName','System Name')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'UserRolePermissionModel.SystemPermission')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'UserRolePermissionModel.SystemPermission','System Permission')
+    END	
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintGrid.StartDate')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintGrid.StartDate','Start Date')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintGrid.EndDate')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintGrid.EndDate','End Date')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintGrid.Started')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintGrid.Started','Started')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.EndDate')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintModel.EndDate','End Date')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.EndDate.RequiredMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintModel.EndDate.RequiredMsg','End date is required')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.Name.MaxLengthMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintModel.Name.MaxLengthMsg','The length must be {MaxLength} characters or fewer')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'Log.PasswordReset')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'Log.PasswordReset','Record reset -> {0}')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.StartDate.UniqueMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintModel.StartDate.UniqueMsg','Start date overlaps with another sprint’s schedule')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'SprintModel.EndDate.UniqueMsg')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'SprintModel.EndDate.UniqueMsg','End date overlaps with another sprint’s schedule')
+    END
+	IF NOT EXISTS (SELECT 1 FROM [LocaleResource] WHERE [ResourceKey] = 'Admin.AccessDenied.Description')
+    BEGIN
+        INSERT INTO [LocaleResource] ([LanguageId],[ResourceKey],[ResourceValue])
+        VALUES(@LanguageId,'Admin.AccessDenied.Description','You don’t have permission to access the admin area.')
     END
 END

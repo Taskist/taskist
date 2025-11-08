@@ -29,12 +29,6 @@ public class BacklogModel : BaseModel
     [LocalizedDisplayName("BacklogTask.Description")]
     public string? Description { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.DeveloperNotes")]
-    public string? DeveloperNotes { get; set; }
-
-    [LocalizedDisplayName("BacklogTask.QualityNotes")]
-    public string? QualityNotes { get; set; }
-
     [LocalizedDisplayName("BacklogTask.Parent")]
     public int? ParentId { get; set; }
 
