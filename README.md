@@ -12,6 +12,12 @@ This system helps teams manage tasks, track bugs, handle change requests, and or
 
 Experience Taskist in action: 👉 [**demo.taskist.org**](https://demo.taskist.org)
 
+## 📚 Documentation
+
+Looking for detailed setup guides, module explanations, and screenshots?  
+Check out the complete **Taskist Documentation Site** below 👇  
+
+🔗 **Visit:** 👉 [**docs.taskist.org**](https://docs.taskist.org)
 
 ## 💬 Join the Discussion on Zulip
 
