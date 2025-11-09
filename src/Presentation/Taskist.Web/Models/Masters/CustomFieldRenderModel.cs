@@ -2,7 +2,7 @@
 
 namespace Taskist.Web.Models.Masters;
 
-public class CustomFieldRenderModel : BaseModel
+public class CustomFieldRenderModel : BasePageModel
 {
     public string Label { get; set; }
 

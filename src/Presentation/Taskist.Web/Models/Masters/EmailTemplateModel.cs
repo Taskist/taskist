@@ -4,7 +4,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class EmailTemplateModel : BaseModel
+public class EmailTemplateModel : BasePageModel
 {
     public EmailTemplateModel()
     {

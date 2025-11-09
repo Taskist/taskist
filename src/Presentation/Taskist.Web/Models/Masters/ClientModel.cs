@@ -3,7 +3,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class ClientModel : BaseModel
+public class ClientModel : BasePageModel
 {
     [LocalizedDisplayName("ClientModel.Name")]
     public string Name { get; set; }

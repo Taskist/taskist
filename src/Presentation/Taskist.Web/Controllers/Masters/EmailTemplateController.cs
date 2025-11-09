@@ -106,7 +106,7 @@ public class EmailTemplateController : BaseController
     [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Reset()
     {
-        var model = new PageModel
+        var model = new EmailTemplateResetModel
         {
             Valid = true
         };

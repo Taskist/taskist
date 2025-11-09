@@ -2,7 +2,7 @@
 
 namespace Taskist.Web.Models.WorkItems;
 
-public class BacklogCommentModel : BaseModel
+public class BacklogCommentModel : BasePageModel
 {
     public BacklogCommentModel()
     {

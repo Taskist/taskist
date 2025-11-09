@@ -1,7 +1,7 @@
 ﻿using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.WorkItems;
-public class BacklogExportModel : BaseModel
+public class BacklogExportModel : BasePageModel
 {
 	public string Title { get; set; }
 

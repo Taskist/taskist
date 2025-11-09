@@ -4,7 +4,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserProjectModel : BaseModel
+public class UserProjectModel : BasePageModel
 {
 	public UserProjectModel()
 	{
@@ -42,7 +42,7 @@ public class UserProjectModel : BaseModel
 	public IList<SelectListItem> AvailableUsers { get; set; }
 }
 
-public class UserProjectGridModel : BaseModel
+public class UserProjectGridModel : BasePageModel
 {
 	public string UserName { get; set; }
 

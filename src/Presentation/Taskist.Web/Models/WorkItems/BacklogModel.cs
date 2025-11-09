@@ -6,7 +6,7 @@ using Taskist.Web.Models.Masters;
 
 namespace Taskist.Web.Models.WorkItems;
 
-public class BacklogModel : BaseModel
+public class BacklogModel : BasePageModel
 {
     public BacklogModel()
     {
@@ -93,7 +93,7 @@ public class BacklogModel : BaseModel
     public IList<SelectListItem> AvailableStatus { get; set; }
 }
 
-public class BacklogItemGridModel : BaseModel
+public class BacklogItemGridModel : BasePageModel
 {
     public string Title { get; set; }
 

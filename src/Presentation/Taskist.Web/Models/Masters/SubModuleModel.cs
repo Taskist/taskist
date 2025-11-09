@@ -4,7 +4,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class SubModuleModel : BaseModel
+public class SubModuleModel : BasePageModel
 {
     public SubModuleModel()
     {

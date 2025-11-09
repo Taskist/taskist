@@ -21,7 +21,7 @@ public class ProfileModel
     public string DisplayName { get; set; }
 }
 
-public class ProfileDetailModel : BaseModel
+public class ProfileDetailModel : BasePageModel
 {
     public ProfileDetailModel()
     {

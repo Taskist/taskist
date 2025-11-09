@@ -5,7 +5,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class ProjectModel : BaseModel
+public class ProjectModel : BasePageModel
 {
     public ProjectModel()
     {
@@ -35,7 +35,7 @@ public class ProjectModel : BaseModel
     public IList<SelectListItem> AvailableClients { get; set; }
 }
 
-public class ProjectGridModel : BaseModel
+public class ProjectGridModel : BasePageModel
 {
     public string Name { get; set; }
 
@@ -50,7 +50,7 @@ public class ProjectGridModel : BaseModel
     public bool Active { get; set; }
 }
 
-public class ProjectSelectorModel : BaseModel
+public class ProjectSelectorModel : BasePageModel
 {
     public string Name { get; set; }
 

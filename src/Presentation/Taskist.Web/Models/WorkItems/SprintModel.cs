@@ -5,7 +5,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.WorkItems;
 
-public class SprintModel : BaseModel
+public class SprintModel : BasePageModel
 {
     public SprintModel()
     {

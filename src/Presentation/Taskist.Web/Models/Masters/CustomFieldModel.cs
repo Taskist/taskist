@@ -4,7 +4,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class CustomFieldModel : BaseModel
+public class CustomFieldModel : BasePageModel
 {
     public CustomFieldModel()
     {
@@ -47,7 +47,7 @@ public class CustomFieldModel : BaseModel
     public IList<SelectListItem> AvailableColumnClasses { get; set; }
 }
 
-public class CustomFieldGridModel : BaseModel
+public class CustomFieldGridModel : BasePageModel
 {
     public string Label { get; set; }
 

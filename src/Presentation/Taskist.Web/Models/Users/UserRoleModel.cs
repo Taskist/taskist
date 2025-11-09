@@ -3,7 +3,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserRoleModel : BaseModel
+public class UserRoleModel : BasePageModel
 {
     [LocalizedDisplayName("UserRoleModel.Name")]
     public string Name { get; set; }

@@ -3,7 +3,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserRolePermissionModel : BaseModel
+public class UserRolePermissionModel : BasePageModel
 {
     [LocalizedDisplayName("UserRolePermissionModel.Name")]
     public string Name { get; set; }

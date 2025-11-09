@@ -2,7 +2,7 @@
 
 namespace Taskist.Web.Models.WorkItems;
 
-public class BacklogDocumentGridModel : BaseModel
+public class BacklogDocumentGridModel : BasePageModel
 {
 	public string Name { get; set; }
 

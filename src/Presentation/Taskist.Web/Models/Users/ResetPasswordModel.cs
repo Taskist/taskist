@@ -4,7 +4,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class ResetPasswordModel : BaseModel
+public class ResetPasswordModel : BasePageModel
 {
     [LocalizedDisplayName("ResetPasswordModel.Password")]
     [DataType(DataType.Password)]

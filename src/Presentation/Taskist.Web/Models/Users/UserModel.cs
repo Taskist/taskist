@@ -5,7 +5,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserModel : BaseModel
+public class UserModel : BasePageModel
 {
     public UserModel()
     {
