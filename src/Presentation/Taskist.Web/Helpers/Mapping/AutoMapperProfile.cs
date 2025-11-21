@@ -59,7 +59,9 @@ public class AutoMapperProfile : Profile
 
         CreateMap<Backlog, BacklogModel>().ReverseMap()
             .ForMember(dest => dest.Code, act => act.Ignore())
-            .ForMember(dest => dest.AssigneeId, opt => opt.MapFrom(src => src.AssigneeId == -1 ? (int?)null : src.AssigneeId));
+            .ForMember(dest => dest.AssigneeId, opt => opt.MapFrom(src => src.AssigneeId == -1 ? (int?)null : src.AssigneeId))
+            .ForMember(dest => dest.SprintId, opt => opt.MapFrom(src => src.SprintId == -1 ? (int?)null : src.SprintId))
+            .ForMember(dest => dest.ReporterId, opt => opt.MapFrom(src => src.ReporterId == -1 ? (int?)null : src.ReporterId));
 
         CreateMap<Sprint, SprintModel>().ReverseMap();
         CreateMap<CustomField, CustomFieldRenderModel>();
