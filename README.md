@@ -1,4 +1,4 @@
-# 📝 Task / CR / Bug Management System
+# 📝 Open-Source Task & Bug Tracking - Designed for Simplicity.
 
 A web-based **Task, Change Request (CR), and Bug Management System** built with **ASP.NET Core MVC (.NET 8)**, using **MS SQL Server or MySQL** as the database.
 
