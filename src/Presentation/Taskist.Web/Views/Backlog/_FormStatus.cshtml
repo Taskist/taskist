@@ -12,6 +12,13 @@
 <div class="row">
     <div class="col-md-12">
         <div class="mb-3">
+            <wc-label asp-for="ProjectId" />
+            <select class="form-control select2 @updateCssClassNameModule" asp-for="ProjectId" asp-items="Model.AvailableProjects"></select>
+            <span asp-validation-for="ProjectId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
             <wc-label asp-for="ModuleId" />
             <select class="form-control select2 @updateCssClassNameModule" asp-for="ModuleId" asp-items="Model.AvailableModules"></select>
             <span asp-validation-for="ModuleId" class="text-danger"></span>
@@ -84,6 +91,13 @@
 @await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacementEnum.StatusSection })
 <script>
     $(function () {
+        $("#ProjectId").change(function () {
+            var dto = {
+                project: $(this).val(),
+            };
+            JSManager.bindSelect("ModuleId", "@Url.Action("GetModules", "Module")", dto);
+        });
+
         $("#ModuleId").change(function () {
             var dto = {
                 module: $(this).val(),

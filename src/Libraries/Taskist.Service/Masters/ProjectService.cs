@@ -1,10 +1,10 @@
-﻿using Taskist.Core.Common;
-using Taskist.Core.Domain.Users;
-using Taskist.Core.Domain.Masters;
-using Taskist.Data.Repository;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.DynamicLinq;
 using System.Linq.Dynamic.Core;
+using Taskist.Core.Common;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
+using Taskist.Data.Repository;
 
 namespace Taskist.Service.Masters;
 
@@ -74,6 +74,15 @@ public class ProjectService : IProjectService
     {
         return await _projectMemberMapRepository.Table.Where(x => x.ProjectId == projectId && x.UserId == userId)
             .FirstOrDefaultAsync();
+    }
+
+    public async Task<IList<Project>> GetAllAccessibleAsync(int userId)
+    {
+        var query = from c in _projectMemberMapRepository.Table
+                    where !c.Project.Deleted && c.Project.Active && c.UserId == userId && c.CanReport
+                    select c.Project;
+
+        return await query.ToListAsync();
     }
 
     public async Task InsertAsync(Project entity)

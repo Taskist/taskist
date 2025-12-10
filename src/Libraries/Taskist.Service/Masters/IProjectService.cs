@@ -1,6 +1,6 @@
 ﻿using Taskist.Core.Common;
-using Taskist.Core.Domain.Users;
 using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
 
 namespace Taskist.Service.Masters;
 
@@ -18,6 +18,8 @@ public interface IProjectService
     Task<Project> GetByNameAsync(string name);
 
     Task<UserProjectMap> GetMappingForUserAsync(int projectId, int userId);
+
+    Task<IList<Project>> GetAllAccessibleAsync(int userId);
 
     Task InsertAsync(Project entity);
 
