@@ -602,11 +602,10 @@ public class BacklogController : BaseController
     {
         var loggedUser = await _workContext.GetCurrentUserAsync();
         var lastAccessedProjectId = await _genericAttributeService.GetAttributeAsync<int>(loggedUser, Constant.ActiveProjectSession);
-
+        var projects = await _projectService.GetAllAccessibleAsync(loggedUser.Id);
         var taskTypes = await _taskTypeService.GetAllActiveAsync();
         var reporters = await _reporterService.GetAllActiveAsync();
         var severities = await _severityService.GetAllActiveAsync();
-        var modules = await _moduleService.GetAllActiveByProjectAsync(lastAccessedProjectId);
         var assignees = await _userService.GetAllActiveByProjectAsync(lastAccessedProjectId);
         var status = await _statusService.GetAllActiveAsync();
         var sprints = await _sprintService.GetAllActiveByProjectAsync(lastAccessedProjectId);
@@ -646,14 +645,31 @@ public class BacklogController : BaseController
             });
         }
 
-        foreach (var item in modules)
+        foreach (var item in projects)
         {
-            model.AvailableModules.Add(new SelectListItem
+            model.AvailableProjects.Add(new SelectListItem
             {
                 Text = item.Name,
                 Value = item.Id.ToString(),
-                Selected = item.Id == model.ModuleId
+                Selected = item.Id == model.ProjectId
             });
+        }
+
+        if (model.ProjectId <= 0)
+            model.ProjectId = lastAccessedProjectId;
+
+        if (model.ProjectId > 0)
+        {
+            var modules = await _moduleService.GetAllActiveByProjectAsync(model.ProjectId);
+            foreach (var item in modules)
+            {
+                model.AvailableModules.Add(new SelectListItem
+                {
+                    Text = item.Name,
+                    Value = item.Id.ToString(),
+                    Selected = item.Id == model.ModuleId
+                });
+            }
         }
 
         if (model.ModuleId > 0)

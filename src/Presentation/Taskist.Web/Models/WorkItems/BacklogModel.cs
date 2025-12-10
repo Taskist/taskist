@@ -13,6 +13,7 @@ public class BacklogModel : BasePageModel
         AvailableTaskTypes = [];
         AvailableReporters = [new SelectListItem { Text = "None", Value = "-1" }];
         AvailableSeverities = [new SelectListItem { Text = "Select", Value = "" }];
+        AvailableProjects = [new SelectListItem { Text = "Select", Value = "" }];
         AvailableModules = [new SelectListItem { Text = "Select", Value = "" }];
         AvailableSubModules = [new SelectListItem { Text = "Select", Value = "" }];
         AvailableSprints = [new SelectListItem { Text = "No Sprint", Value = "-1" }];
@@ -81,6 +82,8 @@ public class BacklogModel : BasePageModel
     public IList<SelectListItem> AvailableReporters { get; set; }
 
     public IList<SelectListItem> AvailableSeverities { get; set; }
+
+    public IList<SelectListItem> AvailableProjects { get; set; }
 
     public IList<SelectListItem> AvailableModules { get; set; }
 

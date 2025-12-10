@@ -202,6 +202,20 @@ public class ModuleController : BaseController
 
     #endregion
 
+    #region Ajax
+
+    public async Task<List<SelectListItem>> GetModules(int project)
+    {
+        var states = await _moduleService.GetAllActiveByProjectAsync(project);
+        return states.Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Name
+        }).ToList();
+    }
+
+    #endregion
+
     #region Helper
 
     private async Task InitModelAsync(ModuleModel model)
