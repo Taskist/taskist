@@ -77,6 +77,8 @@ public class BacklogModel : BaseModel
 
     public bool CanEdit { get; set; }
 
+    public bool CanDelete { get; set; }
+
     [LocalizedDisplayName("BacklogTask.CreatedBy")]
     public int CreatedById { get; set; }
 

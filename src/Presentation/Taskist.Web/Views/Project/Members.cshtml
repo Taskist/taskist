@@ -65,6 +65,10 @@
             new ColumnConditionModel { Value = "true", Operator = OperatorEnum.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
             new ColumnConditionModel { Value = "false", Operator = OperatorEnum.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
         }},
+        new ColumnModel { Title = Localize("ProjectMemberGrid.CanDelete").Text, DataColumn = "CanDelete", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = OperatorEnum.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = OperatorEnum.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+        }},
         new ColumnModel { Title = Localize("ProjectMemberGrid.CanReOpen").Text, DataColumn = "CanReOpen", Conditions = new List<ColumnConditionModel>{
             new ColumnConditionModel { Value = "true", Operator = OperatorEnum.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
             new ColumnConditionModel { Value = "false", Operator = OperatorEnum.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }

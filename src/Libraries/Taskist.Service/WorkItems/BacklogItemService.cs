@@ -75,6 +75,7 @@ public class BacklogItemService : IBacklogItemService
     {
         return await _backlogRepository.GetAllPagedAsync(query =>
         {
+            query = query.Where(x => !x.Deleted);  //r
             if (projectId > 0)
                 query = query.Where(x => x.ProjectId == projectId);
             else
@@ -186,7 +187,7 @@ public class BacklogItemService : IBacklogItemService
                 BacklogId = entity.Id,
                 CreatedById = entity.CreatedById,
                 CreatedOn = DateTime.UtcNow,
-                Comment = $"New {entity.TaskType.Name} created.",
+                Comment = $"New {entity.TaskType?.Name} ?? backlog created.",  //r
                 SystemComment = true
             });
 
@@ -282,6 +283,18 @@ public class BacklogItemService : IBacklogItemService
 
         await _backlogRepository.DeleteAsync(entity);
     }
+
+    public async Task DeleteBacklogAsync(int id)  //r
+    {
+        var entity = await _backlogRepository.GetByIdAsync(id);
+        if (entity == null)
+            throw new ArgumentNullException(nameof(entity));
+
+        entity.Deleted = true;
+
+        await _backlogRepository.UpdateAsync(entity);
+    }
+
 
     #endregion
 

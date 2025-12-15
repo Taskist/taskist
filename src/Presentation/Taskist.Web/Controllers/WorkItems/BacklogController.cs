@@ -128,7 +128,7 @@ public class BacklogController : BaseController
 
         if (fieldValues.Any())
         {
-            var customFields = await _customFieldService.GetAllMandatoryAsync(lastAccessedProjectId);
+            var customFields = (await _customFieldService.GetAllMandatoryAsync(lastAccessedProjectId)).ToList();
             if (customFields.Any())
             {
                 var emptyValues = customFields.Where(x => fieldValues.Any(y => y.CustomFieldId == x.Id && string.IsNullOrEmpty(y.Value)));
@@ -193,7 +193,7 @@ public class BacklogController : BaseController
     {
         var projectAccess = await GetProjectAccess();
         if (projectAccess == null || !projectAccess.CanReport && !projectAccess.CanEdit && !projectAccess.CanClose)
-            return AccessDenied();
+             return AccessDenied();
 
         var entity = await _backlogItemService.GetByIdAsync(id);
         if (entity == null)
@@ -202,8 +202,35 @@ public class BacklogController : BaseController
         var model = _mapper.Map<BacklogModel>(entity);
 
         await InitModelAsync(model);
+        model.CanEdit = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG);
+        model.CanDelete = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG);
 
         return View(model);
+    }
+
+    [HttpPost("DeleteBacklog")]
+    [ValidateAntiForgeryToken]  
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
+    public async Task<IActionResult> DeleteBacklogAsync(int id)
+    {
+
+        // check permission
+        if (!await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG))
+            return Forbid();
+
+        var backlog = await _backlogItemService.GetByIdAsync(id);
+        if (backlog == null)
+            return NotFound();
+
+        backlog.Deleted = true;
+        await _backlogItemService.UpdateAsync(backlog);
+        
+        return Json(new
+        {
+            success = true,
+            message = true ? "Backlog File deleted!" : "Oops, unable to delete the file!"
+        });
+
     }
 
     public async Task<IActionResult> Filter(int filterMode)
@@ -593,6 +620,7 @@ public class BacklogController : BaseController
             CanReport = projectMap != null && projectMap.CanReport,
             CanEdit = projectMap != null && projectMap.CanEdit,
             CanClose = projectMap != null && projectMap.CanClose,
+            CanDelete = projectMap != null && projectMap.CanDelete,
             CanViewOthersTask = projectMap != null && projectMap.CanViewOthersTask,
             CanEditOthersTask = projectMap != null && projectMap.CanEditOthersTask
         };
@@ -615,6 +643,7 @@ public class BacklogController : BaseController
         {
             var access = await GetProjectAccess();
             model.CanEdit = model.AssigneeId == loggedUser.Id || access.CanEditOthersTask;
+            model.CanDelete = access.CanDelete;
         }
         foreach (var item in taskTypes)
         {
