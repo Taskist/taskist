@@ -10,6 +10,8 @@ public class BacklogPageModel
 
     public bool CanClose { get; set; }
 
+    public bool CanDelete { get; set; }
+
     public bool CanReOpen { get; set; }
 
     public bool CanComment { get; set; }

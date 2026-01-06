@@ -27,7 +27,10 @@ public class UserProjectModel : BasePageModel
 	[LocalizedDisplayName("UserProjectModel.CanClose")]
 	public bool CanClose { get; set; }
 
-	[LocalizedDisplayName("UserProjectModel.CanReOpen")]
+    [LocalizedDisplayName("UserProjectModel.CanDelete")]
+    public bool CanDelete { get; set; }
+
+    [LocalizedDisplayName("UserProjectModel.CanReOpen")]
 	public bool CanReOpen { get; set; }
 
 	[LocalizedDisplayName("UserProjectModel.CanComment")]
@@ -52,7 +55,9 @@ public class UserProjectGridModel : BasePageModel
 
 	public bool CanClose { get; set; }
 
-	public bool CanReOpen { get; set; }
+    public bool CanDelete { get; set; }
+
+    public bool CanReOpen { get; set; }
 
 	public bool CanComment { get; set; }
 }

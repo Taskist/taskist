@@ -184,6 +184,7 @@ public class ProjectController : BaseController
                 CanReport = model.CanReport,
                 CanEdit = model.CanEdit,
                 CanReOpen = model.CanReOpen,
+                CanDelete =model.CanDelete,
                 CanClose = model.CanClose,
                 CanComment = model.CanComment,
                 CanViewOthersTask = model.CanViewOthersTask,
@@ -231,8 +232,19 @@ public class ProjectController : BaseController
         if (ModelState.IsValid)
         {
             var entity = await _projectService.GetMemberByIdAsync(model.Id);
-            entity = _mapper.Map(model, entity);
+            if (entity == null)
+                return Json(new JsonResponseModel { Status = HttpStatusCodeEnum.NoData });
 
+            entity.CanReport = model.CanReport;
+            entity.CanEdit = model.CanEdit;
+            entity.CanReOpen = model.CanReOpen;
+            entity.CanDelete = model.CanDelete;
+            entity.CanClose = model.CanClose;
+            entity.CanComment = model.CanComment;
+            entity.CanViewOthersTask = model.CanViewOthersTask;
+            entity.CanEditOthersTask = model.CanEditOthersTask;
+
+            
             await _projectService.UpdateMemberAsync(entity);
 
             await _userActivityService.InsertAsync("ProjectMember", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.User.Name), entity);
@@ -241,7 +253,7 @@ public class ProjectController : BaseController
             {
                 Status = HttpStatusCodeEnum.Success,
                 Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
-            });
+            });                                                                  
         }
 
         return Json(new JsonResponseModel
@@ -419,6 +431,7 @@ public class ProjectController : BaseController
                 CanReport = x.CanReport,
                 CanEdit = x.CanEdit,
                 CanClose = x.CanClose,
+                CanDelete = x.CanDelete,
                 CanReOpen = x.CanReOpen,
                 CanComment = x.CanComment
             }),

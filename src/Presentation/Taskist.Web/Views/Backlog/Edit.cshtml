@@ -21,6 +21,14 @@
 							<a asp-action="Index" class="btn btn-secondary">
 								<i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")
 							</a>
+							@Html.AntiForgeryToken()
+							@if (Model.CanDelete)
+							{
+								<button type="button" class="btn btn-danger" onclick="confirmDelete(@Model.Id)"> 
+									<i class="fas fa-trash me-1"></i>@Localize("Button.Delete")
+								</button>
+							}
+							
 						</div>
 					</div>
 				</div>
@@ -35,7 +43,40 @@
 		</div>
 	</div>
 </form>
+
 <script>
+
+	function confirmDelete(id) {
+		if (confirm("Are you sure you want to delete this backlog item?")) {
+
+			var token = $('#EditForm input[name="__RequestVerificationToken"]').val();
+
+			$.ajax({
+				url: '@Url.Action("DeleteBacklog", "Backlog")',
+				type: 'POST',
+				data: {
+					id: id,
+					__RequestVerificationToken: token
+				},
+				success: function (result) {
+					if (result.success) {
+						window.location.href = '@Url.Action("Index", "Backlog")';
+					}
+				},
+				error: function (xhr, status, error) {
+					console.error("Status: " + status);
+					console.error("Error: " + error);
+					console.error("Response: " + xhr.responseText);
+
+					if(xhr.status === 403) alert("You do not have permission to delete this.");
+					else if(xhr.status === 400) alert("Security validation failed (Anti-Forgery Token).");
+					else if(xhr.status === 404) alert("Delete action not found (URL mismatch).");
+					else alert("Delete failed: " + xhr.status);
+				}
+			});
+		}
+	}
+
 	$(function () {
 		let buttons = '';
 		JSManager.setPageTitle(`@Localize("BacklogPage.Title") #@Model.Id`);
@@ -44,4 +85,6 @@
 		buttons += `<a href="javascript:JSManager.openOffCanvas('@Url.Action("Comments", new { Id = Model.Id })','@Localize("BacklogPage.Button.Comments")')" title="@Localize("BacklogPage.Button.Comments")" class="btn btn-sm btn-success text-white me-2"><i class="fa-solid fa-comments"></i></a>`;
 		JSManager.setPageButtons(buttons);
 	});
+
+
 </script>

@@ -51,10 +51,11 @@ public interface IBacklogItemService
 
 
 	Task DeleteAsync(Backlog entity);
+	Task DeleteBacklogAsync(int id);
 
-	#region Documents
+    #region Documents
 
-	Task<IList<BacklogDocument>> GetAllDocumentAsync(int backlogId);
+    Task<IList<BacklogDocument>> GetAllDocumentAsync(int backlogId);
 
 	Task<Document> GetDocumentByIdAsync(int id);
 
