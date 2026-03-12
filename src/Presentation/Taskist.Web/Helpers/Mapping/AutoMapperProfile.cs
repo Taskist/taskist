@@ -21,6 +21,7 @@ public class AutoMapperProfile : Profile
         CreateMap<EmailTemplate, EmailTemplateModel>().ReverseMap();
         CreateMap<Severity, SeverityModel>().ReverseMap();
         CreateMap<Status, StatusModel>().ReverseMap();
+        CreateMap<Label,LabelModel>().ReverseMap();
         CreateMap<TaskType, TaskTypeModel>().ReverseMap();
         CreateMap<Menu, MenuItemModel>().ReverseMap();
         CreateMap<Client, ClientModel>().ReverseMap();
