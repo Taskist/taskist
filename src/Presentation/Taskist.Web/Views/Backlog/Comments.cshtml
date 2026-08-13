@@ -1,85 +1,62 @@
-﻿@model BacklogCommentModel
+@model BacklogCommentModel
+@functions {
+    static string DayLabel(DateTime d)
+    {
+        var today = DateTime.Now.Date;
+        if (d.Date == today) return "Today";
+        if (d.Date == today.AddDays(-1)) return "Yesterday";
+        return d.ToString("dd MMM yyyy");
+    }
+}
 
 <div class="comments-container" id="comments">
-    @if (Model.Comments.Count > 0)
-    {
-        <div id="timeline" class="timeline">
-            @foreach (var comment in Model.Comments)
+    <div id="comments-empty" class="comments-empty @(Model.Comments.Any() ? "d-none" : "")">
+        <i class="far fa-comments"></i>
+        <div>Nobody commented yet!</div>
+        <small>Be the first to add a comment.</small>
+    </div>
+    <div id="comments-list" class="comments-list" data-current-user="@Model.CurrentUserId">
+        @{ string lastDay = null; }
+        @foreach (var comment in Model.Comments.OrderBy(c => c.CommentOn))
+        {
+            var day = DayLabel(comment.CommentOn);
+            if (day != lastDay)
             {
-                <div class="timeline-item">
-                    <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>@comment.CommentBy</div>
-                    <div class="time text-muted"><i class="far fa-clock me-1"></i>@comment.CommentOn.ToString("dd-MM-yyyy hh:mm")</div>
-                    <div class="details">@Html.Raw(comment.Comment)</div>
-                </div>
+                lastDay = day;
+                <div class="comment-day"><span>@day</span></div>
             }
-        </div>
-    }
-    else
-    {
-        <div class="alert alert-info">Nobody commented yet!</div>
-    }
-</div>
-<div class="comment-box" id="comment-box">
-    <div class="input-group">
-        <input type="text" id="tbComment" class="form-control" placeholder="Write a comment...">
-        <button class="btn btn-primary" id="btnAddComment"><i class="far fa-paper-plane"></i></button>
+            var mine = comment.CommentById == Model.CurrentUserId && !comment.SystemComment;
+            <div class="comment-item @(mine ? "comment-mine" : "") @(comment.SystemComment ? "comment-system" : "")">
+                @if (!mine)
+                {
+                    <div class="comment-avatar">
+                        <img src="@Url.Action("GetAvatar", "Profile", new { userId = comment.CommentById })" alt="@comment.CommentBy" loading="lazy" />
+                    </div>
+                }
+                <div class="comment-body">
+                    <div class="comment-meta">
+                        <span class="comment-author">@(mine ? "You" : comment.CommentBy)</span>
+                        <span class="comment-time" data-time="@comment.CommentOn.ToString("o")" title="@comment.CommentOn.ToString("dd-MMM-yyyy HH:mm")"></span>
+                    </div>
+                    <div class="comment-text">@if (comment.SystemComment) { @Html.Raw(comment.Comment) } else { @comment.Comment }</div>
+                </div>
+            </div>
+        }
     </div>
 </div>
-<style>
-    .offcanvas {
-        height: 100vh;
-    }
+<div class="comment-box" id="comment-box">
+    <div class="comment-input-wrap">
+        <textarea id="tbComment" class="form-control" rows="1" placeholder="Write a comment..." autocomplete="off"></textarea>
+        <button class="btn btn-primary" id="btnAddComment" title="Send" aria-label="Send comment" disabled><i class="far fa-paper-plane"></i></button>
+    </div>
+    <small class="comment-hint text-muted">Enter to send &middot; Shift+Enter for a new line</small>
+</div>
 
-    .offcanvas-body {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .comments-container {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding-bottom: 10px;
-    }
-
-    .comment-box {
-        background: white;
-        padding: 10px;
-        border-top: 1px solid #ddd;
-    }
-</style>
-
+@* AJAX-injected partial: config + init call into the globally-loaded module *@
+<div id="backlog-comments-config" class="d-none"
+     data-backlog-id="@Model.BackLogId"
+     data-create-url="@Url.Action("CommentCreate")"
+     data-photo-url="@Url.Action("GetAvatar", "Profile")"></div>
 <script>
-    $(function() {
-        $("#btnAddComment").click(function() {
-            addComment();
-        });
-
-      $("#tbComment").keypress(function(event) {
-        if (event.which === 13) {
-          event.preventDefault();
-          addComment();
-        }
-      });
-
-      $("#pdOffCanvas").on("shown.bs.offcanvas", function() {
-        $("#tbComment").focus();
-      });
-    })
-
-    function addComment() {
-        let comment = $("#tbComment").val().trim();
-        if (comment) {
-            const dto = {
-                id: @Model.BackLogId,
-                comment
-            };
-
-            JSManager.ajaxPost('@Url.Action("CommentCreate")', dto, 'comment-box', 'Processing...', function(response) {
-                $("#tbComment").val("").focus();
-                const html = `<div class="timeline-item"> <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>${response.commentby}</div> <div class="time text-muted"><i class="far fa-clock me-1"></i>${response.commenton}</div> <div class="details">${comment}</div> </div>`;
-                $('#timeline').prepend(html);
-            });
-        }
-    }
+    if (window.BacklogComments) BacklogComments.init($('#backlog-comments-config').data());
 </script>

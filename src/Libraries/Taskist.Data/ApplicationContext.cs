@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Reflection;
+﻿using System.Reflection;
 using Taskist.Data.Configuration;
+using Microsoft.EntityFrameworkCore;
 
 namespace Taskist.Data;
 

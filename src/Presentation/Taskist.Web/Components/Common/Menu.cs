@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Models.Localization;
 using Taskist.Web.Models.Masters;
 

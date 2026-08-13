@@ -1,9 +1,7 @@
-﻿using Taskist.Core.Common;
+using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DynamicLinq;
-using System.Linq.Dynamic.Core;
 
 namespace Taskist.Service.Masters;
 

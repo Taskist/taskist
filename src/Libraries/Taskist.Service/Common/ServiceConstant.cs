@@ -28,6 +28,8 @@ public static class ServiceConstant
 
     public static string UserRolesAllCacheKey => "taskist.userrole.all-{0}";
 
+    public static string UserRolesByUserCacheKey => "taskist.userrole.byuser.{0}-{1}";
+
     public static string UserRoleIdsCacheKey => "taskist.userrole.ids.{0}-{1}";
 
     public static string MenuCacheKeyByUser => "taskist.menu-{0}";
@@ -44,7 +46,9 @@ public static class ServiceConstant
 
     public static string SettingsAllAsDictionaryCacheKey => "taskist.settings.all.dictionary";
 
-    public static string AccessibleProjectCacheKey => "wc.user.ids.projects";
+    public static string AccessibleProjectPrefixCacheKey => "taskist.user.projects.";
+
+    public static string AccessibleProjectCacheKey => "taskist.user.projects.{0}";
 
     #endregion
 
@@ -52,7 +56,25 @@ public static class ServiceConstant
 
     public static int GridDefaultPageSize = 10;
 
-    public static int SaltKeySize = 10;
+    public static int SaltKeySize = 16;
+
+    #endregion
+
+    #region Uploads
+
+    public static long MaxUploadBytes => 10 * 1024 * 1024;
+
+    /// <summary>
+    /// Extensions accepted as attachments. Anything able to execute in the
+    /// browser or on the host is deliberately excluded.
+    /// </summary>
+    public static IReadOnlySet<string> AllowedUploadExtensions => new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+    {
+        ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp",
+        ".pdf", ".txt", ".csv", ".log", ".md",
+        ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
+        ".zip", ".json", ".xml"
+    };
 
     #endregion
 

@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Localization;
+using Taskist.Service.Security;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
-using Taskist.Service.Security;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;

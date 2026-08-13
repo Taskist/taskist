@@ -1,0 +1,27 @@
+# Build output - always rebuilt inside the image
+**/bin/
+**/obj/
+
+# Local secrets and environment
+.env
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/*.user
+
+# Runtime state that must not be baked into an image
+**/App_Data/DataProtectionKeys/
+**/wwwroot/uploads/
+**/Logs/
+
+# Source control and tooling
+.git/
+.github/
+.vs/
+.vscode/
+.idea/
+
+# Docs and assets not needed by the build
+assets/
+*.md
+!README.md
+LICENSE

@@ -816,6 +816,9 @@ namespace Taskist.Data.Migrations
                     b.Property<bool>("Locked")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime?>("LockoutEndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -839,6 +842,11 @@ namespace Taskist.Data.Migrations
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("HashFormat")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("Password")
                         .IsRequired()

@@ -1,10 +1,9 @@
-﻿using Taskist.Core.Caching;
-using Taskist.Core.Domain.Users;
-using Taskist.Core.Domain.Masters;
-using Taskist.Data.Extensions;
-using Taskist.Data.Repository;
 using Taskist.Service.Common;
 using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Caching;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
+using Taskist.Data.Repository;
 
 namespace Taskist.Service.Masters;
 

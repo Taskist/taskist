@@ -1,9 +1,9 @@
-﻿using Taskist.Core.Common;
+﻿using Microsoft.AspNetCore.Mvc;
+using Taskist.Core.Common;
 using Taskist.Core.Extensions;
-using Taskist.Service.Logging;
-using Taskist.Service.Masters;
 using Taskist.Service.Security;
-using Microsoft.AspNetCore.Mvc;
+using Taskist.Service.Masters;
+using Taskist.Service.Logging;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Controllers.Common;

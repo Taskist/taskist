@@ -1,5 +1,5 @@
-﻿using Taskist.Service.Localization;
 using FluentValidation;
+using Taskist.Service.Localization;
 using Taskist.Web.Models.Users;
 
 namespace Taskist.Web.Helpers.Validators.Users;

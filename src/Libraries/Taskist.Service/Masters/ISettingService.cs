@@ -1,4 +1,4 @@
-﻿using System.Linq.Expressions;
+using System.Linq.Expressions;
 using Taskist.Core.Domain.Common;
 using Taskist.Core.Domain.Masters;
 

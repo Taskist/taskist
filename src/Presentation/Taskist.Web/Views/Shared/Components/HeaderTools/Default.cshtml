@@ -1,0 +1,57 @@
+@model HeaderToolsModel
+
+@if (Model.ShowSearch)
+{
+    <div class="header-tools">
+        <div class="header-search" id="navSearch">
+            <i class="fas fa-magnifying-glass header-search__icon"></i>
+            <input type="text" id="navSearchInput" class="form-control" autocomplete="off"
+                   placeholder="@Localize("Header.SearchPlaceholder").Text"
+                   data-search-url="@Url.Action("Query", "Search")"
+                   data-noresults="@Localize("Header.NoResults").Text" />
+            <kbd class="header-search__kbd">Ctrl K</kbd>
+            <div class="header-search__results" id="navSearchResults"></div>
+        </div>
+    </div>
+}
+
+@if (Model.ShowCreate)
+{
+    <div class="dropdown header-create-wrap">
+        <button class="btn btn-sm header-create" type="button" data-coreui-toggle="dropdown"
+                aria-expanded="false" title="@Localize("Header.Create").Text">
+            <i class="fas fa-plus"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end tk-menu tk-menu--compact">
+            <li><div class="tk-menu__label">@Localize("Header.Create").Text</div></li>
+
+            @if (Model.CanCreateTask)
+            {
+                <li>
+                    <a class="dropdown-item" href="@Url.Action("Create", "Backlog")">
+                        <span class="tk-menu__chip tk-menu__chip--blue"><i class="fas fa-list-check"></i></span>
+                        @Localize("Header.NewTask").Text
+                    </a>
+                </li>
+            }
+            @if (Model.CanCreateProject)
+            {
+                <li>
+                    <a class="dropdown-item" href="javascript:JSManager.openForm('@Url.Action("Create", "Project")','@Localize("Header.NewProject").Text','col-md-8')">
+                        <span class="tk-menu__chip tk-menu__chip--indigo"><i class="fas fa-folder-plus"></i></span>
+                        @Localize("Header.NewProject").Text
+                    </a>
+                </li>
+            }
+            @if (Model.CanCreateClient)
+            {
+                <li>
+                    <a class="dropdown-item" href="javascript:JSManager.openForm('@Url.Action("Create", "Client")','@Localize("Header.NewClient").Text','col-md-8')">
+                        <span class="tk-menu__chip tk-menu__chip--teal"><i class="fas fa-user-plus"></i></span>
+                        @Localize("Header.NewClient").Text
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+}

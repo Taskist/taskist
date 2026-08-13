@@ -17,12 +17,12 @@ public static class AsyncIQueryableExtensions
 
         pageSize = Math.Max(pageSize, 1);
 
-        var count = await source.CountAsync();
+        var count = await AsyncExtensions.CountAsync(source);
 
         var data = new List<T>();
 
         if (!getOnlyTotalCount)
-            data.AddRange(await source.Skip(pageIndex).Take(pageSize).ToListAsync());
+            data.AddRange(await AsyncExtensions.ToListAsync(source.Skip(pageIndex).Take(pageSize)));
 
         return new PagedList<T>(data, pageIndex, pageSize, count);
     }

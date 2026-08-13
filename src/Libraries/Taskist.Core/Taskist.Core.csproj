@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
+		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<Copyright>Copyright © Taskist</Copyright>
@@ -12,12 +12,12 @@
 	<ItemGroup>
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.Dependencyinjection" Version="12.0.1" />
 		<PackageReference Include="EasyCaching.InMemory" Version="1.9.2" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.0" />
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.DynamicLinq" Version="8.3.7" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.10" />
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="10.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.DynamicLinq" Version="10.7.3" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.10" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.10" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Scrutor" Version="4.2.2" />
 		<PackageReference Include="Hangfire.AspNetCore" Version="1.8.18" />

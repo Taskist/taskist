@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Masters;
@@ -23,6 +23,13 @@ public class BacklogModel : BasePageModel
     }
 
     public Guid Code { get; set; }
+
+    /// <summary>Meta shown in the Edit header (creator, age, status journey).</summary>
+    public string CreatedByName { get; set; }
+
+    public DateTime CreatedOn { get; set; }
+
+    public IList<BacklogStatusJourneyModel> StatusJourney { get; set; } = new List<BacklogStatusJourneyModel>();
 
     [LocalizedDisplayName("BacklogTask.Title")]
     public string Title { get; set; }
@@ -125,4 +132,20 @@ public class BacklogItemGridModel : BasePageModel
     public SeverityModel Severity { get; set; }
 
     public TaskTypeModel TaskType { get; set; }
+}
+
+/// <summary>One leg of the task's status journey (a status and how long it was held).</summary>
+public class BacklogStatusJourneyModel
+{
+    public string StatusName { get; set; }
+
+    public string TextColor { get; set; }
+
+    public string BackgroundColor { get; set; }
+
+    public string IconClass { get; set; }
+
+    public int Days { get; set; }
+
+    public bool IsCurrent { get; set; }
 }

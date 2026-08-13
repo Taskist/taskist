@@ -3,6 +3,15 @@
     ViewData["Title"] = Localize("BacklogPage.Title");
 }
 
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/pages/backlog/backlog.css" asp-append-version="true" />
+}
+
+@section PageScripts {
+    <script src="~/js/pages/backlog/backlog-form.js" asp-append-version="true"></script>
+    <script src="~/js/pages/backlog/backlog-form-status.js" asp-append-version="true"></script>
+}
+
 <form asp-action="Create" id="FormBacklog">
     <div class="row">
         <div class="col-md-8">
@@ -10,20 +19,6 @@
                 <div class="card-body p-3">
                     <input type="hidden" asp-for="Token" />
                     @await Html.PartialAsync("_Form", Model)
-                </div>
-                <div class="card-footer text-end p-3">
-                    <div class="row">
-                        <div class="col-sm-12">
-                            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button>
-                            @if (Model.Id <= 0)
-                            {
-                                <button type="submit" name="save-continue" class="btn btn-primary">
-                                    <i class="fas fa-save me-1"></i>@Localize("Button.SaveAndContinue")
-                                </button>
-                            }
-                            <a asp-action="Index" class="btn btn-secondary"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")</a>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -34,5 +29,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    @* floating action pill (bottom-right) *@
+    <div class="backlog-fab">
+        <button type="submit" class="btn btn-sm btn-primary" id="btnSaveBacklog"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button>
+        <button type="submit" name="save-continue" class="btn btn-sm btn-primary">
+            <i class="fas fa-save me-1"></i>@Localize("Button.SaveAndContinue")
+        </button>
+        <a asp-action="Index" class="btn btn-sm btn-secondary"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")</a>
     </div>
 </form>

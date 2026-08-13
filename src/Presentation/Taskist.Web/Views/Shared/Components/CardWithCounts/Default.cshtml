@@ -1,19 +1,30 @@
-﻿@model List<CardModel>
+@model List<CardModel>
 @{
+    // gradient variant + watermark icon per card, cycled in order
+    var variants = new[] { "tk-stat-primary", "tk-stat-warning", "tk-stat-danger", "tk-stat-primary" };
+
+    string IconFor(string name) => name switch
+    {
+        "My Tasks" => "fa-user-check",
+        "Reopened Tasks" => "fa-rotate-left",
+        "Closed Tasks" => "fa-circle-check",
+        _ => "fa-list-check"
+    };
+
     var i = 0;
-    var colors = new[] { "bg-primary", "bg-warning", "bg-danger", "bg-success" };
 }
 
 <div class="row g-4">
     @foreach (var card in Model)
     {
         <div class="col-12 col-sm-6 col-xl-4 col-xxl-3">
-            <div class="card text-white @colors[i]">
+            <div class="card tk-stat-card @variants[i % variants.Length]">
                 <div class="card-body card-count">
-                    <a asp-action="Index" asp-controller="Backlog" asp-route-filter="@card.FilterMode">
-                        <div class="fs-4 fw-semibold">@card.Count</div>
-                        <div>@card.Name</div>
+                    <a class="text-white text-decoration-none d-block" asp-action="Index" asp-controller="Backlog" asp-route-filter="@card.FilterMode">
+                        <div class="fs-2 fw-bold lh-1">@card.Count</div>
+                        <div class="text-white-50 mt-1">@card.Name</div>
                     </a>
+                    <i class="fas @IconFor(card.Name) tk-stat-icon"></i>
                 </div>
             </div>
         </div>

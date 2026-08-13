@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Users;

@@ -1,6 +1,9 @@
-﻿using Taskist.Core.Common;
+using Microsoft.Extensions.Options;
+using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Users;
 using System.Security.Cryptography;
 using System.Text;
+using Taskist.Core.Common;
 
 namespace Taskist.Service.Security;
 
@@ -8,46 +11,45 @@ public class EncryptionService : IEncryptionService
 {
     #region Field
 
-    protected const string EncryptionKey = "E546C8DF278CD5931069B522E695D4F2";
+    /// <summary>
+    /// Marks a payload written with a random per-message IV.
+    /// </summary>
+    protected const byte EnvelopeVersion = 1;
+
+    protected const int Pbkdf2Iterations = 210_000;
+
+    protected const int Pbkdf2SaltSize = 16;
+
+    protected const int Pbkdf2HashSize = 32;
+
+    protected readonly SecurityOptions _securityOptions;
+
+    #endregion
+
+    #region Ctor
+
+    public EncryptionService(IOptions<SecurityOptions> securityOptions)
+    {
+        _securityOptions = securityOptions.Value;
+    }
 
     #endregion
 
     #region Utilities
 
-    protected static byte[] EncryptTextToMemory(string data, SymmetricAlgorithm provider)
+    /// <summary>
+    /// Derives a stable 256-bit AES key from the configured secret.
+    /// </summary>
+    protected static byte[] DeriveKey(string encryptionKey)
     {
-        using var ms = new MemoryStream();
-        using (var cs = new CryptoStream(ms, provider.CreateEncryptor(), CryptoStreamMode.Write))
-        {
-            var toEncrypt = Encoding.Unicode.GetBytes(data);
-            cs.Write(toEncrypt, 0, toEncrypt.Length);
-            cs.FlushFinalBlock();
-        }
-
-        return ms.ToArray();
+        return SHA256.HashData(Encoding.UTF8.GetBytes(encryptionKey));
     }
 
-    protected static string DecryptTextFromMemory(byte[] data, SymmetricAlgorithm provider)
+    protected string ResolveKey(string encryptionPrivateKey)
     {
-        using var ms = new MemoryStream(data);
-        using var cs = new CryptoStream(ms, provider.CreateDecryptor(), CryptoStreamMode.Read);
-        using var sr = new StreamReader(cs, Encoding.Unicode);
-
-        return sr.ReadToEnd();
-    }
-
-    protected SymmetricAlgorithm GetEncryptionAlgorithm(string encryptionKey)
-    {
-        if (string.IsNullOrEmpty(encryptionKey))
-            throw new ArgumentNullException(nameof(encryptionKey));
-
-        SymmetricAlgorithm provider = Aes.Create();
-        var vectorBlockSize = provider.BlockSize / 8;
-
-        provider.Key = Encoding.ASCII.GetBytes(encryptionKey[0..16]);
-        provider.IV = Encoding.ASCII.GetBytes(encryptionKey[^vectorBlockSize..]);
-
-        return provider;
+        return string.IsNullOrEmpty(encryptionPrivateKey)
+            ? _securityOptions.EncryptionKey
+            : encryptionPrivateKey;
     }
 
     #endregion
@@ -57,9 +59,7 @@ public class EncryptionService : IEncryptionService
     public string CreateSaltKey(int size)
     {
         //generate a cryptographic random number
-        using var provider = RandomNumberGenerator.Create();
-        var buff = new byte[size];
-        provider.GetBytes(buff);
+        var buff = RandomNumberGenerator.GetBytes(size);
 
         // Return a Base64 string representation of the random number
         return Convert.ToBase64String(buff);
@@ -67,7 +67,55 @@ public class EncryptionService : IEncryptionService
 
     public string CreatePasswordHash(string password, string saltkey)
     {
-        return HashHelper.CreateHash(Encoding.UTF8.GetBytes(string.Concat(password, saltkey)), "SHA1");
+        return CreatePasswordHash(password, saltkey, PasswordFormat.Pbkdf2);
+    }
+
+    public string CreatePasswordHash(string password, string saltkey, PasswordFormat format)
+    {
+        ArgumentNullException.ThrowIfNull(password);
+        ArgumentNullException.ThrowIfNull(saltkey);
+
+        if (format == PasswordFormat.Sha1Legacy)
+        {
+            //retained only to verify credentials created by earlier versions
+            return HashHelper.CreateHash(Encoding.UTF8.GetBytes(string.Concat(password, saltkey)), "SHA1");
+        }
+
+        var salt = Convert.FromBase64String(saltkey);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(
+            Encoding.UTF8.GetBytes(password),
+            salt,
+            Pbkdf2Iterations,
+            HashAlgorithmName.SHA256,
+            Pbkdf2HashSize);
+
+        return Convert.ToBase64String(hash);
+    }
+
+    public string CreatePasswordSalt()
+    {
+        return Convert.ToBase64String(RandomNumberGenerator.GetBytes(Pbkdf2SaltSize));
+    }
+
+    public bool VerifyPassword(string password, string saltKey, string expectedHash, PasswordFormat format)
+    {
+        if (password == null || saltKey == null || expectedHash == null)
+            return false;
+
+        try
+        {
+            var actual = CreatePasswordHash(password, saltKey, format);
+
+            //compare in constant time so the response cannot be used as an oracle
+            return CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(actual),
+                Encoding.UTF8.GetBytes(expectedHash));
+        }
+        catch (FormatException)
+        {
+            //stored salt is not valid base64 - treat as a failed verification
+            return false;
+        }
     }
 
     public string EncryptText(string plainText, string encryptionPrivateKey = "")
@@ -75,13 +123,27 @@ public class EncryptionService : IEncryptionService
         if (string.IsNullOrEmpty(plainText))
             return plainText;
 
-        if (string.IsNullOrEmpty(encryptionPrivateKey))
-            encryptionPrivateKey = EncryptionKey;
+        var key = DeriveKey(ResolveKey(encryptionPrivateKey));
 
-        using var provider = GetEncryptionAlgorithm(encryptionPrivateKey);
-        var encryptedBinary = EncryptTextToMemory(plainText, provider);
+        using var provider = Aes.Create();
+        provider.Key = key;
 
-        return Convert.ToBase64String(encryptedBinary);
+        //a fresh IV per message; a fixed IV leaks equality between ciphertexts
+        provider.GenerateIV();
+
+        using var ms = new MemoryStream();
+
+        ms.WriteByte(EnvelopeVersion);
+        ms.Write(provider.IV, 0, provider.IV.Length);
+
+        using (var cs = new CryptoStream(ms, provider.CreateEncryptor(), CryptoStreamMode.Write))
+        {
+            var toEncrypt = Encoding.UTF8.GetBytes(plainText);
+            cs.Write(toEncrypt, 0, toEncrypt.Length);
+            cs.FlushFinalBlock();
+        }
+
+        return Convert.ToBase64String(ms.ToArray());
     }
 
     public string DecryptText(string cipherText, string encryptionPrivateKey = "")
@@ -89,13 +151,23 @@ public class EncryptionService : IEncryptionService
         if (string.IsNullOrEmpty(cipherText))
             return cipherText;
 
-        if (string.IsNullOrEmpty(encryptionPrivateKey))
-            encryptionPrivateKey = EncryptionKey;
-
-        using var provider = GetEncryptionAlgorithm(encryptionPrivateKey);
-
         var buffer = Convert.FromBase64String(cipherText);
-        return DecryptTextFromMemory(buffer, provider);
+
+        using var provider = Aes.Create();
+        provider.Key = DeriveKey(ResolveKey(encryptionPrivateKey));
+
+        var ivLength = provider.BlockSize / 8;
+
+        if (buffer.Length < 1 + ivLength || buffer[0] != EnvelopeVersion)
+            throw new CryptographicException("The payload is not in a recognised format.");
+
+        provider.IV = buffer[1..(1 + ivLength)];
+
+        using var ms = new MemoryStream(buffer, 1 + ivLength, buffer.Length - 1 - ivLength);
+        using var cs = new CryptoStream(ms, provider.CreateDecryptor(), CryptoStreamMode.Read);
+        using var sr = new StreamReader(cs, Encoding.UTF8);
+
+        return sr.ReadToEnd();
     }
 
     #endregion
@@ -108,15 +180,33 @@ public class EncryptionService : IEncryptionService
         byte[] key = Guid.NewGuid().ToByteArray();
         string plainToken = $"{userCode}|{Convert.ToBase64String(time.Concat(key).ToArray())}";
 
-        string token = EncryptText(plainToken);
-        return token;
+        return EncryptText(plainToken);
     }
 
     public bool ValidateToken(string token, int expiryTimeInMinutes = 180)
     {
-        byte[] data = Convert.FromBase64String(token);
-        DateTime createdDate = DateTime.FromBinary(BitConverter.ToInt64(data, 0));
-        return createdDate > DateTime.UtcNow.AddMinutes(-expiryTimeInMinutes);
+        if (string.IsNullOrEmpty(token))
+            return false;
+
+        try
+        {
+            byte[] data = Convert.FromBase64String(token);
+
+            if (data.Length < sizeof(long))
+                return false;
+
+            DateTime createdDate = DateTime.FromBinary(BitConverter.ToInt64(data, 0));
+
+            //a token stamped in the future is malformed or tampered with
+            if (createdDate > DateTime.UtcNow.AddMinutes(1))
+                return false;
+
+            return createdDate > DateTime.UtcNow.AddMinutes(-expiryTimeInMinutes);
+        }
+        catch (Exception ex) when (ex is FormatException or ArgumentException)
+        {
+            return false;
+        }
     }
 
     #endregion

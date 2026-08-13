@@ -1,15 +1,15 @@
-﻿using LinqToDB;
-using System.Linq.Dynamic.Core;
 using System.Reflection;
-using System.Text.RegularExpressions;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
-using Taskist.Core.Domain.WorkItems;
-using Taskist.Core.Extensions;
-using Taskist.Data.Repository;
 using Taskist.Service.Masters;
 using Taskist.Service.Messages;
 using Taskist.Service.Users;
+using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Common;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.WorkItems;
+using Taskist.Data.Repository;
+using System.Text.RegularExpressions;
+using Taskist.Core.Extensions;
+using Taskist.Data.Extensions;
 
 namespace Taskist.Service.WorkItems;
 
@@ -95,7 +95,7 @@ public class BacklogItemService : IBacklogItemService
                     status,
                     sprint);
 
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.OrderBySafe(sortColumn, sortDirection);
 
             return query;
         }, pageIndex, pageSize);
@@ -138,7 +138,7 @@ public class BacklogItemService : IBacklogItemService
                     sprint);
 
             if (groupByColumns.Any())
-                query = query.OrderBy(string.Join(",", groupByColumns));
+                query = query.OrderBySafe(groupByColumns);
 
             return query;
         }, false);
@@ -153,6 +153,33 @@ public class BacklogItemService : IBacklogItemService
 
             return query;
         }, false);
+    }
+
+    public async Task<IList<Backlog>> GetAccessibleTasksAsync(int userId)
+    {
+        var projects = await _userService.GetAllAccessibleProjects(userId);
+        var projectIds = projects.Select(p => p.Id).ToList();
+
+        if (!projectIds.Any())
+            return new List<Backlog>();
+
+        return await _backlogRepository.GetAllAsync(query =>
+            query.Where(x => !x.Deleted && projectIds.Contains(x.ProjectId)), false);
+    }
+
+    public async Task<IList<BacklogComment>> GetRecentActivityAsync(int userId, int take)
+    {
+        var projects = await _userService.GetAllAccessibleProjects(userId);
+        var projectIds = projects.Select(p => p.Id).ToList();
+
+        if (!projectIds.Any())
+            return new List<BacklogComment>();
+
+        return await _backlogCommentRepository.Table
+            .Where(c => projectIds.Contains(c.Backlog.ProjectId))
+            .OrderByDescending(c => c.CreatedOn)
+            .Take(take)
+            .ToListAsync();
     }
 
     public async Task<Backlog> GetByIdAsync(int id)
@@ -208,6 +235,64 @@ public class BacklogItemService : IBacklogItemService
             throw new ArgumentNullException(nameof(entity));
 
         await _backlogRepository.UpdateAsync(entity);
+    }
+
+    public async Task<IList<(string StatusName, string TextColor, string BackgroundColor, string IconClass, int Days, bool IsCurrent)>> GetStatusJourneyAsync(int backlogId)
+    {
+        var logs = await _backlogStatusLogRepository.GetAllAsync(query =>
+            query.Where(x => x.BacklogId == backlogId).OrderBy(x => x.CreatedOn), false);
+
+        var journey = new List<(string, string, string, string, int, bool)>();
+
+        for (int i = 0; i < logs.Count; i++)
+        {
+            var log = logs[i];
+            var status = log.Status;
+            var endsAt = i < logs.Count - 1 ? logs[i + 1].CreatedOn : DateTime.Now;
+            var days = Math.Max(0, (int)(endsAt - log.CreatedOn).TotalDays);
+            var isCurrent = i == logs.Count - 1;
+
+            journey.Add((status?.Name ?? "Unknown", status?.TextColor ?? "#fff",
+                status?.BackgroundColor ?? "#64748b", status?.IconClass ?? "fas fa-circle", days, isCurrent));
+        }
+
+        return journey;
+    }
+
+    public async Task LogEditHistoryAsync(int backlogId, IDictionary<string, (string Old, string New)> changes, int userId)
+    {
+        if (changes == null || changes.Count == 0)
+            return;
+
+        foreach (var change in changes)
+        {
+            await _backlogCommentRepository.InsertAsync(new BacklogComment
+            {
+                BacklogId = backlogId,
+                CreatedById = userId,
+                CreatedOn = DateTime.UtcNow,
+                Comment = $"<strong>{change.Key}</strong>: {change.Value.Old} &rarr; {change.Value.New}",
+                SystemComment = true
+            });
+        }
+    }
+
+    public async Task LogStatusChangeAsync(Backlog entity, int newStatusId, int userId, string oldStatusName, string newStatusName)
+    {
+        await _backlogStatusLogRepository.InsertAsync(new BacklogStatusLog
+        {
+            BacklogId = entity.Id,
+            StatusId = newStatusId,
+            CreatedById = userId,
+            CreatedOn = DateTime.Now
+        });
+
+        if (newStatusId == StatusGroupEnum.Resolved.ToInt() ||
+            newStatusId == StatusGroupEnum.ReOpened.ToInt())
+        {
+            var loggedUser = await _userService.GetByIdAsync(userId);
+            await _messageService.EmailTaskNotificationAsync(entity, loggedUser, $"{oldStatusName} &rarr; {newStatusName}");
+        }
     }
 
     public async Task<string> UpdateAsync(int id, string property, string value)
@@ -295,6 +380,33 @@ public class BacklogItemService : IBacklogItemService
         await _backlogRepository.UpdateAsync(entity);
     }
 
+    public async Task<bool> CanAccessAsync(int backlogId, int userId)
+    {
+        if (backlogId <= 0 || userId <= 0)
+            return false;
+
+        var accessibleProjects = await _userService.GetAllAccessibleProjects(userId);
+        if (!accessibleProjects.Any())
+            return false;
+
+        var projectIds = accessibleProjects.Select(x => x.Id).ToList();
+
+        return await _backlogRepository.Table
+            .AnyAsync(x => x.Id == backlogId && !x.Deleted && projectIds.Contains(x.ProjectId));
+    }
+
+    public async Task<bool> CanAccessDocumentAsync(int backlogDocumentId, int userId)
+    {
+        if (backlogDocumentId <= 0 || userId <= 0)
+            return false;
+
+        var backlogId = await _backlogDocumentRepository.Table
+            .Where(x => x.Id == backlogDocumentId)
+            .Select(x => x.BacklogId)
+            .FirstOrDefaultAsync();
+
+        return backlogId > 0 && await CanAccessAsync(backlogId, userId);
+    }
 
     #endregion
 

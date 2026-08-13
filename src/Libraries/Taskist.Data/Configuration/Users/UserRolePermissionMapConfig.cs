@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Taskist.Core.Domain.Users;
+using Microsoft.EntityFrameworkCore;
 
 namespace Taskist.Data.Configuration.Users;
 

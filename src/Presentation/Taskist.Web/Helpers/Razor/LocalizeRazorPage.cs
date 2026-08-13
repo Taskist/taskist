@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Nop.Web.Framework.Localization;
-using Taskist.Web.Helpers.Localization;
 using Taskist.Core.Common;
 using Taskist.Service.Localization;
+using Taskist.Web.Helpers.Localization;
 
 namespace Taskist.Web.Helpers.Razor;
 

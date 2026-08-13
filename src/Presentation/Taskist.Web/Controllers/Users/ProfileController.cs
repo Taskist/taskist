@@ -1,12 +1,12 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using AutoMapper;
 using Taskist.Core.Common;
-using Taskist.Service.Files;
+using Taskist.Service.Security;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
-using Taskist.Service.Security;
 using Taskist.Service.Users;
+using Taskist.Service.Files;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Common;
@@ -127,11 +127,20 @@ public class ProfileController : BaseController
     }
 
     [HttpGet]
+    // Client-side cache only; the browser already keys its cache by the full URL (incl. ?userId),
+    // so VaryByQueryKeys (which needs the response-cache middleware) is neither required nor wanted.
     [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client)]
     [CheckPermission(PermissionProvider.General.MANAGE_DASHBOARD)]
-    public async Task<IActionResult> GetAvatar()
+    public async Task<IActionResult> GetAvatar(int userId = 0)
     {
-        var user = await _workContext.GetCurrentUserAsync();
+        //userId lets other views (history / comments timelines) show each author's photo;
+        //without it the current user's own avatar is served
+        var user = userId > 0
+            ? await _userService.GetByIdAsync(userId)
+            : await _workContext.GetCurrentUserAsync();
+
+        user ??= await _workContext.GetCurrentUserAsync();
+
         var file = await _fileStorageService.GetAvatarFileAsync(user);
 
         return File(file.FileBytes, "image/png");
@@ -143,6 +152,14 @@ public class ProfileController : BaseController
     {
         if (avatar == null || avatar.Length == 0)
             return BadRequest("Avatar is required.");
+
+        if (avatar.Length > WebConstant.MaxAvatarBytes)
+            return BadRequest("The image must be 2 MB or smaller.");
+
+        //the file is stored with a .png name and served back as an image, so
+        //confirm the bytes really are an image before writing it to wwwroot
+        if (!ImageHelper.IsImage(avatar))
+            return BadRequest("Only PNG, JPEG, GIF or WebP images are accepted.");
 
         var user = await _workContext.GetCurrentUserAsync();
         if (user == null) return NotFound();

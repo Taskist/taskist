@@ -1,8 +1,8 @@
-﻿using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
-using LinqToDB;
+using Taskist.Data.Extensions;
 
 namespace Taskist.Service.Masters;
 
@@ -28,7 +28,7 @@ public class EmailAccountService : IEmailAccountService
     {
         return await _emailAccountRepository.GetAllPagedAsync(query =>
         {
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.OrderBySafe(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));

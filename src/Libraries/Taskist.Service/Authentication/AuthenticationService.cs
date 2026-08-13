@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
-using Taskist.Core.Caching;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Users;
 using Taskist.Service.Common;
 using Taskist.Service.Users;
+using Microsoft.AspNetCore.Http;
+using Taskist.Core.Caching;
+using Taskist.Core.Domain.Users;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using System.Security.Claims;
+using Taskist.Core.Common;
 
 namespace Taskist.Service.Authentication;
 

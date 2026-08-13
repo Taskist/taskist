@@ -1,9 +1,9 @@
-﻿using Taskist.Core.Common;
-using Taskist.Core.Domain.Settings;
-using Taskist.Service.Masters;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Taskist.Core.Common;
+using Taskist.Core.Domain.Settings;
+using Taskist.Service.Masters;
 
 namespace Taskist.Web.Helpers.Attributes;
 

@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.Users;
 
 namespace Taskist.Service.Masters;

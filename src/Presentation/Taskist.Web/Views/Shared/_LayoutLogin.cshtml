@@ -6,8 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>@ViewData["Title"] - Taskist</title>
-    <link rel="icon" href="~/images/brand/favicon.ico" type="image/x-icon" />
+    <link rel="icon" href="~/images/brand/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="~/images/brand/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="~/images/brand/logo-icon.svg" />
+    <link rel="manifest" href="~/site.webmanifest" />
+    <meta name="theme-color" content="#1e293b" />
     @await Html.PartialAsync("Sections/_Styles")
+    @RenderSection("PageStyles", required: false)
     @await Html.PartialAsync("Sections/_ScriptsHeader")
 </head>
 
@@ -27,5 +32,6 @@
         });
     </script>
     @await Html.PartialAsync("Sections/_Scripts")
+    @RenderSection("PageScripts", required: false)
 </body>
 </html>

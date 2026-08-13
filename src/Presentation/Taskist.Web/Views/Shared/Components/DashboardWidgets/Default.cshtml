@@ -1,0 +1,217 @@
+@model DashboardModel
+@using Newtonsoft.Json
+
+@{
+    string SliceJson(List<DashboardSlice> s) => JsonConvert.SerializeObject(new
+    {
+        labels = s.Select(x => x.Label),
+        data = s.Select(x => x.Count),
+        colors = s.Select(x => x.Color)
+    });
+}
+
+@{
+    var backlogUrl = Url.Action("Index", "Backlog");
+}
+
+<!-- filter bar: project + period; changing either reloads #dashboardContent -->
+<div class="dash-filterbar mb-3">
+    <div class="dash-filterbar__title"><i class="fas fa-gauge-high me-2"></i>Overview</div>
+    <div class="dash-filterbar__controls">
+        <select id="dashProject" class="form-select form-select-sm">
+            <option value="0">All Projects</option>
+            @foreach (var p in Model.ProjectOptions)
+            {
+                if (p.Id == Model.SelectedProjectId)
+                {
+                    <option value="@p.Id" selected>@p.Name</option>
+                }
+                else
+                {
+                    <option value="@p.Id">@p.Name</option>
+                }
+            }
+        </select>
+        <select id="dashPeriod" class="form-select form-select-sm">
+            @foreach (var (val, label) in new[] { (0, "All time"), (30, "Last 30 days"), (90, "Last 90 days"), (180, "Last 180 days") })
+            {
+                if (Model.Days == val)
+                {
+                    <option value="@val" selected>@label</option>
+                }
+                else
+                {
+                    <option value="@val">@label</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+<!-- KPI row (each tile links to the backlog grid with the matching filter) -->
+<div class="row g-3 mb-2 dash-kpis">
+    <div class="col-6 col-lg-2">
+        <a href="@backlogUrl?filter=0" class="dash-kpi">
+            <div class="dash-kpi-val">@Model.TotalTasks</div>
+            <div class="dash-kpi-lbl"><i class="fas fa-layer-group me-1"></i>Total</div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-2">
+        <a href="@backlogUrl?filter=0" class="dash-kpi">
+            <div class="dash-kpi-val">@Model.OpenTasks</div>
+            <div class="dash-kpi-lbl"><i class="far fa-folder-open me-1"></i>Open</div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-2">
+        <a href="@backlogUrl?filter=1" class="dash-kpi dash-kpi-accent">
+            <div class="dash-kpi-val">@Model.MyTasks</div>
+            <div class="dash-kpi-lbl"><i class="fas fa-user me-1"></i>My Tasks</div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-2">
+        <a href="@backlogUrl?filter=3" class="dash-kpi">
+            <div class="dash-kpi-val">@Model.ClosedTasks</div>
+            <div class="dash-kpi-lbl"><i class="fas fa-circle-check me-1"></i>Closed</div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-2">
+        <a href="@backlogUrl?filter=0" class="dash-kpi @(Model.OverdueTasks > 0 ? "dash-kpi-danger" : "")">
+            <div class="dash-kpi-val">@Model.OverdueTasks</div>
+            <div class="dash-kpi-lbl"><i class="far fa-calendar-times me-1"></i>Overdue</div>
+        </a>
+    </div>
+    <div class="col-6 col-lg-2">
+        <a href="@backlogUrl?filter=0" class="dash-kpi @(Model.DueSoonTasks > 0 ? "dash-kpi-warn" : "")">
+            <div class="dash-kpi-val">@Model.DueSoonTasks</div>
+            <div class="dash-kpi-lbl"><i class="far fa-calendar-check me-1"></i>Due Soon</div>
+        </a>
+    </div>
+</div>
+
+<!-- due-date breakdown (open tasks) -->
+<div class="dash-due-row mb-2">
+    <div class="dash-due dash-due-danger">
+        <div class="dash-due-ico"><i class="far fa-calendar-times"></i></div>
+        <div class="dash-due-val">@Model.DueOverdue</div>
+        <div class="dash-due-lbl">Overdue</div>
+    </div>
+    <div class="dash-due dash-due-warn">
+        <div class="dash-due-ico"><i class="fas fa-bolt"></i></div>
+        <div class="dash-due-val">@Model.DueToday</div>
+        <div class="dash-due-lbl">Due Today</div>
+    </div>
+    <div class="dash-due">
+        <div class="dash-due-ico"><i class="far fa-sun"></i></div>
+        <div class="dash-due-val">@Model.DueTomorrow</div>
+        <div class="dash-due-lbl">Tomorrow</div>
+    </div>
+    <div class="dash-due">
+        <div class="dash-due-ico"><i class="far fa-calendar-check"></i></div>
+        <div class="dash-due-val">@Model.DueNext7</div>
+        <div class="dash-due-lbl">Next 7 Days</div>
+    </div>
+    <div class="dash-due dash-due-muted">
+        <div class="dash-due-ico"><i class="far fa-calendar"></i></div>
+        <div class="dash-due-val">@Model.DueNone</div>
+        <div class="dash-due-lbl">No Due Date</div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- status donut -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">Status Distribution</div>
+            <div class="card-body"><canvas id="dashStatusChart" height="220"></canvas></div>
+        </div>
+    </div>
+    <!-- severity bar -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">By Severity</div>
+            <div class="card-body"><canvas id="dashSeverityChart" height="220"></canvas></div>
+        </div>
+    </div>
+    <!-- type bar -->
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header">By Task Type</div>
+            <div class="card-body"><canvas id="dashTypeChart" height="220"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <!-- my open tasks -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>My Open Tasks</span>
+                <a asp-controller="Backlog" asp-action="Index" asp-route-filter="1" class="small">View all</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.MyOpenTasks.Any())
+                {
+                    <ul class="dash-task-list">
+                        @foreach (var t in Model.MyOpenTasks)
+                        {
+                            <li>
+                                <a href="@Url.Action("Edit", "Backlog")/@t.Id" class="dash-task">
+                                    <span class="dash-task-id">#@t.Id</span>
+                                    <span class="dash-task-title">@t.Title</span>
+                                    <span class="dash-task-status" style="background:@t.StatusColor;">@t.StatusName</span>
+                                    @if (t.DueDate.HasValue)
+                                    {
+                                        <span class="dash-task-due @(t.IsOverdue ? "overdue" : "")">
+                                            <i class="far fa-clock me-1"></i>@t.DueDate.Value.ToString("dd MMM")
+                                        </span>
+                                    }
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="dash-empty"><i class="far fa-circle-check"></i><div>No open tasks assigned to you.</div></div>
+                }
+            </div>
+        </div>
+    </div>
+    <!-- recent activity -->
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">Recent Activity</div>
+            <div class="card-body p-0">
+                @if (Model.RecentActivity.Any())
+                {
+                    <ul class="dash-activity">
+                        @foreach (var a in Model.RecentActivity)
+                        {
+                            <li>
+                                <img class="dash-activity-avatar" src="@Url.Action("GetAvatar", "Profile", new { userId = a.UserId })" alt="@a.UserName" loading="lazy" />
+                                <div class="dash-activity-body">
+                                    <div class="dash-activity-text">
+                                        <a href="@Url.Action("Edit", "Backlog")/@a.BacklogId">#@a.BacklogId</a>
+                                        @if (a.IsSystem) { @Html.Raw(a.Text) } else { <span>@a.UserName: @a.Text</span> }
+                                    </div>
+                                    <div class="dash-activity-time" data-time="@a.When.ToString("o")"></div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <div class="dash-empty"><i class="far fa-comment-dots"></i><div>No recent activity.</div></div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@* chart datasets for dashboard.js (loaded via Home/Index PageScripts) *@
+<div id="dashboard-config" class="d-none"
+     data-status='@Html.Raw(SliceJson(Model.StatusDistribution))'
+     data-severity='@Html.Raw(SliceJson(Model.SeverityDistribution))'
+     data-type='@Html.Raw(SliceJson(Model.TaskTypeDistribution))'></div>

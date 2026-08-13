@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Taskist.Core.Common;
-using Taskist.Core.Domain.Users;
 using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
 using Taskist.Data.Repository;
 using Taskist.Service.Masters;
 using Taskist.Web.Helpers.Extensions;

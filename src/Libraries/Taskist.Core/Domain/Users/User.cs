@@ -39,6 +39,11 @@ public class User : BaseEntity, ISoftDeletedEntity
 
     public bool Locked { get; set; }
 
+    /// <summary>
+    /// UTC instant until which sign-in is refused after too many failed attempts.
+    /// </summary>
+    public DateTime? LockoutEndDate { get; set; }
+
     public int Status { get; set; }
 
     public bool Deleted { get; set; }

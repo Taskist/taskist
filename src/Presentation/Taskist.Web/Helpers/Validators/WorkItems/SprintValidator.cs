@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Taskist.Core.Extensions;
 using Taskist.Service.Localization;
 using Taskist.Service.WorkItems;

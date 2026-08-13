@@ -1,22 +1,24 @@
-﻿using AutoMapper;
+﻿using System.Net.Mime;
+using OfficeOpenXml;
+using LicenseContext = OfficeOpenXml.LicenseContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
-using OfficeOpenXml;
+using AutoMapper;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.WorkItems;
 using Taskist.Core.Extensions;
+using Taskist.Web.Helpers.Extensions;
+using Taskist.Service.Security;
+using Taskist.Service.Masters;
+using Taskist.Service.WorkItems;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
-using Taskist.Service.Masters;
-using Taskist.Service.Messages;
-using Taskist.Service.Security;
 using Taskist.Service.Users;
-using Taskist.Service.WorkItems;
+using Taskist.Service.Messages;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
-using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Masters;
 using Taskist.Web.Models.WorkItems;
@@ -205,6 +207,143 @@ public class BacklogController : BaseController
         model.CanEdit = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG);
         model.CanDelete = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG);
 
+        //meta header + status journey ribbon
+        model.CreatedOn = entity.CreatedOn;
+        model.CreatedByName = entity.CreatedBy?.Name;
+        var journey = await _backlogItemService.GetStatusJourneyAsync(id);
+        model.StatusJourney = journey.Select(j => new BacklogStatusJourneyModel
+        {
+            StatusName = j.StatusName,
+            TextColor = j.TextColor,
+            BackgroundColor = j.BackgroundColor,
+            IconClass = j.IconClass,
+            Days = j.Days,
+            IsCurrent = j.IsCurrent
+        }).ToList();
+
+        return View(model);
+    }
+
+    [HttpPost]
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
+    public async Task<IActionResult> Edit(BacklogModel model, List<CustomFieldValueModel> fieldValues)
+    {
+        var loggedUser = await _workContext.GetCurrentUserAsync();
+
+        //the item must belong to a project the caller can reach
+        if (!await _backlogItemService.CanAccessAsync(model.Id, loggedUser.Id))
+            return AccessDenied();
+
+        var entity = await _backlogItemService.GetByIdAsync(model.Id);
+        if (entity == null)
+            return RedirectToAction("Index");
+
+        var fieldValuesErrors = false;
+
+        if (fieldValues.Any())
+        {
+            var mandatoryFields = (await _customFieldService.GetAllMandatoryAsync(entity.ProjectId)).ToList();
+            if (mandatoryFields.Any())
+            {
+                var emptyValues = mandatoryFields.Where(x => fieldValues.Any(y => y.CustomFieldId == x.Id && string.IsNullOrEmpty(y.Value)));
+                fieldValuesErrors = emptyValues.Any();
+
+                foreach (var customField in emptyValues)
+                {
+                    ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync($"{customField.ResourceKey}.RequiredMsg"));
+                }
+            }
+        }
+
+        if (ModelState.IsValid)
+        {
+            //capture the "before" state (resolved to display names) so we can log
+            //a history entry per changed field once the save completes
+            var before = new
+            {
+                entity.StatusId,
+                StatusName = entity.Status?.Name,
+                entity.AssigneeId,
+                AssigneeName = entity.Assignee?.Name,
+                entity.SeverityId,
+                SeverityName = entity.Severity?.Name,
+                entity.TaskTypeId,
+                TaskTypeName = entity.TaskType?.Name,
+                entity.ModuleId,
+                ModuleName = entity.Module?.Name,
+                entity.SubModuleId,
+                SubModuleName = entity.SubModule?.Name,
+                entity.SprintId,
+                SprintName = entity.Sprint?.Name,
+                entity.ReporterId,
+                ReporterName = entity.Reporter?.Name,
+                entity.DueDate,
+                entity.Title
+            };
+
+            //preserve audit / ownership fields that the edit form does not post,
+            //so mapping the model onto the entity cannot zero them out
+            var createdById = entity.CreatedById;
+            var createdOn = entity.CreatedOn;
+            var code = entity.Code;
+
+            _mapper.Map(model, entity);
+
+            entity.CreatedById = createdById;
+            entity.CreatedOn = createdOn;
+            entity.Code = code;
+            entity.ModifiedById = loggedUser.Id;
+            entity.ModifiedOn = DateTime.UtcNow;
+
+            await _backlogItemService.UpdateAsync(entity);
+
+            //diff before/after and log a system-comment history entry per change
+            var changes = new Dictionary<string, (string, string)>();
+            void Track(string label, int? oldId, string oldName, int? newId, string newName)
+            {
+                if (oldId != newId)
+                    changes[label] = (string.IsNullOrEmpty(oldName) ? "None" : oldName,
+                                      string.IsNullOrEmpty(newName) ? "None" : newName);
+            }
+
+            Track("Status", before.StatusId, before.StatusName, entity.StatusId, entity.Status?.Name);
+            Track("Assignee", before.AssigneeId, before.AssigneeName, entity.AssigneeId, entity.Assignee?.Name);
+            Track("Severity", before.SeverityId, before.SeverityName, entity.SeverityId, entity.Severity?.Name);
+            Track("Task Type", before.TaskTypeId, before.TaskTypeName, entity.TaskTypeId, entity.TaskType?.Name);
+            Track("Module", before.ModuleId, before.ModuleName, entity.ModuleId, entity.Module?.Name);
+            Track("Sub Module", before.SubModuleId, before.SubModuleName, entity.SubModuleId, entity.SubModule?.Name);
+            Track("Sprint", before.SprintId, before.SprintName, entity.SprintId, entity.Sprint?.Name);
+            Track("Reporter", before.ReporterId, before.ReporterName, entity.ReporterId, entity.Reporter?.Name);
+
+            if (before.DueDate != entity.DueDate)
+                changes["Due Date"] = (before.DueDate?.ToString("dd-MMM-yyyy") ?? "None", entity.DueDate?.ToString("dd-MMM-yyyy") ?? "None");
+            if (before.Title != entity.Title)
+                changes["Title"] = (before.Title ?? "", entity.Title ?? "");
+
+            await _backlogItemService.LogEditHistoryAsync(entity.Id, changes, loggedUser.Id);
+
+            //status change: record the status log and fire the resolved/reopened email
+            if (before.StatusId != entity.StatusId)
+                await _backlogItemService.LogStatusChangeAsync(entity, entity.StatusId, loggedUser.Id, before.StatusName, entity.Status?.Name);
+
+            //upsert each custom field value (also records history)
+            foreach (var fieldValue in fieldValues)
+            {
+                await _backlogItemService.InsertFieldValueAsync(entity.Id, fieldValue.CustomFieldId, fieldValue.Value);
+            }
+
+            await _userActivityService.InsertAsync("BackLog", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Code), entity);
+
+            return RedirectToAction("Index");
+        }
+
+        if (!fieldValuesErrors)
+            ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Error.UnableToUpdateTask"));
+
+        await InitModelAsync(model);
+        model.CanEdit = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG);
+        model.CanDelete = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG);
+
         return View(model);
     }
 
@@ -245,38 +384,49 @@ public class BacklogController : BaseController
 
     #region Actions For Documents
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Documents(int id)
     {
+        var loggedUser = await _workContext.GetCurrentUserAsync();
+        if (!await _backlogItemService.CanAccessAsync(id, loggedUser.Id))
+            return AccessDeniedPartial();
+
         var data = await _backlogItemService.GetAllDocumentAsync(id);
         var model = data.Select(s => new BacklogDocumentGridModel
         {
             Id = s.Id,
             Name = s.Document.FileName,
-            ContentType = s.Document.ContentType
+            ContentType = s.Document.ContentType,
+            Extension = s.Document.Extension,
+            FileSize = s.Document.FileSize
         }).ToList();
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [IgnoreAntiforgeryToken]
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> UploadDocument(IFormFile file, int reference = 0)
     {
         if (file == null)
             return Json(new { success = false, message = "No file uploaded" });
 
+        if (!_documentService.IsAllowed(file, out var rejectReason))
+            return Json(new { success = false, message = rejectReason });
+
+        var loggedUser = await _workContext.GetCurrentUserAsync();
+
+        //an attachment may only be added to an item the caller can already reach
+        if (reference > 0 && !await _backlogItemService.CanAccessAsync(reference, loggedUser.Id))
+            return AccessDeniedDataRead();
+
         var document = await _documentService.InsertAsync(file);
 
-        if (reference > 0 && document.Id > 0)
-        {
-            var loggedUser = await _workContext.GetCurrentUserAsync();
-
-            await _backlogItemService.InsertDocumentAsync(reference, document.Id,
-                loggedUser.Id);
-        }
-
-        if (document == null)
+        if (document == null || document.Id == 0)
             return Json(new { success = false, message = "Wrong file format" });
+
+        if (reference > 0)
+            await _backlogItemService.InsertDocumentAsync(reference, document.Id, loggedUser.Id);
 
         return Json(new
         {
@@ -285,21 +435,36 @@ public class BacklogController : BaseController
         });
     }
 
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> ViewDocument(int token)
     {
+        var loggedUser = await _workContext.GetCurrentUserAsync();
+        if (!await _backlogItemService.CanAccessDocumentAsync(token, loggedUser.Id))
+            return AccessDenied();
+
         var document = await _backlogItemService.GetDocumentByIdAsync(token);
 
-        if (document != null)
-            return File(document.FileData, document.ContentType);
+        if (document == null)
+            return BadRequest(new { message = "Unable to download the file" });
 
-        return BadRequest(new { message = "Unable to download the file" });
+        //never echo the stored content type back - a text/html attachment would
+        //otherwise execute in the origin. Force a download instead.
+        Response.Headers.XContentTypeOptions = "nosniff";
+
+        var fileName = $"{document.FileName}{document.Extension}";
+
+        return File(document.FileData, MediaTypeNames.Application.Octet, fileName);
     }
 
     [HttpPost]
-    [IgnoreAntiforgeryToken]
+    [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> DeleteDocument(int token)
     {
         var loggedUser = await _workContext.GetCurrentUserAsync();
+
+        if (!await _backlogItemService.CanAccessDocumentAsync(token, loggedUser.Id))
+            return AccessDeniedDataRead();
+
         var status = await _backlogItemService.DeleteDocumentAsync(token, loggedUser.Id);
 
         return Json(new
@@ -316,12 +481,18 @@ public class BacklogController : BaseController
     [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> History(int id)
     {
+        var loggedUser = await _workContext.GetCurrentUserAsync();
+        if (!await _backlogItemService.CanAccessAsync(id, loggedUser.Id))
+            return AccessDeniedPartial();
+
         var data = await _backlogItemService.GetAllHistoryAsync(id);
         var model = data.Select(s => new BacklogCommentGridModel
         {
+            CommentById = s.CreatedById,
             CommentBy = s.CreatedBy.Name,
             CommentOn = s.CreatedOn,
-            Comment = s.Comment
+            Comment = s.Comment,
+            SystemComment = s.SystemComment
         }).ToList();
 
         return PartialView(model);
@@ -334,15 +505,22 @@ public class BacklogController : BaseController
     [CheckPermission(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG)]
     public async Task<IActionResult> Comments(int id)
     {
+        var loggedUser = await _workContext.GetCurrentUserAsync();
+        if (!await _backlogItemService.CanAccessAsync(id, loggedUser.Id))
+            return AccessDeniedPartial();
+
         var data = await _backlogItemService.GetAllCommentsAsync(id);
         var model = new BacklogCommentModel()
         {
             BackLogId = id,
+            CurrentUserId = loggedUser.Id,
             Comments = data.Select(s => new BacklogCommentGridModel
             {
+                CommentById = s.CreatedById,
                 CommentBy = s.CreatedBy.Name,
                 CommentOn = s.CreatedOn,
-                Comment = s.Comment
+                Comment = s.Comment,
+                SystemComment = s.SystemComment
             }).ToList()
         };
 
@@ -354,11 +532,16 @@ public class BacklogController : BaseController
     public async Task<IActionResult> CommentCreate(int id, string comment)
     {
         var loggedUser = await _workContext.GetCurrentUserAsync();
+
+        if (!await _backlogItemService.CanAccessAsync(id, loggedUser.Id))
+            return AccessDeniedDataRead();
+
         await _backlogItemService.InsertCommentAsync(id, comment, loggedUser.Id);
 
         return Json(new
         {
             success = true,
+            commentbyid = loggedUser.Id,
             commentby = loggedUser.Name,
             commenton = DateTime.Now.ToString("dd-MM-yyyy hh:mm")
         });
@@ -432,34 +615,6 @@ public class BacklogController : BaseController
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
         });
-    }
-
-    #endregion
-
-    #region Ajax
-
-    [HttpPatch]
-    public async Task<JsonResponseModel> UpdateStatus(int id, string name, string value)
-    {
-        var message = await _backlogItemService.UpdateAsync(id, name, value);
-
-        return new JsonResponseModel
-        {
-            Status = message == "Error" ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.Success,
-            Message = message
-        };
-    }
-
-    [HttpPatch]
-    public async Task<JsonResponseModel> UpdateCustomField(int id, int reference, string value)
-    {
-        var message = await _backlogItemService.InsertFieldValueAsync(id, reference, value);
-
-        return new JsonResponseModel
-        {
-            Status = message == "Error" ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.Success,
-            Message = message
-        };
     }
 
     #endregion
@@ -614,9 +769,21 @@ public class BacklogController : BaseController
         var lastAccessedProjectId = await _genericAttributeService.GetAttributeAsync<int>(loggedUser, Constant.ActiveProjectSession);
         var projectMap = await _userService.GetProjectMapping(loggedUser.Id, lastAccessedProjectId);
 
+        //accessible projects power the contextual switcher on the backlog page
+        var accessibleProjects = await _userService.GetAllAccessibleProjects(loggedUser.Id);
+
         return new BacklogPageModel
         {
             ProjectId = projectMap != null ? projectMap.Id : 0,
+            ActiveProjectId = lastAccessedProjectId,
+            AvailableProjects = accessibleProjects
+                .Select(p => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Text = p.Name,
+                    Value = p.Id.ToString(),
+                    Selected = p.Id == lastAccessedProjectId
+                })
+                .ToList(),
             CanReport = projectMap != null && projectMap.CanReport,
             CanEdit = projectMap != null && projectMap.CanEdit,
             CanClose = projectMap != null && projectMap.CanClose,

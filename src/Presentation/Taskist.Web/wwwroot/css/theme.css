@@ -1,0 +1,729 @@
+/* ==========================================================================================================
+   Taskist - Theme customization
+
+   A design-token layer on top of CoreUI: a professional slate shell with a confident blue accent,
+   a clean solid sidebar, gradient-underline grids and modern surfaces.
+
+   Nothing here is page specific - per-page styling lives in css/pages/. Remove the <link> to this
+   file to fall back to the stock CoreUI look.
+
+   Sections:
+     1. Design tokens
+     2. Base / surfaces
+     3. Sidebar (photo + colour wash, brand-gradient active states)
+     4. Header & dropdowns
+     5. Cards & dashboard
+     6. Data grid
+     7. Buttons & forms
+     8. Utilities & micro-interactions
+     9. Dark mode
+========================================================================================================== */
+
+/* ---------------------------------------------------------------------------------------------------------
+   1. Design tokens
+--------------------------------------------------------------------------------------------------------- */
+
+:root {
+    --app-font-size: 0.90rem;
+    --app-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    /* palette - professional slate shell + confident blue accent */
+    --wp-blue: #3b82f6;
+    --wp-blue-mid: #2563eb;
+    --wp-blue-deep: #1d4ed8;
+    --wp-blue-rgb: 37, 99, 235;
+    --wp-slate: #1e293b;
+    --wp-slate-deep: #0f172a;
+    --wp-accent-gradient: linear-gradient(90deg, var(--wp-blue-deep) 0%, var(--wp-blue) 100%);
+
+    /* grid tints */
+    --wp-grid-header: #eef2fb;
+    --wp-grid-stripe: rgba(37, 99, 235, .045);
+    --wp-grid-hover: rgba(37, 99, 235, .09);
+
+    /* elevation & geometry */
+    --tk-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.08);
+    --tk-shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08), 0 2px 4px rgba(15, 23, 42, 0.06);
+    --tk-shadow-lg: 0 12px 28px rgba(15, 23, 42, 0.12), 0 4px 8px rgba(15, 23, 42, 0.06);
+    --tk-radius: 0.75rem;
+    --tk-radius-sm: 0.5rem;
+    --tk-transition: 160ms cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* sidebar geometry */
+    --tk-sidebar-width: 15rem;
+
+    /* remap CoreUI primary onto the blue accent */
+    --cui-primary: var(--wp-blue-mid);
+    --cui-primary-rgb: 37, 99, 235;
+    --cui-link-color: var(--wp-blue-mid);
+    --cui-link-hover-color: var(--wp-blue-deep);
+}
+
+html {
+    font-size: var(--app-font-size);
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   2. Base / surfaces
+--------------------------------------------------------------------------------------------------------- */
+
+body {
+    font-family: var(--app-font);
+    background-color: #f4f6fa;
+}
+
+.card {
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: var(--tk-radius);
+    box-shadow: var(--tk-shadow-sm);
+    transition: box-shadow var(--tk-transition);
+}
+
+.card:hover {
+    box-shadow: var(--tk-shadow-md);
+}
+
+.card-header {
+    background: transparent;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    font-weight: 600;
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   3. Sidebar - clean solid slate with a blue active accent
+--------------------------------------------------------------------------------------------------------- */
+
+.sidebar {
+    /* dark slate gradient (stays dark, never bright) over a visible texture image.
+       lower wash alpha lets the image and the diagonal shift read clearly */
+    background-color: #1e293b;
+    background-image:
+        linear-gradient(165deg, rgba(30, 41, 59, 0.82) 0%, rgba(23, 33, 58, 0.80) 50%, rgba(20, 28, 48, 0.84) 100%),
+        url(../images/sidenav-bg.jpg);
+    background-repeat: no-repeat, no-repeat;
+    background-position: center, center;
+    background-size: cover, cover;
+
+    --cui-sidebar-nav-link-color: rgba(226, 232, 240, 0.75);
+    --cui-sidebar-nav-link-hover-color: #ffffff;
+    --cui-sidebar-nav-link-active-color: #ffffff;
+    --cui-sidebar-nav-title-color: rgba(203, 213, 225, 0.85);
+    border-right: 1px solid rgba(148, 163, 184, 0.12);
+    box-shadow: var(--tk-shadow-md);
+}
+
+/* apply the custom width only to the EXPANDED sidebar; narrow / unfoldable /
+   hidden states keep CoreUI's own widths so the collapse toggle still works */
+.sidebar:not(.sidebar-narrow):not(.sidebar-narrow-unfoldable) {
+    --cui-sidebar-width: var(--tk-sidebar-width);
+}
+
+/* keep the body content aligned with the narrower expanded sidebar */
+@media (min-width: 992px) {
+    .sidebar.sidebar-fixed:not(.sidebar-end):not(.hide):not(.sidebar-narrow):not(.sidebar-narrow-unfoldable) ~ * {
+        --cui-sidebar-occupy-start: var(--tk-sidebar-width) !important;
+    }
+}
+
+.sidebar-brand,
+.sidebar-header {
+    background: transparent;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.sidebar-nav .nav-link {
+    border-radius: 6px;
+    margin: 1px 8px;
+    transition: background-color .15s ease, color .15s ease, box-shadow .15s ease;
+}
+
+.sidebar-nav .nav-link:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, .06);
+}
+
+/* active leaf / child item: blue -> gold gradient TEXT (no background pill).
+   warm/cool contrast makes the gradient clearly visible even on short labels,
+   while the gold stays restrained enough for the professional palette */
+.sidebar-nav .nav-link.active,
+.sidebar-nav .nav-link.active:hover {
+    position: relative;
+    font-weight: 700;
+    background: linear-gradient(100deg, #60a5fa 0%, #93c5fd 45%, #fbbf24 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    box-shadow: none;
+}
+
+.sidebar-nav .nav-link.active .nav-icon-bullet {
+    background-color: #fbbf24;
+}
+
+/* the icon sits inside the gradient-text link, so give it back a solid colour */
+.sidebar-nav .nav-link.active .nav-icon {
+    -webkit-text-fill-color: #fbbf24;
+    color: #fbbf24;
+}
+
+/* active parent group header: blue left bar + subtle wash */
+.nav-group.show > .nav-group-toggle,
+.nav-group.active-parent > .nav-group-toggle {
+    position: relative;
+    color: #fff !important;
+    background: rgba(59, 130, 246, 0.10) !important;
+}
+
+.nav-group.active-parent > .nav-group-toggle::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--wp-blue);
+}
+
+.nav-group.active-parent > .nav-group-toggle .nav-icon {
+    color: var(--wp-blue);
+}
+
+.sidebar-nav .nav-group-items {
+    background: transparent !important;
+}
+
+.sidebar-footer,
+.sidebar-toggler {
+    background: transparent;
+    border-top-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   4. Header & dropdowns
+--------------------------------------------------------------------------------------------------------- */
+
+/* compact task off-canvas (history / comments) */
+#pdOffCanvas {
+    --cui-offcanvas-width: 360px;
+}
+
+#pdOffCanvas .offcanvas-header {
+    background: var(--wp-grid-header, #eef2fb);
+    border-bottom: 1px solid rgba(15, 23, 42, 0.08) !important;
+    padding: 0.7rem 1rem;
+}
+
+#pdOffCanvas .offcanvas-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--wp-blue-deep, #1d4ed8);
+}
+
+#pdOffCanvas .offcanvas-body {
+    padding: 0.85rem 1rem;
+}
+
+.header {
+    background-color: rgba(255, 255, 255, 0.88);
+    backdrop-filter: saturate(180%) blur(8px);
+}
+
+.subheader-title {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    color: var(--wp-blue-deep);
+    font-weight: 600;
+}
+
+.dropdown-menu {
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: var(--tk-radius);
+    box-shadow: var(--tk-shadow-lg);
+    padding: 0.35rem;
+}
+
+.dropdown-item {
+    border-radius: var(--tk-radius-sm);
+    padding: 0.5rem 0.75rem;
+    transition: background-color var(--tk-transition), color var(--tk-transition), transform var(--tk-transition);
+}
+
+.dropdown-item:hover {
+    background: rgba(var(--wp-blue-rgb), 0.10);
+    color: var(--wp-blue-deep);
+    transform: translateX(2px);
+}
+
+.dropdown-item .icon,
+.dropdown-item i {
+    color: var(--wp-blue-deep);
+}
+
+.dropdown-menu .dropdown-header {
+    background: rgba(var(--wp-blue-rgb), 0.08);
+    border-radius: var(--tk-radius-sm);
+    color: var(--cui-body-color);
+}
+
+/* notification empty-state */
+.tk-notify-empty {
+    padding: 1.75rem 1rem;
+    text-align: center;
+    color: #6b7280;
+}
+
+.tk-notify-empty .tk-notify-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0.5rem;
+    border-radius: 50%;
+    background: rgba(var(--wp-blue-rgb), 0.12);
+    color: var(--wp-blue-deep);
+    font-size: 1.1rem;
+}
+
+/* role badge in the user menu */
+.tk-role-badge {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    background: var(--wp-accent-gradient);
+}
+
+/* ---- header tools: global search + quick-add ---- */
+.header-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1 1 auto;
+}
+
+/* global search */
+.header-search {
+    position: relative;
+    flex: 1 1 auto;
+    max-width: 520px;
+}
+
+.header-search__icon {
+    position: absolute;
+    top: 50%;
+    left: 0.75rem;
+    transform: translateY(-50%);
+    font-size: 0.8rem;
+    color: #94a3b8;
+    pointer-events: none;
+}
+
+.header-search .form-control {
+    height: 36px;
+    border-radius: 20px;
+    background: #eef2f9;
+    border: 1px solid transparent;
+    padding-left: 2.1rem;
+    padding-right: 3rem;
+    font-size: 0.85rem;
+    transition: background-color var(--tk-transition), border-color var(--tk-transition), box-shadow var(--tk-transition);
+}
+
+.header-search .form-control:focus {
+    background: #fff;
+    border-color: var(--wp-blue);
+    box-shadow: 0 0 0 3px rgba(var(--wp-blue-rgb), 0.15);
+}
+
+.header-search__kbd {
+    position: absolute;
+    top: 50%;
+    right: 0.6rem;
+    transform: translateY(-50%);
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #64748b;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.12);
+    border-radius: 5px;
+    padding: 0.1rem 0.35rem;
+    pointer-events: none;
+}
+
+.header-search__results {
+    display: none;
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid rgba(15, 23, 42, 0.08);
+    border-radius: 10px;
+    box-shadow: var(--tk-shadow-lg);
+    padding: 0.35rem;
+    max-height: 24rem;
+    overflow-y: auto;
+    z-index: 1050;
+}
+
+.header-search__results.show {
+    display: block;
+}
+
+.header-search__group {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 0.5rem 0.6rem 0.25rem;
+}
+
+.header-search__item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: var(--tk-radius-sm);
+    color: var(--cui-body-color);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.header-search__item i {
+    width: 1.1rem;
+    text-align: center;
+    color: var(--wp-blue-deep);
+    font-size: 0.85rem;
+}
+
+.header-search__item:hover,
+.header-search__item.active {
+    background: rgba(var(--wp-blue-rgb), 0.10);
+}
+
+.header-search__item .hs-label {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.85rem;
+}
+
+.header-search__item .hs-sub {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    white-space: nowrap;
+}
+
+.header-search__empty {
+    padding: 1.1rem 0.6rem;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.82rem;
+}
+
+/* quick-add ("+") button - sits in the right-side nav, just before the bell */
+.header-create-wrap {
+    display: flex;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+.header-create {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: none;
+    border-radius: 9px;
+    color: #fff;
+    background: var(--wp-accent-gradient);
+    box-shadow: var(--tk-shadow-sm);
+    transition: filter var(--tk-transition), transform var(--tk-transition);
+}
+
+.header-create:hover {
+    color: #fff;
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+}
+
+/* quick-add menu (shares the app dropdown shell, adds chips + label) */
+.tk-menu.dropdown-menu {
+    min-width: 15rem;
+}
+
+.tk-menu--compact.dropdown-menu {
+    min-width: 13rem;
+}
+
+.tk-menu__label {
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    padding: 0.4rem 0.65rem 0.3rem;
+}
+
+.tk-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.88rem;
+}
+
+.tk-menu__chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    color: #fff;
+    flex: 0 0 auto;
+}
+
+.tk-menu .dropdown-item:hover .tk-menu__chip {
+    filter: brightness(1.05);
+}
+
+.tk-menu__chip--blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.tk-menu__chip--indigo { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.tk-menu__chip--teal { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+.tk-menu__chip--green { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.tk-menu__chip--amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+/* hide the search on very small screens to keep the bar usable */
+@media (max-width: 575.98px) {
+    .header-search {
+        display: none;
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   5. Cards & dashboard
+--------------------------------------------------------------------------------------------------------- */
+
+.tk-stat-card {
+    position: relative;
+    overflow: hidden;
+    border: none;
+    border-radius: var(--tk-radius);
+    color: #fff;
+    box-shadow: var(--tk-shadow-md);
+    transition: transform var(--tk-transition), box-shadow var(--tk-transition);
+}
+
+.tk-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--tk-shadow-lg);
+}
+
+.tk-stat-card .tk-stat-icon {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.25rem;
+    font-size: 3.5rem;
+    opacity: 0.18;
+    line-height: 1;
+}
+
+.tk-stat-primary { background: linear-gradient(135deg, #1d4ed8 0%, #3b82f6 100%); }
+.tk-stat-warning { background: linear-gradient(135deg, #334155 0%, #475569 100%); }
+.tk-stat-danger  { background: linear-gradient(135deg, #b91c1c 0%, #ef4444 100%); }
+
+/* welcome banner */
+.alert.shadow-lg {
+    border: none;
+    border-radius: var(--tk-radius);
+    background: linear-gradient(90deg, rgba(37, 99, 235, .08) 0%, rgba(59, 130, 246, .05) 100%);
+    box-shadow: var(--tk-shadow-sm) !important;
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   6. Data grid - blue gradient-underline header, light cell borders
+--------------------------------------------------------------------------------------------------------- */
+
+/* soften the heavy table-bordered grid lines to a light hairline */
+table.dataTable.table-bordered > :not(caption) > * > * {
+    border-color: rgba(15, 23, 42, 0.06);
+}
+
+/* header tint + one CONTINUOUS blue gradient underline across the whole row.
+   painted as the row background bottom-strip so it doesn't break per cell */
+table.dataTable thead tr {
+    background-color: var(--wp-grid-header);
+    background-image: linear-gradient(90deg, #1e40af 0%, #3b82f6 50%, #1e40af 100%);
+    background-repeat: no-repeat;
+    background-position: bottom;
+    background-size: 100% 1.5px;
+}
+
+table.dataTable thead th {
+    /* transparent so the row's tint + gradient strip below shows through */
+    background-color: transparent !important;
+    background-image: none !important;
+    border: 0 !important;
+    font-weight: 700;
+    color: #1f2937;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    font-size: 0.78rem;
+    vertical-align: middle;
+    padding-top: .45rem;
+    padding-bottom: .45rem;
+}
+
+/* neutralise Bootstrap's per-cell fills so the row zebra/hover render as one band */
+table.dataTable > tbody > tr > td,
+table.dataTable > tbody > tr > th {
+    --bs-table-bg-type: transparent;
+    --bs-table-accent-bg: transparent;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+}
+
+table.dataTable > tbody > tr {
+    transition: background .12s ease;
+}
+
+table.dataTable > tbody > tr:nth-of-type(even) {
+    background-color: var(--wp-grid-stripe);
+}
+
+table.dataTable > tbody > tr:hover {
+    background: var(--wp-grid-hover);
+}
+
+.dataTable a:hover {
+    color: var(--wp-blue-deep) !important;
+}
+
+.dataTables_paginate .page-item.active .page-link {
+    background-color: var(--wp-blue);
+    border-color: var(--wp-blue);
+    color: #fff;
+}
+
+.dataTables_paginate .page-link:focus {
+    box-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   7. Buttons & forms
+--------------------------------------------------------------------------------------------------------- */
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--wp-blue) 0%, var(--wp-blue-deep) 100%);
+    border: none;
+    box-shadow: var(--tk-shadow-sm);
+    transition: transform var(--tk-transition), box-shadow var(--tk-transition), filter var(--tk-transition);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    filter: none;
+    transform: translateY(-1px);
+    box-shadow: var(--tk-shadow-md);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+.btn {
+    border-radius: var(--tk-radius-sm);
+}
+
+.form-control,
+.form-select {
+    border-radius: var(--tk-radius-sm);
+    transition: border-color var(--tk-transition), box-shadow var(--tk-transition);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--wp-blue);
+    box-shadow: 0 0 0 0.2rem rgba(var(--wp-blue-rgb), 0.18);
+}
+
+.form-check-input:checked {
+    background-color: var(--wp-blue-deep);
+    border-color: var(--wp-blue-deep);
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   8. Utilities & micro-interactions
+--------------------------------------------------------------------------------------------------------- */
+
+.text-teal,
+.text-accent {
+    color: var(--wp-blue);
+}
+
+/* skeleton loading placeholder */
+.tk-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: rgba(15, 23, 42, 0.06);
+    border-radius: var(--tk-radius-sm);
+}
+
+.tk-skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+    animation: tk-shimmer 1.4s infinite;
+}
+
+@keyframes tk-shimmer {
+    100% { transform: translateX(100%); }
+}
+
+.waves-effect.waves-light .waves-ripple {
+    background: rgba(255, 255, 255, 0.4);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* ---------------------------------------------------------------------------------------------------------
+   9. Dark mode
+--------------------------------------------------------------------------------------------------------- */
+
+[data-coreui-theme="dark"] body {
+    background-color: #0f1424;
+}
+
+[data-coreui-theme="dark"] .header {
+    background-color: rgba(20, 26, 46, 0.85);
+}
+
+[data-coreui-theme="dark"] .card {
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-coreui-theme="dark"] table.dataTable thead th {
+    color: #e5e7eb;
+}

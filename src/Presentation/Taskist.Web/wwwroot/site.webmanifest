@@ -1,0 +1,23 @@
+{
+  "name": "Taskist",
+  "short_name": "Taskist",
+  "description": "Task, Change Request and Bug management",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6fa",
+  "theme_color": "#1e293b",
+  "icons": [
+    {
+      "src": "/images/brand/logo-icon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/brand/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "maskable"
+    }
+  ]
+}

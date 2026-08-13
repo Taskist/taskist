@@ -1,8 +1,14 @@
-﻿namespace Taskist.Web.Models.WorkItems;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace Taskist.Web.Models.WorkItems;
 
 public class BacklogPageModel
 {
     public int ProjectId { get; set; }
+
+    public int ActiveProjectId { get; set; }
+
+    public IList<SelectListItem> AvailableProjects { get; set; } = [];
 
     public bool CanReport { get; set; }
 

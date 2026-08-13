@@ -1,12 +1,14 @@
 # 📝 Open-Source Task & Bug Tracking - Designed for Simplicity.
 
-A web-based **Task, Change Request (CR), and Bug Management System** built with **ASP.NET Core MVC (.NET 8)**, using **MS SQL Server or MySQL** as the database.
+A web-based **Task, Change Request (CR), and Bug Management System** built with **ASP.NET Core MVC (.NET 8)**, using **Microsoft SQL Server** as the database.
 
 This system helps teams manage tasks, track bugs, handle change requests, and organize projects efficiently.
 
+[![CI](https://github.com/Taskist/taskist/actions/workflows/ci.yml/badge.svg)](https://github.com/Taskist/taskist/actions/workflows/ci.yml)
 ![License](https://img.shields.io/github/license/taskist/taskist)
 ![Issues](https://img.shields.io/github/issues/taskist/taskist)
 ![Stars](https://img.shields.io/github/stars/taskist/taskist)
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 
 ## 🚀 Live Demo
 
@@ -42,11 +44,13 @@ All discussions are public and searchable to help new contributors learn quickly
 3. [⚡ Transaction Modules](#-transaction-modules)
 4. [🗂 Module Hierarchy](#-module-hierarchy)
 5. [🛠 Technology Stack](#-technology-stack)
-6. [🚀 Project Setup](#-project-setup)
-7. [💾 Database Migrations](#-database-migrations)
-8. [▶️ Running the Project](#-running-the-project)
-9. [🐛 GitHub Issues & Contribution](#-github-issues--contribution)
-10. [📄 License](#-license)
+6. [🐳 Quick Start with Docker](#-quick-start-with-docker)
+7. [🚀 Local Development Setup](#-local-development-setup)
+8. [⚙️ Configuration](#-configuration)
+9. [💾 Database Migrations](#-database-migrations)
+10. [🔐 Security](#-security)
+11. [🐛 GitHub Issues & Contribution](#-github-issues--contribution)
+12. [📄 License](#-license)
 
 ## ✨ Features
 
@@ -108,108 +112,197 @@ Transaction Modules
 ## 🛠 Technology Stack
 
 - **Backend:** ASP.NET Core MVC (.NET 8)
-- **Frontend:** Razor Views, Bootstrap (optional)
-- **Database:** MS SQL Server or MySQL
-- **ORM:** Entity Framework Core
-- **Version Control:** Git & GitHub
+- **Frontend:** Razor Views, Bootstrap
+- **Database:** Microsoft SQL Server 2019+
+- **ORM:** Entity Framework Core 8
+- **Background jobs:** Hangfire
+- **Validation:** FluentValidation
+- **Containers:** Docker & Docker Compose
 
-## 🚀 Project Setup
+## 🐳 Quick Start with Docker
 
-1. Clone the repository:
+The fastest way to try Taskist. This starts SQL Server, applies migrations, seeds reference data and runs the app.
+
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine with Compose v2).
+
+```bash
+git clone https://github.com/Taskist/taskist.git
+cd taskist
+
+# 1. Create your environment file
+cp .env.example .env
+
+# 2. Generate an encryption key and paste it into .env
+openssl rand -base64 32
+
+# 3. Start everything
+docker compose up -d
+```
+
+Open **http://localhost:8080** and sign in:
+
+| Email               | Password      |
+| ------------------- | ------------- |
+| `admin@taskist.org` | `Admin@12345` |
+
+> [!WARNING]
+> Change this password immediately after the first sign-in, and never expose the seeded account on a reachable network. Taskist upgrades the stored hash to PBKDF2 automatically the first time this account signs in.
+
+Useful commands:
+
+```bash
+docker compose logs -f web     # follow application logs
+docker compose down            # stop, keeping data
+docker compose down -v         # stop and delete all data
+```
+
+Want sample projects and tasks to explore? Set `SEED_DUMMY_DATA=true` in `.env` before the first start.
+
+## 🚀 Local Development Setup
+
+**Prerequisites:** [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and SQL Server (Express or LocalDB is fine).
+
+1. Clone and restore:
 
 ```powershell
 git clone https://github.com/Taskist/taskist.git
-cd Taskist
+cd taskist
+dotnet restore src/Taskist.sln
 ```
 
-2. Open the solution in **Visual Studio 2022+** or VS Code.
+2. Configure your connection string and encryption key. `appsettings.Development.json` is git-ignored, so it is safe for local values:
 
-3. Restore NuGet packages:
-
-```powershell
-dotnet restore
+```json
+{
+  "ConnectionStrings": {
+    "AppContext": "Server=.\\SQLEXPRESS;Database=Taskist;Integrated Security=True;TrustServerCertificate=True;"
+  },
+  "Security": {
+    "EncryptionKey": "a-local-development-key-at-least-32-chars"
+  }
+}
 ```
 
-## 💾 Database Migrations
-
-**Run EF Core commands from the `Task.Data` folder**:
-
-1. Open terminal/powershell in the `Task.Data` folder:
+3. Create the schema:
 
 ```powershell
-cd Task.Data
+cd src/Libraries/Taskist.Data
+dotnet ef database update --startup-project ../../Presentation/Taskist.Web
 ```
 
-2. Add a new migration:
+4. Seed reference data by running the scripts in [`sql script/mssql/`](sql%20script/mssql/) **in order**:
+
+| Script | Required | Contents |
+| ------ | -------- | -------- |
+| `1_defaults.sql` | ✅ | Menus, roles, permissions, language and the administrator account |
+| `2_locale_resource.sql` | ✅ | English (India) translations |
+| `3_dummy_data.sql` | Optional | Sample clients, projects and tasks for evaluation |
+
+Each script runs in a transaction and is safe to re-run — rows are matched on their business key, so nothing is duplicated.
+
+5. Run:
 
 ```powershell
-dotnet ef migrations add InitialCreate --startup-project ..\..\Presentation\Taskist.Web
-```
-
-3. Update the database:
-
-```powershell
-dotnet ef database update --startup-project ..\..\Presentation\Taskist.Web
-```
-
-4. Remove the last migration (if needed):
-
-```powershell
-dotnet ef migrations remove --startup-project ..\..\Presentation\Taskist.Web
-```
-
-**Tip:** Make sure your `appsettings.json` connection string in the Web project points to **SQL Server or MySQL**.
-
-## ▶️ Running the Project
-
-```powershell
-cd Presentation\Taskist.Web
+cd src/Presentation/Taskist.Web
 dotnet run
 ```
 
-- Open your browser and navigate to `https://localhost:5001` (or the port shown in console).
-- Admin user can be seeded in the database using initial migration or `SeedData` class.
+Browse to the URL shown in the console (typically `https://localhost:7169`).
+
+## ⚙️ Configuration
+
+Taskist reads configuration from `appsettings.json`, environment variables prefixed with `TASKIST_`, and user-secrets. Environment variables win, so they are the preferred way to supply secrets.
+
+Nested keys use a double underscore: `Security:EncryptionKey` becomes `TASKIST_Security__EncryptionKey`.
+
+### Required
+
+The application **will not start** without these.
+
+| Setting | Environment variable | Description |
+| ------- | -------------------- | ----------- |
+| `ConnectionStrings:AppContext` | `TASKIST_ConnectionStrings__AppContext` | SQL Server connection string |
+| `Security:EncryptionKey` | `TASKIST_Security__EncryptionKey` | Minimum 32 characters, unique per deployment. Generate with `openssl rand -base64 32` |
+
+### Optional
+
+| Setting | Default | Description |
+| ------- | ------- | ----------- |
+| `Security:MaxFailedAccessAttempts` | `5` | Failed sign-ins before an account locks |
+| `Security:LockoutMinutes` | `15` | How long the lockout lasts |
+| `Security:RequireHttpsCookies` | `true` | Restrict cookies to HTTPS. Set `false` only when deliberately serving plain HTTP |
+| `Sentry:Enabled` | `false` | Enable Sentry error reporting |
+
+> [!IMPORTANT]
+> `Security:RequireHttpsCookies` defaults to `true`, so **sign-in will not work over plain HTTP**. The Docker Compose stack sets it to `false` because it serves HTTP on localhost. Set it back to `true` once you are behind TLS.
+
+## 💾 Database Migrations
+
+Run EF Core commands from the `src/Libraries/Taskist.Data` folder:
+
+```powershell
+cd src/Libraries/Taskist.Data
+
+# apply pending migrations
+dotnet ef database update --startup-project ../../Presentation/Taskist.Web
+
+# add a migration after changing an entity
+dotnet ef migrations add YourMigrationName --startup-project ../../Presentation/Taskist.Web
+
+# remove the last migration (only if not yet applied)
+dotnet ef migrations remove --startup-project ../../Presentation/Taskist.Web
+```
+
+Upgrading an existing install? See **[UPGRADING.md](UPGRADING.md)** — the security hardening release requires new configuration and a migration.
+
+## 🔐 Security
+
+To report a vulnerability, please follow **[SECURITY.md](SECURITY.md)** rather than opening a public issue.
+
+Deployment checklist:
+
+- Serve over HTTPS and keep `Security:RequireHttpsCookies` set to `true`
+- Set a unique `Security:EncryptionKey`
+- Change the default `admin@taskist.org` password (`Admin@12345`)
+- Use a least-privilege SQL account rather than `sa`
+- Back up `App_Data/DataProtectionKeys` — losing it invalidates every session
 
 ## 🐛 GitHub Issues & Contribution
 
+New contributors are very welcome. **[CONTRIBUTING.md](CONTRIBUTING.md)** covers environment setup, coding conventions and what CI expects.
+
 ### Raising an Issue
 
-1. Go to the [Issues](https://github.com/Taskist/taskist/issues) tab.
-2. Click **New Issue**.
-3. Provide:
-   - **Title**
-   - **Description**
-   - **Steps to reproduce** (for bugs) or expected feature description
+Open a [new issue](https://github.com/Taskist/taskist/issues/new/choose) and pick a template. Bug reports ask for reproduction steps, your version and how you deploy Taskist — that detail is usually what decides whether a bug can be fixed.
 
-### Contribution Rules
+Found a security vulnerability? Please report it privately following **[SECURITY.md](SECURITY.md)** instead of opening an issue.
 
-- 🍴 Fork the repository.
-- 🌿 Create a feature branch:
+Setup questions are usually answered faster on [Zulip](https://taskist.zulipchat.com/#narrow/channel/539613-support).
 
-```powershell
+### Submitting a Pull Request
+
+For anything beyond a small fix, please discuss it first via an issue or on [Zulip](https://taskist.zulipchat.com/#narrow/channel/539614-dev), so your time is not spent on something that does not fit the project's direction.
+
+```bash
+# 1. Fork, then branch
 git checkout -b feature/YourFeatureName
-```
 
-- 📝 Make changes and commit:
+# 2. Make your changes, then verify what CI will check
+dotnet build src/Taskist.sln
+dotnet test src/Taskist.sln
 
-```powershell
-git add .
-git commit -m "Description of your changes"
-```
-
-- ⬆️ Push to your fork:
-
-```powershell
+# 3. Push and open a pull request against main
 git push origin feature/YourFeatureName
 ```
 
-- 🔀 Create a **Pull Request** to the `main` branch.
+**Code guidelines**
 
-**Code Guidelines**
+- Follow C# naming conventions and match the structure of the file you are editing
+- Keep methods short and modular
+- Use EF Core migrations for schema changes — CI fails if the model changes without one
+- Add tests for authentication, permissions, data access or file upload changes
 
-- Follow C# naming conventions.
-- Keep methods short and modular.
-- Use Entity Framework migrations for DB changes.
+By participating, you agree to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## 📄 License
 

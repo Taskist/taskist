@@ -1,11 +1,11 @@
-﻿using AutoMapper;
+﻿using Severity = Taskist.Core.Domain.Masters.Severity;
 using Microsoft.AspNetCore.Mvc;
+using AutoMapper;
 using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
+using Taskist.Service.Security;
+using Taskist.Service.Masters;
 using Taskist.Service.Localization;
 using Taskist.Service.Logging;
-using Taskist.Service.Masters;
-using Taskist.Service.Security;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;

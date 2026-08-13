@@ -4,15 +4,18 @@ public static class Constant
 {
     #region App
 
-    public static string Prefix => ".WC.BL";
+    public static string Prefix => ".Taskist";
 
-    public static string IsPostBeingDoneRequestItem => "WC.BL.IsPOSTBeingDone";
+    public static string IsPostBeingDoneRequestItem => "Taskist.IsPOSTBeingDone";
 
-    public static string CompanyName => "Wise Coders";
+    /// <summary>
+    /// Substituted for the %company% placeholder in email templates.
+    /// </summary>
+    public static string CompanyName => "Taskist";
 
-    public static string SessionCookie => ".Session";
+    public static string SessionCookie => ".Taskist.Session";
 
-    public static string AntiForgeryCookie => ".Antiforgery";
+    public static string AntiForgeryCookie => ".Taskist.Antiforgery";
 
     #endregion
 

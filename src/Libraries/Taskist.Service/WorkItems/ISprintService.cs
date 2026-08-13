@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.WorkItems;
 
 namespace Taskist.Service.WorkItems;

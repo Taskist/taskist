@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Taskist.Web.Models.Users;
+﻿namespace Taskist.Web.Models.Users;
 
 public class UserRolePermissionGridModel
 {

@@ -1,6 +1,6 @@
-﻿using Taskist.Service.Localization;
-using Taskist.Service.Masters;
 using FluentValidation;
+using Taskist.Service.Localization;
+using Taskist.Service.Masters;
 using Taskist.Web.Models.Masters;
 using Taskist.Web.Helpers.Extensions;
 

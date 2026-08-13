@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Taskist.Core.Common;
 using Taskist.Service.Localization;
 using Taskist.Service.Security;

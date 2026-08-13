@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Newtonsoft.Json;
 using Taskist.Service.Common;
 using Taskist.Service.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Taskist.Core.Common;
+using Newtonsoft.Json;
 
 namespace Taskist.Service.Messages;
 

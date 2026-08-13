@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Taskist.Core.Domain.Users;
 
 namespace Taskist.Service.Files;

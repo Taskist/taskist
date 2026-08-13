@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Caching;
+using Taskist.Core.Caching;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Common;
 using Taskist.Core.Domain.Logging;

@@ -139,6 +139,7 @@
   height: 300px;
 }
 
+/* dropzone thumbnail previews (compact dropzone styling lives in css/pages/backlog/backlog.css) */
 .dropzone {
   padding: 0;
 }
@@ -158,14 +159,6 @@
   margin: 8px;
   padding-bottom: 0 !important;
   margin-bottom: 0px;
-}
-
-.dropzone .dz-message {
-}
-
-#dropzone-container {
-  border: 1px dashed #007bff;
-  color: #6c757d;
 }
 
 .timeline {
@@ -324,7 +317,7 @@
 }
 
 .sidebar-brand-full {
-  margin-left: 3rem;
+  margin-left: 2.5rem;
 }
 
 .text-line-container {

@@ -400,3 +400,11 @@ FodyWeavers.xsd
 /src/Presentation/Taskist.Web/App_Data/DataProtectionKeys/*
 /src/Presentation/Taskist.Web/Logs
 /src/Presentation/Taskist.Web/wwwroot/uploads
+# Local configuration and secrets - never commit real credentials
+src/Presentation/Taskist.Web/appsettings.Production.json
+src/Presentation/Taskist.Web/appsettings.*.local.json
+src/Presentation/Taskist.Web/appsettings.Development.json
+*.user
+
+# Docker local environment
+.env

@@ -65,14 +65,9 @@
         </div>
     </div>
 </div>
+<div id="custom-field-config" class="d-none" data-project-name="@Model.ProjectName"></div>
 <script>
-    $(function() {
-        $("#Label").on("input", function() {
-            let prefix = "@Model.ProjectName";
-            prefix = prefix.replace(/[^a-zA-Z0-9]/g, '') + '.';
-            let input = $(this).val();
-            let output = input.replace(/[^a-zA-Z0-9]/g, '');
-            $("#ResourceKey").val(prefix + output);
-        });
-    });
+    if (window.ProjectCustomField) {
+        ProjectCustomField.init({ projectName: $('#custom-field-config').data('project-name') });
+    }
 </script>

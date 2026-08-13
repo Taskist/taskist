@@ -1,13 +1,5 @@
 ﻿@model CustomFieldsViewModel
 
-@{
-    var updateCssClassName = "";
-    if (Model.BacklogId > 0)
-    {
-        updateCssClassName = "ajax-update-custom-field";
-    }
-}
-
 @for (int i = 0; i < Model.CustomFields.Count; i++)
 {
     var field = Model.CustomFields[i];
@@ -18,7 +10,7 @@
         {
             <div class="mb-3">
                 <label class="form-label">@Localize(field.ResourceKey)</label>
-                <input type="text" class="form-control @updateCssClassName" data-reference="@field.Id" name="fieldValues[@i].Value" value="@fieldValue" data-val="@field.Mandatory.ToString().ToLower()" />
+                <input type="text" class="form-control" name="fieldValues[@i].Value" value="@fieldValue" data-val="@field.Mandatory.ToString().ToLower()" />
             </div>
 
         }
@@ -49,23 +41,3 @@
         }
     </div>
 }
-
-<script>
-    $(function () {
-        $('.@updateCssClassName').change(function () {
-            debugger
-            let id = '@Model.BacklogId';
-            let reference = parseInt($(this).data('reference'));
-            let value = $(this).val();
-            let dto = {
-                id,
-                reference,
-                value
-            };
-
-            JSManager.ajaxPatch('@Url.Action("UpdateCustomField")', dto, undefined, undefined, function (response){
-                JSManager.showSuccess(response.message);
-            });
-        });
-    });
-</script>

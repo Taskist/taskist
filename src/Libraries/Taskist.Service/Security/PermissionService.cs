@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Taskist.Service.Common;
+using Taskist.Service.Users;
+using Microsoft.EntityFrameworkCore;
 using Taskist.Core.Caching;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
 using Taskist.Data.Repository;
-using Taskist.Service.Common;
-using Taskist.Service.Users;
 
 namespace Taskist.Service.Security;
 

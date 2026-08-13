@@ -1,0 +1,57 @@
+# syntax=docker/dockerfile:1
+
+# Applies EF Core migrations and the seed scripts, then exits.
+# Run as an init step before the application container starts.
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /source
+
+RUN dotnet tool install --global dotnet-ef --version 8.* \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends unixodbc \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+COPY src/Taskist.sln ./
+COPY src/Libraries/Taskist.Core/Taskist.Core.csproj Libraries/Taskist.Core/
+COPY src/Libraries/Taskist.Data/Taskist.Data.csproj Libraries/Taskist.Data/
+COPY src/Libraries/Taskist.Service/Taskist.Service.csproj Libraries/Taskist.Service/
+COPY src/Presentation/Taskist.Web/Taskist.Web.csproj Presentation/Taskist.Web/
+
+# the bundle is published self-contained, so restore must target that runtime
+RUN dotnet restore Taskist.sln -r linux-x64
+
+COPY src/ ./
+
+# a self-contained bundle avoids needing the SDK or a design-time connection at run time
+RUN dotnet ef migrations bundle \
+    --project Libraries/Taskist.Data/Taskist.Data.csproj \
+    --startup-project Presentation/Taskist.Web/Taskist.Web.csproj \
+    --configuration Release \
+    --self-contained \
+    --runtime linux-x64 \
+    --output /migrate/efbundle
+
+# ----- runtime -----
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0 AS runtime
+WORKDIR /migrate
+
+# mssql-tools provides sqlcmd for the seed scripts
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl gnupg apt-transport-https \
+    && curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg \
+    && echo "deb [signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" > /etc/apt/sources.list.d/mssql-release.list \
+    && apt-get update \
+    && ACCEPT_EULA=Y apt-get install -y --no-install-recommends mssql-tools18 \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH="${PATH}:/opt/mssql-tools18/bin"
+
+COPY --from=build /migrate/efbundle ./efbundle
+COPY "sql script/mssql/" ./seed/
+COPY docker/migrate-entrypoint.sh ./migrate-entrypoint.sh
+
+RUN chmod +x ./efbundle ./migrate-entrypoint.sh
+
+ENTRYPOINT ["./migrate-entrypoint.sh"]

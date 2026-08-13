@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Taskist.Core.Domain.Localization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Taskist.Data.Configuration.Localization;
 

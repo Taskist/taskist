@@ -1,0 +1,101 @@
+name: 🐛 Bug Report
+description: Something is not working as expected
+title: "[Bug]: "
+labels: ["bug", "needs triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        ⚠️ **Found a security vulnerability?** Please do not file it here. Follow [SECURITY.md](https://github.com/Taskist/taskist/blob/main/SECURITY.md) to report it privately.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: We can rarely fix what we cannot reproduce.
+      placeholder: |
+        1. Sign in as ...
+        2. Go to ...
+        3. Click ...
+        4. See the error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Taskist version
+      description: Release tag or commit SHA.
+      placeholder: "v1.0.0 or 3f8a2c1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: How are you running Taskist?
+      options:
+        - Docker Compose
+        - IIS / Windows Server
+        - Linux (systemd, nginx, or similar)
+        - Local development (dotnet run)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: database
+    attributes:
+      label: SQL Server version
+      options:
+        - SQL Server 2022
+        - SQL Server 2019
+        - SQL Server 2017
+        - SQL Server Express
+        - LocalDB
+        - Azure SQL
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or error output
+      description: Application logs, the `Log` table, or browser console output. This is automatically formatted as code.
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Screenshots, browser version, or other context.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a duplicate
+          required: true
+        - label: I am running a supported version of Taskist
+          required: true
+        - label: This is not a security vulnerability (those go through SECURITY.md)
+          required: true

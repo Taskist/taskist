@@ -1,6 +1,6 @@
-﻿using Taskist.Core.Common;
+﻿using Microsoft.AspNetCore.Mvc;
+using Taskist.Core.Common;
 using Taskist.Service.WorkItems;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Models.Dashboard;
 
 namespace Taskist.Web.Components.Dashboard;

@@ -1,9 +1,8 @@
-﻿using Taskist.Core.Common;
+using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.WorkItems;
 using Taskist.Data.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DynamicLinq;
-using System.Linq.Dynamic.Core;
+using Taskist.Data.Extensions;
 
 namespace Taskist.Service.WorkItems;
 
@@ -30,7 +29,7 @@ public class SprintService : ISprintService
 		return await _sprintRepository.GetAllPagedAsync(query =>
 		{
 			query = query.Where(x => !x.Deleted);
-			query = query.OrderBy($"{sortColumn} {sortDirection}");
+			query = query.OrderBySafe(sortColumn, sortDirection);
 
 			if (!string.IsNullOrWhiteSpace(search))
 				query = query.Where(c => c.Name.Contains(search));

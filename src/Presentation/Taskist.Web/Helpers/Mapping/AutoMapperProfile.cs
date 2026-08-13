@@ -3,6 +3,8 @@ using Taskist.Core.Domain.Localization;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.Users;
 using Taskist.Core.Domain.WorkItems;
+using Menu = Taskist.Core.Domain.Masters.Menu;
+using Severity = Taskist.Core.Domain.Masters.Severity;
 using Taskist.Web.Models.Localization;
 using Taskist.Web.Models.Masters;
 using Taskist.Web.Models.Users;

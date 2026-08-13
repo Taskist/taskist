@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.Users;
 
@@ -94,6 +94,12 @@ public interface IUserService
         bool emailWelcomeKit);
 
     Task<User> ValidateTokenAsync(string token);
+
+    /// <summary>
+    /// Indicates whether the account is currently barred from signing in.
+    /// Clears an expired lockout as a side effect.
+    /// </summary>
+    Task<bool> IsLockedOutAsync(User user);
 
     #endregion
 

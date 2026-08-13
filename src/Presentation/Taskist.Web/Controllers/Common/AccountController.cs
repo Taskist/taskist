@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Taskist.Core.Common;
-using Taskist.Service.Authentication;
-using Taskist.Service.Masters;
-using Taskist.Service.Security;
 using Taskist.Service.Users;
+using Taskist.Service.Security;
+using Taskist.Service.Masters;
+using Taskist.Service.Authentication;
+using Taskist.Web.Helpers.Common;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Users;
 
@@ -46,6 +48,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [EnableRateLimiting(WebConstant.AuthRateLimitPolicy)]
     public async Task<IActionResult> Login(LoginModel model, string returnUrl)
     {
         if (ModelState.IsValid)
@@ -76,21 +79,15 @@ public class AccountController : Controller
                             return RedirectToAction("Index", "Home");
                         return Redirect(returnUrl);
                     }
-                case LoginResultEnum.NotExist:
-                    ModelState.AddModelError(string.Empty, "User doesn't exists");
-                    break;
-                case LoginResultEnum.NotActive:
-                    ModelState.AddModelError(string.Empty, "User is not active");
-                    break;
-                case LoginResultEnum.Deleted:
-                    ModelState.AddModelError(string.Empty, "No account with this email found");
-                    break;
-                case LoginResultEnum.NotRegistered:
-                    ModelState.AddModelError(string.Empty, "Account is not registered");
-                    break;
                 case LoginResultEnum.LockedOut:
-                    ModelState.AddModelError(string.Empty, "Your account is locked out");
+                    ModelState.AddModelError(string.Empty, "Your account is temporarily locked. Please try again later.");
                     break;
+                //every other failure returns one message so the form cannot be
+                //used to discover which email addresses have accounts
+                case LoginResultEnum.NotExist:
+                case LoginResultEnum.NotActive:
+                case LoginResultEnum.Deleted:
+                case LoginResultEnum.NotRegistered:
                 case LoginResultEnum.WrongPassword:
                 default:
                     ModelState.AddModelError(string.Empty, "The credentials provided are incorrect");
@@ -146,6 +143,7 @@ public class AccountController : Controller
     }
 
     [HttpPost]
+    [EnableRateLimiting(WebConstant.AuthRateLimitPolicy)]
     public async Task<IActionResult> Activate(SetPasswordModel model)
     {
         if (ModelState.IsValid)

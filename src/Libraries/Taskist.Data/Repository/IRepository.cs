@@ -1,6 +1,6 @@
 ﻿using System.Linq.Expressions;
-using Taskist.Core.Common;
 using Taskist.Core.Domain.Common;
+using Taskist.Core.Common;
 
 namespace Taskist.Data.Repository;
 

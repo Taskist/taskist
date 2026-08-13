@@ -1,15 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DynamicLinq;
-using System.Linq.Dynamic.Core;
-using Taskist.Core.Caching;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
-using Taskist.Core.Domain.Users;
-using Taskist.Data.Repository;
 using Taskist.Service.Common;
 using Taskist.Service.Masters;
 using Taskist.Service.Messages;
 using Taskist.Service.Security;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Taskist.Core.Caching;
+using Taskist.Core.Common;
+using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
+using Taskist.Data.Repository;
+using Taskist.Data.Extensions;
 
 namespace Taskist.Service.Users;
 
@@ -28,6 +29,7 @@ public class UserService : IUserService
     protected readonly IEncryptionService _encryptionService;
     protected readonly ISettingService _settingsService;
     protected readonly ICacheManager _cacheManager;
+    protected readonly SecurityOptions _securityOptions;
 
     #endregion
 
@@ -43,8 +45,10 @@ public class UserService : IUserService
         IEncryptionService encryptionService,
         ISettingService settingsService,
         IMessageService messageService,
-        ICacheManager cacheManager)
+        ICacheManager cacheManager,
+        IOptions<SecurityOptions> securityOptions)
     {
+        _securityOptions = securityOptions.Value;
         _userRepository = userRepository;
         _passwordRepository = passwordRepository;
         _userRoleRepository = userRoleRepository;
@@ -68,7 +72,7 @@ public class UserService : IUserService
         return await _userRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.SystemAccount);
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.OrderBySafe(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query =
@@ -87,7 +91,7 @@ public class UserService : IUserService
     {
         return await _userRoleRepository.GetAllPagedAsync(query =>
         {
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.OrderBySafe(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query =
@@ -197,7 +201,7 @@ public class UserService : IUserService
     public async Task UpdateUserRoleAsync(UserRole userRole)
     {
         await _userRoleRepository.UpdateAsync(userRole);
-        await _cacheManager.RemoveAsync(ServiceConstant.UserRolesAllCacheKey);
+        await _cacheManager.RemoveByPrefixAsync(ServiceConstant.UserRolesPrefixCacheKey);
     }
 
     public async Task RemoveUserRoleMappingAsync(User user, UserRole role)
@@ -265,7 +269,9 @@ public class UserService : IUserService
                     (showHidden || cr.Active)
                     select cr.Id;
 
-        return await _cacheManager.GetAsync(ServiceConstant.UserRoleIdsCacheKey, () => query.ToArrayAsync());
+        var key = string.Format(ServiceConstant.UserRoleIdsCacheKey, user.Id, showHidden);
+
+        return await _cacheManager.GetAsync(key, () => query.ToArrayAsync());
     }
 
     public async Task<IList<UserRole>> GetUserRolesAsync(User user, bool showHidden = false)
@@ -289,7 +295,9 @@ public class UserService : IUserService
                     where showHidden || cr.Active
                     select cr;
 
-        var userRoles = await _cacheManager.GetAsync(ServiceConstant.UserRolesAllCacheKey, () => query.ToListAsync());
+        var key = string.Format(ServiceConstant.UserRolesAllCacheKey, showHidden);
+
+        var userRoles = await _cacheManager.GetAsync(key, () => query.ToListAsync());
 
         return userRoles;
     }
@@ -299,7 +307,7 @@ public class UserService : IUserService
         await _userRoleRepository.InsertAsync(userRole);
 
         if (userRole.Id > 0)
-            await _cacheManager.RemoveAsync(ServiceConstant.UserRolesAllCacheKey);
+            await _cacheManager.RemoveByPrefixAsync(ServiceConstant.UserRolesPrefixCacheKey);
     }
 
     public async Task InsertUserRoleAsync(List<UserRole> userRoles)
@@ -384,17 +392,31 @@ public class UserService : IUserService
         if (entity.Status != (int)UserStatusEnum.Active)
             return LoginResultEnum.NotActive;
 
+        if (await IsLockedOutAsync(entity))
+            return LoginResultEnum.LockedOut;
+
         var activePassword = await GetCurrentPasswordAsync(entity.Id);
 
         if (activePassword == null)
             return LoginResultEnum.LockedOut;
 
-        var enteredPassword = _encryptionService.CreatePasswordHash(password, activePassword.PasswordSalt);
-        if (!activePassword.Password.Equals(enteredPassword))
+        var storedFormat = (PasswordFormat)activePassword.HashFormat;
+
+        if (!_encryptionService.VerifyPassword(password, activePassword.PasswordSalt,
+            activePassword.Password, storedFormat))
+        {
+            await RegisterFailedLoginAsync(entity);
             return LoginResultEnum.WrongPassword;
+        }
 
         if (!await IsRegisteredAsync(entity))
             return LoginResultEnum.NotRegistered;
+
+        //credentials are valid - silently move legacy hashes onto the current algorithm
+        if (storedFormat != PasswordFormat.Pbkdf2)
+            await UpgradePasswordHashAsync(activePassword, password);
+
+        await RegisterSuccessfulLoginAsync(entity);
 
         return LoginResultEnum.Successful;
     }
@@ -409,22 +431,92 @@ public class UserService : IUserService
             CreatedOn = DateTime.UtcNow
         };
 
-        var saltKey = _encryptionService.CreateSaltKey(10);
-        var encryptedNewPassword = _encryptionService.CreatePasswordHash(newPassword, saltKey);
+        var saltKey = _encryptionService.CreatePasswordSalt();
+        var encryptedNewPassword = _encryptionService.CreatePasswordHash(newPassword, saltKey, PasswordFormat.Pbkdf2);
 
         var currentPassword = await GetCurrentPasswordAsync(entity.Id);
         if (currentPassword != null)
         {
             currentPassword.PasswordSalt = saltKey;
             currentPassword.Password = encryptedNewPassword;
+            currentPassword.HashFormat = (int)PasswordFormat.Pbkdf2;
             await UpdateUserPasswordAsync(currentPassword);
         }
         else
         {
             newEntity.PasswordSalt = saltKey;
             newEntity.Password = encryptedNewPassword;
+            newEntity.HashFormat = (int)PasswordFormat.Pbkdf2;
             await InsertUserPasswordAsync(newEntity);
         }
+
+        //a password change clears any standing lockout
+        if (entity != null)
+        {
+            entity.FailedLoginAttempts = 0;
+            entity.LockoutEndDate = null;
+            await UpdateAsync(entity);
+        }
+    }
+
+    #endregion
+
+    #region Lockout
+
+    public async Task<bool> IsLockedOutAsync(User user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+
+        if (user.Locked)
+            return true;
+
+        if (user.LockoutEndDate == null)
+            return false;
+
+        if (user.LockoutEndDate > DateTime.UtcNow)
+            return true;
+
+        //the window has elapsed - let the user try again from a clean slate
+        user.FailedLoginAttempts = 0;
+        user.LockoutEndDate = null;
+        await UpdateAsync(user);
+
+        return false;
+    }
+
+    protected async Task RegisterFailedLoginAsync(User user)
+    {
+        user.FailedLoginAttempts++;
+
+        if (user.FailedLoginAttempts >= _securityOptions.MaxFailedAccessAttempts)
+            user.LockoutEndDate = DateTime.UtcNow.AddMinutes(_securityOptions.LockoutMinutes);
+
+        await UpdateAsync(user);
+    }
+
+    protected async Task RegisterSuccessfulLoginAsync(User user)
+    {
+        if (user.FailedLoginAttempts == 0 && user.LockoutEndDate == null)
+            return;
+
+        user.FailedLoginAttempts = 0;
+        user.LockoutEndDate = null;
+
+        await UpdateAsync(user);
+    }
+
+    /// <summary>
+    /// Re-hashes a verified legacy password using the current algorithm.
+    /// </summary>
+    protected async Task UpgradePasswordHashAsync(UserPassword userPassword, string plainPassword)
+    {
+        var saltKey = _encryptionService.CreatePasswordSalt();
+
+        userPassword.PasswordSalt = saltKey;
+        userPassword.Password = _encryptionService.CreatePasswordHash(plainPassword, saltKey, PasswordFormat.Pbkdf2);
+        userPassword.HashFormat = (int)PasswordFormat.Pbkdf2;
+
+        await UpdateUserPasswordAsync(userPassword);
     }
 
     public async Task<RegistrationResultEnum> RegisterAsync(User user,
@@ -512,7 +604,9 @@ public class UserService : IUserService
             .Where(x => x.Project.Active && !x.Project.Deleted && x.UserId == userId)
             .Select(s => s.Project);
 
-        return await _cacheManager.GetAsync(ServiceConstant.AccessibleProjectCacheKey, () => query.ToListAsync());
+        var key = string.Format(ServiceConstant.AccessibleProjectCacheKey, userId);
+
+        return await _cacheManager.GetAsync(key, () => query.ToListAsync());
     }
 
     public async Task<UserProjectMap> GetProjectMapping(int userId, int projectId)

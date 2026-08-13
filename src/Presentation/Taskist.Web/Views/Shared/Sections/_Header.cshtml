@@ -7,58 +7,29 @@
         <button class="header-toggler" type="button" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()" style="margin-inline-start: -14px;">
             <i class="icon icon-lg fas fa-bars"></i>
         </button>
-        <ul class="header-nav d-md-flex">
-        </ul>
+        @await Component.InvokeAsync("HeaderTools", new { section = "search" })
         <ul class="header-nav ms-auto">
-            <li class="nav-item">
-                @await Component.InvokeAsync("ProjectSelector")
+            <li class="nav-item d-flex align-items-center me-1">
+                @await Component.InvokeAsync("HeaderTools", new { section = "create" })
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-                    <i class="icon icon-lg my-1 mx-2 fas fa-bell">
-                    </i><span class="badge rounded-pill position-absolute top-0 end-0 bg-danger">5</span>
+                <a class="nav-link position-relative" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Notifications">
+                    <i class="icon icon-lg my-1 mx-2 fas fa-bell"></i>
+                    @* badge renders only when there is something to show *@
+                    @if (false)
+                    {
+                        <span class="badge rounded-pill position-absolute top-0 end-0 bg-danger">0</span>
+                    }
                 </a>
-                <div class="dropdown-menu dropdown-menu-end dropdown-menu-lg pt-0" style="">
-                    <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2" data-coreui-i18n="notificationsCounter, { 'counter': 5 }">You have 5 notifications</div><a class="dropdown-item" href="#">
-                        <svg class="icon me-2 text-success">
-                            <use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-user-follow"></use>
-                        </svg><span data-coreui-i18n="newUserRegistered">New user registered</span>
-                    </a><a class="dropdown-item" href="#">
-                        <svg class="icon me-2 text-danger">
-                            <use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-user-unfollow"></use>
-                        </svg><span data-coreui-i18n="userDeleted">User deleted</span>
-                    </a><a class="dropdown-item" href="#">
-                        <svg class="icon me-2 text-info">
-                            <use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-chart"></use>
-                        </svg><span data-coreui-i18n="salesReportIsReady">Sales report is ready</span>
-                    </a><a class="dropdown-item" href="#">
-                        <svg class="icon me-2 text-success">
-                            <use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-basket"></use>
-                        </svg><span data-coreui-i18n="newClient">New client</span>
-                    </a><a class="dropdown-item" href="#">
-                        <svg class="icon me-2 text-warning">
-                            <use xlink:href="vendors/@@coreui/icons/svg/free.svg#cil-speedometer"></use>
-                        </svg><span data-coreui-i18n="serverOverloaded">Server overloaded</span>
-                    </a>
-                    <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold my-2" data-coreui-i18n="server">Server</div><a class="dropdown-item d-block py-2" href="#">
-                        <div class="text-uppercase small fw-semibold mb-1" data-coreui-i18n="cpuUsage">CPU Usage</div>
-                        <div class="progress progress-thin">
-                            <div class="progress-bar bg-info-gradient" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="small text-body-secondary" data-coreui-i18n="cpuUsageDescription, { 'number_of_processes': 358, 'number_of_cores': '1/4' }">358 processes. 1/4 cores</div>
-                    </a><a class="dropdown-item d-block py-2" href="#">
-                        <div class="text-uppercase small fw-semibold mb-1" data-coreui-i18n="memoryUsage">Memory Usage</div>
-                        <div class="progress progress-thin">
-                            <div class="progress-bar bg-warning-gradient" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="small text-body-secondary">11444MB/16384MB</div>
-                    </a><a class="dropdown-item d-block py-2" href="#">
-                        <div class="text-uppercase small fw-semibold mb-1" data-coreui-i18n="ssdUsage">SSD Usage</div>
-                        <div class="progress progress-thin">
-                            <div class="progress-bar bg-danger-gradient" role="progressbar" style="width: 95%" aria-valuenow="95" aria-valuemin="0" aria-valuemax="100"></div>
-                        </div>
-                        <div class="small text-body-secondary">243GB/256GB</div>
-                    </a>
+                <div class="dropdown-menu dropdown-menu-end dropdown-menu-lg pt-0">
+                    <div class="dropdown-header fw-semibold mb-2">
+                        <i class="icon fas fa-bell me-2"></i>Notifications
+                    </div>
+                    <div class="tk-notify-empty">
+                        <span class="tk-notify-check"><i class="fas fa-check"></i></span>
+                        <div class="fw-semibold">You're all caught up</div>
+                        <div class="small">No new notifications</div>
+                    </div>
                 </div>
             </li>
         </ul>
@@ -72,11 +43,23 @@
                         <img class="avatar-img" src="@Url.Action("GetAvatar", "Profile")?v=@user.AvatarVersion" alt="@user.Name" />
                     </div>
                 </a>
-                <div class="dropdown-menu dropdown-menu-end pt-0">
-                    <div class="dropdown-header bg-body-tertiary text-body-secondary fw-semibold rounded-top mb-2">
-                        <i class="icon fas fa-user me-2"></i><span class="profile-name">@user.Name</span>
+                <div class="dropdown-menu dropdown-menu-end pt-0" style="min-width: 15rem;">
+                    <div class="dropdown-header mb-2">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-md me-2">
+                                <img class="avatar-img" src="@Url.Action("GetAvatar", "Profile")?v=@user.AvatarVersion" alt="@user.Name" />
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="fw-semibold text-truncate profile-name">@user.Name</div>
+                                <div class="small text-body-secondary text-truncate">@user.Email</div>
+                                @if (user.IsAdmin)
+                                {
+                                    <span class="tk-role-badge mt-1">Administrator</span>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <a class="dropdown-item profile-link" href="#">
+                    <a class="dropdown-item" href="javascript:JSManager.openForm('@Url.Action("Edit", "Profile")','@Localize("User.Profile").Text','col-md-7')">
                         <i class="icon fas fa-id-card me-2"></i>Profile
                     </a>
                     <div class="dropdown-divider"></div>
@@ -98,12 +81,3 @@
         </div>
     </div>
 </header>
-
-<script>
-    $(function(){
-        $('.profile-link').click(function(e) {
-            e.preventDefault();
-            JSManager.openForm('@Url.Action("Edit", "Profile")','@Localize("User.Profile").Text','col-md-7');
-        });
-    });
-</script>

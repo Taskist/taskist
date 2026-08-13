@@ -10,6 +10,7 @@
 @section PageScripts {
 	<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
 	<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.bootstrap5.js"></script>
+	<script src="~/js/pages/backlog/backlog-index.js" asp-append-version="true"></script>
 }
 
 <div class="card mb-2">
@@ -28,6 +29,17 @@
 
 <div class="card">
 	<div class="card-header d-flex justify-content-between align-items-center">
+		@if (Model.AvailableProjects.Any())
+		{
+			<div class="d-flex align-items-center gap-2">
+				<label for="activeProjectSwitcher" class="mb-0 text-body-secondary small fw-semibold text-nowrap">
+					<i class="fas fa-briefcase me-1"></i>Project
+				</label>
+				<select id="activeProjectSwitcher" class="form-select form-select-sm" style="min-width: 200px;"
+						asp-items="@(new SelectList(Model.AvailableProjects, "Value", "Text", Model.ActiveProjectId.ToString()))">
+				</select>
+			</div>
+		}
 		<div class="d-flex gap-2 ms-auto">
 			<button id="btnExcelExport" type="button" class="btn btn-success btn-sm text-white">
 				<i class="fa-solid fa-file-excel me-1"></i>Download
@@ -157,298 +169,38 @@
 	</div>
 </div>
 
-<script>
-	let filterLoaded = false;
-	$(document).ready(function () {
-		JSManager.setPageTitle('@Localize("BacklogPage.Title").Text');
-		let canReport = JSON.parse('@Model.CanReport.ToString().ToLower()');
-		let canEdit = JSON.parse('@Model.CanEdit.ToString().ToLower()');
+@* server values for backlog-index.js (urls + flags + localized labels) *@
+<div id="backlog-index-config" class="d-none"
+	 data-set-project-url="@Url.Action("SetActiveProject", "Common")"
+	 data-filter-url="@Url.Action("Filter", new { filterMode = Model.FilterMode })"
+	 data-filter-base-url="@Url.Action("Filter")"
+	 data-create-url="@Url.Action("Create")"
+	 data-edit-url="@Url.Action("Edit")"
+	 data-read-url="@Url.Action("DataRead")"
+	 data-export-url="@Url.Action("ExportToExcel")"
+	 data-can-report="@Model.CanReport.ToString().ToLower()"
+	 data-can-edit="@Model.CanEdit.ToString().ToLower()"
+	 data-labels='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(new {
+		pageTitle = Localize("BacklogPage.Title").Text,
+		searchLabel = Localize("Grid.SearchLabel").Text,
+		searchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+		lengthMenu = Localize("Grid.LengthChangeLabel").Text,
+		zeroRecords = Localize("Grid.ZeroRecords").Text,
+		info = Localize("Grid.FooterInfo").Text,
+		infoEmpty = Localize("Grid.FooterInfoWhenEmpty").Text,
+		edit = Localize("Button.Edit").Text,
+		colTaskId = Localize("BacklogGrid.TaskId").Text,
+		colTitle = Localize("BacklogGrid.Title").Text,
+		colTaskType = Localize("BacklogGrid.TaskType").Text,
+		colSeverity = Localize("BacklogGrid.Severity").Text,
+		colStatus = Localize("BacklogGrid.Status").Text,
+		colProject = Localize("BacklogGrid.Project").Text,
+		colModule = Localize("BacklogGrid.Module").Text,
+		colSubModule = Localize("BacklogGrid.SubModule").Text,
+		colAssignee = Localize("BacklogGrid.Assignee").Text,
+		colDueDate = Localize("BacklogGrid.DueDate").Text,
+		colCreatedBy = Localize("BacklogGrid.CreatedBy").Text,
+		colCreatedOn = Localize("BacklogGrid.CreatedOn").Text
+	}))'></div>
 
-		filterLoaded = true;
-		JSManager.renderPartial('@Url.Action("Filter", new { filterMode = Model.FilterMode })', {}, 'filter-container');
 
-		if (canReport) {
-			$('#pageButtons').append(`<a href="@Url.Action("Create")" class="btn btn-sm btn-primary me-2"><i class="fas fa-plus me-1"></i>Add New</a>`);
-		}
-
-		var table = $("#BacklogGrid").DataTable({
-			processing: true,
-			serverSide: true,
-			stateSave: false,
-			info: true,
-			autoWidth: false,
-			filter: false,
-			lengthChange: true,
-			pageLength: 10,
-			searching: false,
-			ordering: true,
-			rowGroup: {
-				dataSrc: [],
-				enable: false,
-				startRender: function (rows, group, level) {
-					var count = rows.count();
-					var indent = "&nbsp;&nbsp;&nbsp;".repeat(level);
-					return $(`<tr class="group-header"><td colspan="4">${indent}<strong>${group} (${count})</strong></td></tr>`);
-				},
-				endRender: function(){
-					$('#columnToggleMenu input[type="checkbox"]').trigger('change');
-				}
-			},
-			initComplete: function (settings, json) {
-			},
-			language: {
-				search: '<span>@Localize("Grid.SearchLabel").Text</span> _INPUT_',
-				searchPlaceholder: '@Localize("Grid.SearchPlaceholder").Text',
-				lengthMenu: '_MENU_ @Localize("Grid.LengthChangeLabel").Text',
-				paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
-				zeroRecords: '@Localize("Grid.ZeroRecords").Text',
-				info: '@Localize("Grid.FooterInfo").Text',
-				infoEmpty: '@Localize("Grid.FooterInfoWhenEmpty").Text'
-			},
-			ajax: {
-				url: "@Url.Action("DataRead")",
-				type: "POST",
-				datatype: "json",
-				data: function (dto) {
-					setFilterParam(dto);
-					JSManager.addAntiForgeryToken(dto);
-				}
-			},
-			columns: [{
-				title: '@Localize("BacklogGrid.TaskId")',
-				data: 'Id',
-				sortable: true,
-				render: function (data, type, row) {
-					let html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}">${row.Id}</a>`
-					return data;
-				}
-			},{
-				title: '@Localize("BacklogGrid.Title")',
-				data: 'Title',
-				sortable: true,
-				render: function (data, type, row) {
-					if(data.length > 50) {
-						let truncatedText = data.substr(0, 50) + "...";
-						return `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}"><span class="dt-truncate"
-								 tabindex="0"
-								 role="button"
-								 data-bs-toggle="popover"
-								 data-bs-trigger="hover focus"
-								 data-bs-content="${data}">
-								${truncatedText}
-							</span></a>`;
-					}
-
-					return `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}">${data}</a>`;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.TaskType")',
-				sortable: true,
-				render: function (data, type, row) {
-					return `<span class="badge" style="color:${row.TaskType.TextColor};background-color:${row.TaskType.BackgroundColor};"><i class="${row.TaskType.IconClass} me-1"></i>${row.TaskType.Name}</span>`;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.Severity")',
-				sortable: true,
-				render: function (data, type, row) {
-					return `<span class="badge" style="color:${row.Severity.TextColor};background-color:${row.Severity.BackgroundColor};"><i class="${row.Severity.IconClass} me-1"></i>${row.Severity.Name}</span>`;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.Status")',
-				sortable: true,
-				render: function (data, type, row) {
-					let reopenCounter = '';
-					if (parseInt(row.ReOpenCount) > 2) {
-						reopenCounter = `<span class="badge rounded-pill bg-danger me-1" title="Reopened count">${row.ReOpenCount}</span>`;
-					}else if (parseInt(row.ReOpenCount) > 0) {
-						reopenCounter = `<span class="badge rounded-pill bg-warning me-1" title="Reopened count">${row.ReOpenCount}</span>`;
-					}else {
-						reopenCounter = '';
-					}
-					return `${reopenCounter}<span class="badge" style="color:${row.Status.TextColor};background-color:${row.Status.BackgroundColor};"><i class="${row.Status.IconClass} me-1"></i>${row.Status.Name}</span>`;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.Project")',
-				data: 'Project',
-				sortable: true,
-				render: function (data, type, row) {
-					return data;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.Module")',
-				data: 'Module',
-				sortable: true,
-				render: function (data, type, row) {
-					return data;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.SubModule")',
-				data: 'SubModule',
-				sortable: true,
-				render: function (data, type, row) {
-					return data;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.Assignee")',
-				data: 'Assignee',
-				sortable: true,
-				render: function (data, type, row) {
-					return data;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.DueDate")',
-				data: 'DueDate',
-				sortable: true,
-				render: function (data, type, row) {
-					if(JSManager.hasValue(data)) {
-						  const today = moment();
-						  const targetDate = moment(data);
-						  const dayDifference = targetDate.diff(today, "days");
-						  if (dayDifference < 0) {
-							  return `<i class="far fa-calendar-times text-danger me-1" title="Overdue by ${Math.abs(dayDifference)} days"></i>${moment(data).format('DD-MMM-YYYY')}`;
-						  } else if (dayDifference === 0) {
-							  return `<i class="far fa-calendar-check text-success me-1" title="${dayDifference} Due today!"></i>${moment(data).format('DD-MMM-YYYY')}`;
-						  } else {
-							  return `<i class="far fa-calendar-plus text-primary me-1" title="${dayDifference} days remaining"></i>${moment(data).format('DD-MMM-YYYY')}`;
-						  }
-					}
-					else
-						return 'Not set';
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.CreatedBy")',
-				data: 'CreatedBy',
-				sortable: true,
-				render: function (data, type, row) {
-					return data;
-				}
-			},
-			{
-				title: '@Localize("BacklogGrid.CreatedOn")',
-				data: 'CreatedOn',
-				sortable: true,
-				render: function (data, type, row) {
-					return moment(data).format('DD-MMM-YYYY');
-				}
-			}]
-		});
-
-		if (!$.fn.dataTable.RowGroup) {
-			console.error("RowGroup is NOT loaded. Check your script imports.");
-		}
-
-		$('#groupingToggleMenu input[type="checkbox"]').on('change', function () {
-			updateColumnGrouping();
-		});
-
-		$('#columnToggleMenu input[type="checkbox"]').on('change', function () {
-			updateColumnVisibility();
-		});
-
-		function updateColumnGrouping() {
-			var selectedGroups = $('#groupingToggleMenu input[type="checkbox"]:checked').map(function () {
-				 return $(this).val();
-			 }).get();
-
-			 if(selectedGroups.length > 0){
-				 table.rowGroup().dataSrc(selectedGroups).enable(true).draw();
-			 }else {
-				table.rowGroup().dataSrc([]).enable(false).draw();
-			 }
-
-			 var selectedCount = selectedGroups.length;
-			 $('#groupingToggleBtn').text(`Group By (${selectedCount})`);
-		}
-
-		function updateColumnVisibility() {
-			$('#columnToggleMenu input[type="checkbox"]').each(function () {
-				var column = table.column($(this).data('column'));
-				column.visible($(this).prop('checked'));
-			});
-
-			let selectedCount = $('#columnToggleMenu input[type="checkbox"]:checked').length;
-			$('#columnToggleBtn').text(`Showing ${selectedCount}/10 Columns`);
-		}
-
-		$("#BacklogGrid").closest('div').addClass("table-responsive");
-
-		$('#BacklogGrid').on('draw.dt', function () {
-			let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
-			let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
-				return new bootstrap.Popover(popoverTriggerEl)
-			})
-		});
-
-		$('#filterContent').on('shown.bs.collapse', function () {
-			$('#filterIcon').removeClass('fa-plus').addClass('fa-minus');
-			if (!filterLoaded) {
-				filterLoaded = true;
-				JSManager.renderPartial('@Url.Action("Filter")', {}, 'filter-container');
-			}
-		});
-
-		$('#filterContent').on('hidden.bs.collapse', function () {
-			$('#filterIcon').removeClass('fa-minus').addClass('fa-plus');
-		});
-
-		$('#resetGroupBy').on('click', function() {
-			 $('#groupingToggleMenu input[type="checkbox"]').prop('checked', false);
-			 updateColumnGrouping();
-		})
-
-		$('#resetColumn').on('click', function() {
-			 $('#columnToggleMenu input[type="checkbox"]').prop('checked', true);
-			 updateColumnVisibility();
-		})
-
-		$('#btnExcelExport').on('click', function() {
-			let visibleColumns = [];
-			let groupByColumns = [];
-
-			$('#columnToggleMenu input:checked').each(function () {
-				visibleColumns.push($(this).data('columnname'));
-			});
-
-			$('#groupingToggleMenu input:checked').each(function () {
-				groupByColumns.push($(this).data('columnname'));
-			});
-
-			let exportUrl = "@Url.Action("ExportToExcel")"
-						+ "?columns=" + visibleColumns.join(',')
-						+ "&createdby=" + $('#CreatedById').val()
-						+ "&module=" + $('#ModuleId').val()
-						+ "&subModule=" + $('#SubModuleId').val()
-						+ "&taskType=" + $('#TaskTypeId').val()
-						+ "&severity=" + $('#SeverityId').val()
-						+ "&reporter=" + $('#ReporterId').val()
-						+ "&assignee=" + $('#AssigneeId').val()
-						+ "&status=" + $('#StatusId').val()
-						+ "&sprint=" + $('#SprintId').val()
-						+ "&groups=" + groupByColumns.join(',');
-
-			window.location.href=exportUrl;
-		});
-	});
-
-	function setFilterParam(dto) {
-		dto.createdby = $('#CreatedById').val();
-		dto.module = $('#ModuleId').val();
-		dto.subModule = $('#SubModuleId').val();
-		dto.taskType = $('#TaskTypeId').val();
-		dto.severity = $('#SeverityId').val();
-		dto.reporter = $('#ReporterId').val();
-		dto.assignee = $('#AssigneeId').val();
-		dto.status = $('#StatusId').val();
-		dto.sprint = $('#SprintId').val();
-		return dto;
-	}
-</script>

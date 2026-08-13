@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Service.Masters;
 using Taskist.Service.WorkItems;
-using Microsoft.AspNetCore.Mvc;
 using Taskist.Web.Models.Masters;
 
 namespace Taskist.Web.Components.WorkItems;

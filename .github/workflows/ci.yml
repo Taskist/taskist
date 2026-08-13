@@ -1,0 +1,208 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Restore
+        run: dotnet restore src/Taskist.sln
+
+      - name: Build
+        run: dotnet build src/Taskist.sln --configuration Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test src/Taskist.sln
+          --configuration Release
+          --no-build
+          --verbosity normal
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results
+          retention-days: 7
+
+  migrations:
+    name: Verify Migrations
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 8.*
+
+      - name: Restore
+        run: dotnet restore src/Taskist.sln
+
+      # catches entity changes committed without a matching migration
+      - name: Check for model changes without a migration
+        run: |
+          dotnet ef migrations has-pending-model-changes \
+            --project src/Libraries/Taskist.Data/Taskist.Data.csproj \
+            --startup-project src/Presentation/Taskist.Web/Taskist.Web.csproj \
+          && echo "No pending model changes."
+        env:
+          TASKIST_ConnectionStrings__AppContext: "Server=localhost;Database=TaskistCi;User Id=sa;Password=NotUsedAtDesignTime1!;TrustServerCertificate=True;"
+          TASKIST_Security__EncryptionKey: "ci-design-time-key-at-least-32-characters"
+
+  migrate-and-run:
+    name: Migrate & Smoke Test
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "CiStr0ng!Password"
+          MSSQL_PID: Developer
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'CiStr0ng!Password' -C -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+          --health-start-period 30s
+
+    env:
+      TASKIST_ConnectionStrings__AppContext: "Server=localhost,1433;Database=Taskist;User Id=sa;Password=CiStr0ng!Password;TrustServerCertificate=True;"
+      TASKIST_Security__EncryptionKey: "ci-smoke-test-key-at-least-32-characters"
+      TASKIST_Security__RequireHttpsCookies: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 8.*
+
+      - name: Create database
+        run: >
+          /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P 'CiStr0ng!Password' -C -b
+          -Q "IF DB_ID('Taskist') IS NULL CREATE DATABASE [Taskist];"
+
+      # proves the migrations apply cleanly to an empty database
+      - name: Apply migrations
+        run: >
+          dotnet ef database update
+          --project src/Libraries/Taskist.Data/Taskist.Data.csproj
+          --startup-project src/Presentation/Taskist.Web/Taskist.Web.csproj
+
+      - name: Apply seed scripts
+        run: |
+          for script in "sql script/mssql/1_defaults.sql" "sql script/mssql/2_locale_resource.sql"; do
+            echo "Applying $script"
+            /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P 'CiStr0ng!Password' -C -b -d Taskist -i "$script"
+          done
+
+      - name: Publish
+        run: dotnet publish src/Presentation/Taskist.Web/Taskist.Web.csproj -c Release -o ./publish
+
+      # confirms the app boots and serves the sign-in page against a real database
+      - name: Smoke test
+        run: |
+          cd publish
+          ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_HTTP_PORTS=5080 \
+            dotnet Taskist.Web.dll > ../app.log 2>&1 &
+          APP_PID=$!
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://localhost:5080/login > /dev/null 2>&1; then
+              echo "Application responded on attempt $attempt."
+              kill $APP_PID
+              exit 0
+            fi
+            if ! kill -0 $APP_PID 2>/dev/null; then
+              echo "Application exited early."
+              cat ../app.log
+              exit 1
+            fi
+            sleep 2
+          done
+
+          echo "Application did not respond in time."
+          cat ../app.log
+          kill $APP_PID 2>/dev/null || true
+          exit 1
+
+      - name: Upload application log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-log
+          path: app.log
+          retention-days: 7
+
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build application image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: taskist:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build migration image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile.migrate
+          push: false
+          tags: taskist-migrate:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

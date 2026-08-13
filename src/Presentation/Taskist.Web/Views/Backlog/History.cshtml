@@ -1,11 +1,67 @@
-﻿@model IList<BacklogCommentGridModel>
-
-<div class="timeline">
-    @foreach(var comment in Model){
-        <div class="timeline-item">
-            <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>@comment.CommentBy</div>
-            <div class="time text-muted"><i class="far fa-clock me-1"></i>@comment.CommentOn.ToString("dd-MM-yyyy hh:mm")</div>
-            <div class="details">@Html.Raw(comment.Comment)</div>
-        </div>
+@model IList<BacklogCommentGridModel>
+@functions {
+    // choose an icon + accent colour from the change label
+    static (string Icon, string Cls) EventStyle(string comment)
+    {
+        var c = (comment ?? "").ToLowerInvariant();
+        if (c.Contains("status")) return ("fas fa-flag", "ev-status");
+        if (c.Contains("assignee")) return ("fas fa-user-check", "ev-assignee");
+        if (c.Contains("severity")) return ("fas fa-triangle-exclamation", "ev-severity");
+        if (c.Contains("sprint")) return ("fas fa-bolt", "ev-sprint");
+        if (c.Contains("added file") || c.Contains("added a file")) return ("fas fa-paperclip", "ev-file");
+        if (c.Contains("deleted file")) return ("fas fa-trash", "ev-file");
+        if (c.Contains("module")) return ("fas fa-cube", "ev-module");
+        if (c.Contains("due date")) return ("fas fa-calendar-day", "ev-due");
+        if (c.Contains("title")) return ("fas fa-heading", "ev-title");
+        if (c.Contains("reporter")) return ("fas fa-user-pen", "ev-reporter");
+        return ("fas fa-pen", "ev-generic");
     }
-</div>
+
+    static string DayLabel(DateTime d)
+    {
+        var today = DateTime.Now.Date;
+        if (d.Date == today) return "Today";
+        if (d.Date == today.AddDays(-1)) return "Yesterday";
+        return d.ToString("dd MMM yyyy");
+    }
+}
+
+@if (Model.Any())
+{
+    <div class="history-timeline">
+        @{ string lastDay = null; }
+        @foreach (var item in Model)
+        {
+            var day = DayLabel(item.CommentOn);
+            if (day != lastDay)
+            {
+                lastDay = day;
+                <div class="history-day">@day</div>
+            }
+            var style = EventStyle(item.Comment);
+            <div class="history-item">
+                <div class="history-dot @style.Cls"><i class="@style.Icon"></i></div>
+                <div class="history-content">
+                    <div class="history-meta">
+                        <span class="history-author">@item.CommentBy</span>
+                        <span class="history-time" data-time="@item.CommentOn.ToString("o")" title="@item.CommentOn.ToString("dd-MMM-yyyy HH:mm")"></span>
+                    </div>
+                    <div class="history-text">@Html.Raw(item.Comment)</div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="files-empty">
+        <i class="far fa-clock"></i>
+        <div>No history yet.</div>
+        <small>Field changes and file activity will appear here.</small>
+    </div>
+}
+
+@* AJAX-injected partial: init call into the globally-loaded module *@
+<script>
+    if (window.BacklogHistory) BacklogHistory.init();
+</script>

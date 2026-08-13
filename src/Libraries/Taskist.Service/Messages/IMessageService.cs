@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Domain.Users;
+using Taskist.Core.Domain.Users;
 using Taskist.Core.Domain.WorkItems;
 
 namespace Taskist.Service.Messages;

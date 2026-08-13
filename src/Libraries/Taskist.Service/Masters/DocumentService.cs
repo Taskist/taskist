@@ -1,6 +1,7 @@
-﻿using Taskist.Core.Domain.Masters;
-using Taskist.Data.Repository;
+using Taskist.Service.Common;
 using Microsoft.AspNetCore.Http;
+using Taskist.Core.Domain.Masters;
+using Taskist.Data.Repository;
 
 namespace Taskist.Service.Masters;
 
@@ -26,10 +27,42 @@ public class DocumentService : IDocumentService
         return id == 0 ? null : await _documentRepository.GetByIdAsync(id);
     }
 
+    public bool IsAllowed(IFormFile file, out string rejectReason)
+    {
+        rejectReason = string.Empty;
+
+        if (file == null || file.Length == 0)
+        {
+            rejectReason = "No file uploaded";
+            return false;
+        }
+
+        if (file.Length > ServiceConstant.MaxUploadBytes)
+        {
+            rejectReason = $"File exceeds the {ServiceConstant.MaxUploadBytes / (1024 * 1024)} MB limit";
+            return false;
+        }
+
+        //use only the final extension so "report.pdf.exe" is judged as ".exe"
+        var extension = Path.GetExtension(file.FileName);
+
+        if (string.IsNullOrWhiteSpace(extension) ||
+            !ServiceConstant.AllowedUploadExtensions.Contains(extension))
+        {
+            rejectReason = "This file type is not allowed";
+            return false;
+        }
+
+        return true;
+    }
+
     public async Task<Document> InsertAsync(IFormFile file)
     {
         if (file == null)
-            throw new ArgumentNullException();
+            throw new ArgumentNullException(nameof(file));
+
+        if (!IsAllowed(file, out _))
+            return null;
 
         var fileData = GetBytesFromFile(file);
 
@@ -57,6 +90,9 @@ public class DocumentService : IDocumentService
 
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
+
+        if (!IsAllowed(file, out _))
+            return;
 
         var fileData = GetBytesFromFile(file);
 

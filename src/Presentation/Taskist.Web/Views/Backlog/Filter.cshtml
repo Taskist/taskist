@@ -74,27 +74,7 @@
     </div>
 </div>
 
+@* AJAX-injected partial: init call into the globally-loaded module *@
 <script>
-    $(function() {
-        $(".kendo-select").kendoMultiSelect({
-            autoClose: false,
-            tagMode: "single"
-        });
-
-        $('#btnSearch').click(function(){
-            JSManager.reloadGrid('BacklogGrid');
-        });
-        $('#btnReset').click(function(){
-            $(".kendo-select-filter").each(function() {
-                var multiSelect = $(this).data("kendoMultiSelect");
-                if (multiSelect) {
-                    multiSelect.value([]);
-                    multiSelect.refresh();
-                }
-            });
-            JSManager.reloadGrid('BacklogGrid');
-        });
-
-        JSManager.reloadGrid('BacklogGrid');
-    });
+    if (window.BacklogFilter) BacklogFilter.init();
 </script>

@@ -1,12 +1,12 @@
-﻿using Hangfire;
-using System.Net;
-using System.Text.RegularExpressions;
+using Taskist.Service.Masters;
+using Taskist.Service.Security;
+using Hangfire;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
 using Taskist.Core.Domain.WorkItems;
+using System.Net;
+using System.Text.RegularExpressions;
 using Taskist.Core.Extensions;
-using Taskist.Service.Masters;
-using Taskist.Service.Security;
 
 namespace Taskist.Service.Messages;
 

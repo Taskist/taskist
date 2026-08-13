@@ -1,9 +1,8 @@
-﻿using System.Linq.Dynamic.Core;
+using Microsoft.EntityFrameworkCore;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DynamicLinq;
+using Taskist.Data.Extensions;
 
 namespace Taskist.Service.Masters;
 
@@ -30,7 +29,7 @@ public class TaskTypeService : ITaskTypeService
         return await _taskTypeRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.OrderBySafe(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));

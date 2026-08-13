@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔐 Report a security vulnerability
+    url: https://github.com/Taskist/taskist/security/advisories/new
+    about: Please report vulnerabilities privately rather than in a public issue. See SECURITY.md.
+  - name: 💬 Ask a question or get help
+    url: https://taskist.zulipchat.com/#narrow/channel/539613-support
+    about: Setup problems and usage questions are best answered on Zulip.
+  - name: 📚 Documentation
+    url: https://docs.taskist.org
+    about: Setup guides, module explanations and screenshots.
