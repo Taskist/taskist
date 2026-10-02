@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
+using MapsterMapper;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Service.Security;

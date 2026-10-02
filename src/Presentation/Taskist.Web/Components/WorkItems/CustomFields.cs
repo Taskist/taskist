@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Service.Masters;

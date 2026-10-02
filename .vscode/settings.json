@@ -1,0 +1,15 @@
+{
+  // Hide build output and IDE folders from the Explorer (they're git-ignored anyway)
+  "files.exclude": {
+    "**/bin": true,
+    "**/obj": true,
+    "**/.vs": true
+  },
+  // Also keep them out of search results
+  "search.exclude": {
+    "**/bin": true,
+    "**/obj": true
+  },
+  // Use Microsoft Edge when VS Code opens an external browser
+  "workbench.externalBrowser": "edge"
+}

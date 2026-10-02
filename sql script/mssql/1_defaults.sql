@@ -177,6 +177,28 @@ WHERE p.[SystemName] <> N'General.ManageDashboard'
   AND NOT EXISTS (SELECT 1 FROM [UserRolePermissionMap] AS m
                   WHERE m.[PermissionId] = p.[Id] AND m.[UserRoleId] = r.[Id]);
 
+-- Developer: dashboard + work items (backlog, board, sprints).
+-- The Work Items parent permission is included so the menu group renders.
+INSERT INTO [UserRolePermissionMap] ([PermissionId], [UserRoleId])
+SELECT p.[Id], r.[Id]
+FROM [UserRolePermission] AS p
+CROSS JOIN [UserRole] AS r
+WHERE r.[SystemName] = N'Developer'
+  AND p.[SystemName] IN (N'General.ManageDashboard', N'WorkItem.ManageWorkItems',
+                         N'WorkItem.ManageBacklog', N'WorkItem.ManageBoard', N'WorkItem.ManageSprints')
+  AND NOT EXISTS (SELECT 1 FROM [UserRolePermissionMap] AS m
+                  WHERE m.[PermissionId] = p.[Id] AND m.[UserRoleId] = r.[Id]);
+
+-- Reporter: dashboard + reports and tracks backlog items.
+INSERT INTO [UserRolePermissionMap] ([PermissionId], [UserRoleId])
+SELECT p.[Id], r.[Id]
+FROM [UserRolePermission] AS p
+CROSS JOIN [UserRole] AS r
+WHERE r.[SystemName] = N'Reporter'
+  AND p.[SystemName] IN (N'General.ManageDashboard', N'WorkItem.ManageWorkItems', N'WorkItem.ManageBacklog')
+  AND NOT EXISTS (SELECT 1 FROM [UserRolePermissionMap] AS m
+                  WHERE m.[PermissionId] = p.[Id] AND m.[UserRoleId] = r.[Id]);
+
 /* ---------------------------------------------------------------------------------------------------------
     User to role mapping
 --------------------------------------------------------------------------------------------------------- */

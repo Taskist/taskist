@@ -1,6 +1,6 @@
 ﻿using Severity = Taskist.Core.Domain.Masters.Severity;
 using Microsoft.AspNetCore.Mvc;
-using AutoMapper;
+using MapsterMapper;
 using Taskist.Core.Common;
 using Taskist.Service.Security;
 using Taskist.Service.Masters;

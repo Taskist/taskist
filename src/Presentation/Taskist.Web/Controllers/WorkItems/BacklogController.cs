@@ -4,7 +4,7 @@ using LicenseContext = OfficeOpenXml.LicenseContext;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
-using AutoMapper;
+using MapsterMapper;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.WorkItems;

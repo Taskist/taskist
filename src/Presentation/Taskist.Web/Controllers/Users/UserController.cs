@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using AutoMapper;
+using MapsterMapper;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
 using Taskist.Service.Security;
@@ -179,7 +179,7 @@ public class UserController : BaseController
             await _userService.ResetPasswordAsync(model.Id, model.Password);
 
             var user = await _userService.GetByIdAsync(model.Id);
-            await _userActivityService.InsertAsync("ResetPassword", string.Format(await _localizationService.GetResourceAsync("Log.PasswordReset"), user.Name));
+            await _userActivityService.InsertAsync("ResetPassword", string.Format(await _localizationService.GetResourceAsync("Log.PasswordReset"), user.Name), user);
 
             return Json(new JsonResponseModel
             {

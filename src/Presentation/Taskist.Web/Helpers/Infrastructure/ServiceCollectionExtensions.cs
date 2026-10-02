@@ -3,6 +3,8 @@ using System.Threading.RateLimiting;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Hangfire;
+using Mapster;
+using MapsterMapper;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -260,7 +262,11 @@ public static class ServiceCollectionExtensions
         services.AddFluentValidationAutoValidation().AddFluentValidationClientsideAdapters();
         services.AddValidatorsFromAssemblyContaining<Program>();
 
-        services.AddAutoMapper(typeof(Program));
+        var mapsterConfig = TypeAdapterConfig.GlobalSettings;
+        mapsterConfig.Scan(typeof(Program).Assembly);
+        mapsterConfig.Compile(); //fail fast: surfaces any bad mapping rule at startup, not mid-request
+        services.AddSingleton(mapsterConfig);
+        services.AddScoped<IMapper, ServiceMapper>();
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

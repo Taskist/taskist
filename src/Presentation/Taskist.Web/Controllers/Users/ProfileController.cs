@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using AutoMapper;
+using MapsterMapper;
 using Taskist.Core.Common;
 using Taskist.Service.Security;
 using Taskist.Service.Localization;

@@ -49,7 +49,9 @@ public class UserActivityService : IUserActivityService
         {
             SystemName = systemName,
             EntityId = entity?.Id,
-            EntityName = entity?.GetType().Name,
+            //EntityName is a NOT NULL column; fall back to the systemName for entity-less
+            //activities (e.g. password reset) so logging never fails on a null value
+            EntityName = entity?.GetType().Name ?? systemName,
             UserId = user.Id,
             Comment = CommonHelper.EnsureMaximumLength(comment ?? string.Empty, 4000),
             CreatedOnUtc = DateTime.Now,
