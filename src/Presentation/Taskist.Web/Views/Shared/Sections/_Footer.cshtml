@@ -1,9 +1,15 @@
-﻿<footer class="footer mt-3 px-4">
+@inject GeneralSettings GeneralSettings
+@inject Taskist.Core.Configuration.IAppInfoProvider AppInfo
+<footer class="footer mt-3 px-4">
     <div>
-        <a href="https://taskist.github.io/" target="_blank">Taskist</a> © <script>document.write(new Date().getFullYear());</script> Somaraj
+        © @DateTime.Today.Year <a href="https://somaraj.com/" target="_blank" class="text-decoration-none">@(string.IsNullOrWhiteSpace(GeneralSettings.CompanyName) ? "Somaraj N" : GeneralSettings.CompanyName)</a>
     </div>
-    <div class="ms-auto">
-        <a href="https://taskist.github.io/" class="me-3" target="_blank">Version 1.0 alpha</a>
-        <a href="https://taskist.github.io/" target="_blank">Support</a>
+    <div class="ms-auto d-none d-md-flex align-items-center">
+        <span class="me-3 text-muted">Version @AppInfo.Version</span>
+        @if (AppInfo.IsBeta)
+        {
+            <span class="app-beta-chip me-3">BETA</span>
+        }
+        <a href="mailto:@(string.IsNullOrWhiteSpace(GeneralSettings.SupportEmail) ? "taskist@outlook.in" : GeneralSettings.SupportEmail)" class="text-decoration-none">Support</a>
     </div>
 </footer>

@@ -1,0 +1,10 @@
+# Normalize line endings. Text files are checked out as CRLF on all platforms
+# (this is a Windows / .NET repository), keeping editors from flagging mixed endings.
+* text=auto eol=crlf
+
+# Shell scripts must stay LF to remain executable on Unix.
+*.sh text eol=lf
+
+# Leave vendored / third-party assets untouched (no EOL normalization).
+src/Presentation/Taskist.Web/wwwroot/lib/** -text
+src/Presentation/Taskist.Web/theme/** -text

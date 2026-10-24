@@ -1,0 +1,63 @@
+@model TimelineModel
+@{
+    ViewData["Title"] = Localize("TimelinePage.Title");
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/pages/board.css" asp-append-version="true" />
+}
+
+@section PageScripts {
+    <script src="~/lib/fullcalendar/index.global.min.js"></script>
+    <script src="~/js/pages/board/timeline.js" asp-append-version="true"></script>
+}
+
+@* Relocated into the page header (#pageButtons) by timeline.js on load. *@
+<div id="boardHeaderControls" class="d-none align-items-center gap-2">
+    <div class="board-header-project">
+        <select id="boardProject" class="form-control form-control-sm select2" data-url="@Url.Action("Timeline")" data-placeholder="@Localize("Board.Project").Text">
+            @foreach (var p in Model.Projects)
+            {
+                <option value="@p.Value" selected="@p.Selected">@p.Text</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (!Model.HasProject)
+{
+    <wp-empty-state icon="fas fa-folder-open" heading="@Localize("EmptyState.NoProject.Title").Text" text="@Localize("EmptyState.NoProject.Text").Text"
+                    action-text="@Localize("EmptyState.NoProject.Action").Text" action-url="@Url.Action("Create", "Project")" action-permission="ManageProject"></wp-empty-state>
+}
+else
+{
+    <div class="tl-toolbar mb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div id="timelineSummary" class="tl-summary"></div>
+        <div class="btn-group btn-group-sm" role="group">
+            <button type="button" id="tlViewCalendar" class="btn btn-outline-primary active">@Localize("Timeline.Calendar").Text</button>
+            <button type="button" id="tlViewGantt" class="btn btn-outline-primary">@Localize("Timeline.Gantt").Text</button>
+        </div>
+    </div>
+
+    <div id="tlCalendarPane" class="card">
+        <div class="card-body">
+            <div id="taskTimeline"
+                 data-feed-url="@Url.Action("TimelineData")"
+                 data-update-url="@Url.Action("UpdateStatus", "Backlog")"
+                 data-project="@Model.ProjectId"></div>
+            <div class="tl-legend text-muted small mt-2">
+                <span class="tl-legend__heat"></span> @Localize("Timeline.HeatLegend").Text
+            </div>
+        </div>
+    </div>
+
+    <div id="tlGanttPane" class="card d-none">
+        <div class="card-body">
+            <div id="taskGantt"
+                 data-feed-url="@Url.Action("TimelineData")"
+                 data-edit-url="@Url.Action("Edit", "Backlog")"
+                 data-unassigned="@Localize("Board.Unassigned").Text"
+                 data-project="@Model.ProjectId"></div>
+        </div>
+    </div>
+}

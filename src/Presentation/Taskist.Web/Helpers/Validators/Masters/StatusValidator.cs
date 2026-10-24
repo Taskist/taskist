@@ -1,8 +1,8 @@
-using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Masters;
+using FluentValidation;
 
 namespace Taskist.Web.Helpers.Validators.Masters;
 
@@ -12,8 +12,8 @@ public class StatusValidator : AbstractValidator<StatusModel>
         IStatusService severityService)
     {
         RuleFor(r => r.Name)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("StatusModel.Name.RequiredMsg"))
-            .MaximumLength(100).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.Name.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("StatusModel.Name.RequiredMsg"))
+            .MaximumLength(100).WithMessage(localizationService.GetResource("StatusModel.Name.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -23,21 +23,21 @@ public class StatusValidator : AbstractValidator<StatusModel>
                 }
                 var entity = await severityService.GetByNameAsync(x.Name);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.Name.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("StatusModel.Name.UniqueMsg"));
 
         RuleFor(r => r.Description)
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.Description.MaxLengthMsg"));
+            .MaximumLength(250).WithMessage(localizationService.GetResource("StatusModel.Description.MaxLengthMsg"));
 
         RuleFor(r => r.GroupId)
-           .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.Group.RequiredMsg"));
+           .GreaterThan(0).WithMessage(localizationService.GetResource("StatusModel.Group.RequiredMsg"));
 
         RuleFor(r => r.TextColor)
-            .MaximumLength(20).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.TextColor.MaxLengthMsg"));
+            .MaximumLength(20).WithMessage(localizationService.GetResource("StatusModel.TextColor.MaxLengthMsg"));
 
         RuleFor(r => r.BackgroundColor)
-            .MaximumLength(20).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.BackgroundColor.MaxLengthMsg"));
+            .MaximumLength(20).WithMessage(localizationService.GetResource("StatusModel.BackgroundColor.MaxLengthMsg"));
 
         RuleFor(r => r.IconClass)
-            .MaximumLength(50).WithMessageAwait(localizationService.GetResourceAsync("StatusModel.IconClass.MaxLengthMsg"));
+            .MaximumLength(50).WithMessage(localizationService.GetResource("StatusModel.IconClass.MaxLengthMsg"));
     }
 }

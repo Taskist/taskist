@@ -1,73 +1,48 @@
-﻿@{
+@{
     var user = await workContext.GetCurrentUserAsync();
+    var avatarUrl = Url.Action("Photo", "Profile", new { userId = user.Id });
 }
 
-<header class="header header-sticky p-0 mb-4">
+<header class="header header-sticky p-0 mb-2">
     <div class="container-fluid border-bottom px-4">
         <button class="header-toggler" type="button" onclick="coreui.Sidebar.getInstance(document.querySelector('#sidebar')).toggle()" style="margin-inline-start: -14px;">
             <i class="icon icon-lg fas fa-bars"></i>
         </button>
-        @await Component.InvokeAsync("HeaderTools", new { section = "search" })
+        @await Component.InvokeAsync("HeaderTools")
         <ul class="header-nav ms-auto">
-            <li class="nav-item d-flex align-items-center me-1">
-                @await Component.InvokeAsync("HeaderTools", new { section = "create" })
-            </li>
-            <li class="nav-item dropdown">
-                <a class="nav-link position-relative" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Notifications">
-                    <i class="icon icon-lg my-1 mx-2 fas fa-bell"></i>
-                    @* badge renders only when there is something to show *@
-                    @if (false)
-                    {
-                        <span class="badge rounded-pill position-absolute top-0 end-0 bg-danger">0</span>
-                    }
-                </a>
-                <div class="dropdown-menu dropdown-menu-end dropdown-menu-lg pt-0">
-                    <div class="dropdown-header fw-semibold mb-2">
-                        <i class="icon fas fa-bell me-2"></i>Notifications
-                    </div>
-                    <div class="tk-notify-empty">
-                        <span class="tk-notify-check"><i class="fas fa-check"></i></span>
-                        <div class="fw-semibold">You're all caught up</div>
-                        <div class="small">No new notifications</div>
-                    </div>
-                </div>
-            </li>
-        </ul>
-        <ul class="header-nav">
             <li class="nav-item py-1">
                 <div class="vr h-100 mx-2 text-body text-opacity-75"></div>
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-link py-0 pe-0" data-coreui-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                     <div class="avatar avatar-md">
-                        <img class="avatar-img" src="@Url.Action("GetAvatar", "Profile")?v=@user.AvatarVersion" alt="@user.Name" />
+                        <img class="avatar-img" src="@avatarUrl" alt="@user.Name" />
                     </div>
                 </a>
-                <div class="dropdown-menu dropdown-menu-end pt-0" style="min-width: 15rem;">
-                    <div class="dropdown-header mb-2">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar avatar-md me-2">
-                                <img class="avatar-img" src="@Url.Action("GetAvatar", "Profile")?v=@user.AvatarVersion" alt="@user.Name" />
-                            </div>
-                            <div class="overflow-hidden">
-                                <div class="fw-semibold text-truncate profile-name">@user.Name</div>
-                                <div class="small text-body-secondary text-truncate">@user.Email</div>
-                                @if (user.IsAdmin)
-                                {
-                                    <span class="tk-role-badge mt-1">Administrator</span>
-                                }
-                            </div>
+                <div class="dropdown-menu dropdown-menu-end wp-menu">
+                    <div class="wp-menu__identity">
+                        <img src="@avatarUrl" alt="@user.Name" />
+                        <div class="min-w-0">
+                            <div class="wp-id-name">@user.Name</div>
+                            <div class="wp-id-mail">@user.Email</div>
                         </div>
                     </div>
-                    <a class="dropdown-item" href="javascript:JSManager.openForm('@Url.Action("Edit", "Profile")','@Localize("User.Profile").Text','col-md-7')">
-                        <i class="icon fas fa-id-card me-2"></i>Profile
+                    <a class="dropdown-item" asp-action="Index" asp-controller="Profile">
+                        <span class="wp-menu__chip wp-menu__chip--teal"><i class="fas fa-user"></i></span>@Localize("HeaderMenu.MyProfile")
                     </a>
-                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="javascript:JSManager.openOffCanvas('@Url.Action("ChangePassword","Profile")', '@Localize("HeaderMenu.ChangePassword")')">
+                        <span class="wp-menu__chip wp-menu__chip--amber"><i class="fas fa-key"></i></span>@Localize("HeaderMenu.ChangePassword")
+                    </a>
+                    <a href="#" class="dropdown-item js-theme-toggle" data-url="@Url.Action("SaveAppearance", "Profile")"
+                       data-dark-text="@Localize("HeaderMenu.DarkMode").Text" data-light-text="@Localize("HeaderMenu.LightMode").Text">
+                        <span class="wp-menu__chip wp-menu__chip--blue"><i class="fas fa-moon js-theme-toggle-icon"></i></span><span class="js-theme-toggle-text">@Localize("HeaderMenu.DarkMode")</span>
+                    </a>
                     <a asp-route="ResetCache" class="dropdown-item">
-                        <i class="icon fas fa-sync me-2"></i>Reset Cache
+                        <span class="wp-menu__chip wp-menu__chip--blue"><i class="fas fa-sync"></i></span>@Localize("HeaderMenu.ResetCache")
                     </a>
-                    <a asp-route="Logout" class="dropdown-item">
-                        <i class="icon fas fa-sign-out-alt me-2"></i>Logout
+                    <hr class="wp-menu__divider" />
+                    <a asp-route="Logout" class="dropdown-item wp-menu__danger">
+                        <span class="wp-menu__chip wp-menu__chip--red"><i class="fas fa-sign-out-alt"></i></span>@Localize("HeaderMenu.Logout")
                     </a>
                 </div>
             </li>
@@ -75,9 +50,10 @@
     </div>
     <div class="container-fluid border-bottom px-4">
         <div class="subheader-title">
-            <i class="icon icon-lg fas fa-folder-open me-2"></i><span id="pageTitle"></span>
+            <i class="far fa-folder-open page-icon"></i><span id="pageTitle"></span>
         </div>
         <div class="py-0 pe-0" id="pageButtons">
         </div>
     </div>
+    @await Component.InvokeAsync("Announcements")
 </header>

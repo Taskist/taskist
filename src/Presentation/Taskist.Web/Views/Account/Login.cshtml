@@ -1,28 +1,48 @@
 @model LoginModel
+@inject Taskist.Service.Masters.ISettingService SettingService
+@inject Taskist.Core.Configuration.IAppInfoProvider AppInfo
 @{
 	ViewData["Title"] = "Login";
 	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+
+	var general = await SettingService.LoadSettingAsync<Taskist.Core.Domain.Settings.GeneralSettings>();
+	var companyName = string.IsNullOrWhiteSpace(general?.CompanyName) ? "Somaraj" : general.CompanyName;
+	var supportEmail = general?.SupportEmail;
 }
 
 @section PageStyles {
-	<link rel="stylesheet" href="~/css/pages/account/login.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/lib/ladda/ladda-themeless.min.css" />
+	<link rel="stylesheet" href="~/css/pages/login.css" asp-append-version="true" />
 }
 
 <div class="login-card">
 	<div class="login-brand d-none d-lg-flex">
-		<div class="login-eyebrow">Taskist</div>
+		<div class="login-eyebrow">@companyName</div>
 		<div class="login-brand-content">
 			<h1 class="login-brand-title">Welcome to Taskist</h1>
 			<p class="login-brand-tagline">Plan, track and ship your work &mdash; all in one place.</p>
 			<ul class="login-features">
-				<li><i class="fas fa-tasks"></i> Backlog &amp; sprints at a glance</li>
-				<li><i class="fas fa-bug"></i> Track bugs, tasks &amp; change requests</li>
+				<li><i class="fas fa-tasks"></i> Backlog &amp; releases at a glance</li>
+				<li><i class="fas fa-code-branch"></i> Boards, code reviews &amp; wiki</li>
 				<li><i class="fas fa-chart-line"></i> Insightful dashboards &amp; reports</li>
 			</ul>
 		</div>
 		<div class="login-brand-footer">
-			<span>Need access? Contact your administrator.</span>
-			<span class="login-brand-version">v 1.0 alpha</span>
+			@if (!string.IsNullOrWhiteSpace(supportEmail))
+			{
+				<span>Need help signing in? <a href="mailto:@supportEmail">@supportEmail</a></span>
+			}
+			else
+			{
+				<span>Need access? Contact your administrator.</span>
+			}
+			<span class="login-brand-version">
+				v @AppInfo.Version
+				@if (AppInfo.IsBeta)
+				{
+					<span class="login-beta-chip">BETA</span>
+				}
+			</span>
 		</div>
 		<span class="login-brand-blob login-brand-blob-1"></span>
 		<span class="login-brand-blob login-brand-blob-2"></span>
@@ -31,14 +51,14 @@
 	<div class="login-form">
 		<div class="login-form-inner">
 			<div class="login-form-logo">
-				<img src="~/images/brand/logo.png" alt="Taskist" height="44" />
+				<img src="~/images/brand/logo.png" alt="Taskist" />
 			</div>
 			<div class="login-form-header">
 				<h2 id="loginGreeting">Welcome back</h2>
 				<p>Sign in to continue to Taskist.</p>
 			</div>
 
-			<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off" id="loginForm">
+			<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off" id="loginForm" class="no-auto-ladda">
 				<div asp-validation-summary="ModelOnly" class="login-error"></div>
 				<div class="mb-3">
 					<label asp-for="Email" class="form-label"></label>
@@ -65,18 +85,21 @@
 						<input class="form-check-input" asp-for="RememberMe" type="checkbox" />
 						<label class="form-check-label" asp-for="RememberMe"></label>
 					</div>
+					<a class="login-forgot" asp-route="ForgotPassword">Forgot password?</a>
 				</div>
 
-				<button type="submit" class="btn btn-primary login-submit">
-					Sign In <i class="fas fa-arrow-right ms-1"></i>
+				<button type="submit" class="btn btn-primary login-submit ladda-button" data-style="zoom-in">
+					<span class="ladda-label">Sign In <i class="fas fa-arrow-right ms-1"></i></span>
 				</button>
 
-				<p class="login-copy">&copy; @DateTime.Now.Year Taskist</p>
+				<p class="login-copy">&copy; @DateTime.Now.Year Taskist &middot; Somaraj</p>
 			</form>
 		</div>
 	</div>
 </div>
 
 @section PageScripts {
-	<script src="~/js/pages/account/login.js" asp-append-version="true"></script>
+	<script src="~/lib/ladda/spin.min.js"></script>
+	<script src="~/lib/ladda/ladda.min.js"></script>
+	<script src="~/js/pages/login.js" asp-append-version="true"></script>
 }

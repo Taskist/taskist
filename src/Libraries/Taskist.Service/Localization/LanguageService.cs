@@ -1,9 +1,11 @@
-using Taskist.Data.Repository;
-using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Extensions;
 using Taskist.Core.Caching;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Localization;
-using Taskist.Data.Extensions;
+using Taskist.Data.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 
 namespace Taskist.Service.Localization;
 
@@ -32,7 +34,7 @@ public class LanguageService : ILanguageService
 	{
 		return await _languageRepository.GetAllPagedAsync(query =>
 		{
-			query = query.OrderBySafe(sortColumn, sortDirection);
+			query = query.ApplySafeSort(sortColumn, sortDirection);
 
 			if (!string.IsNullOrWhiteSpace(search))
 				query = query.Where(

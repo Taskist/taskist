@@ -1,9 +1,9 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 using Taskist.Core.Domain.Users;
 
 namespace Taskist.Core.Domain.WorkItems;
 
-public class BacklogComment : BaseEntity
+public class BacklogComment : BaseEntity, IAuditableEntity
 {
     public int BacklogId { get; set; }
 
@@ -12,6 +12,14 @@ public class BacklogComment : BaseEntity
     public int CreatedById { get; set; }
 
     public bool SystemComment { get; set; }
+
+    public bool PostToIssue { get; set; }
+
+    public string? FieldName { get; set; }
+
+    public string? OldValue { get; set; }
+
+    public string? NewValue { get; set; }
 
     public DateTime CreatedOn { get; set; }
 

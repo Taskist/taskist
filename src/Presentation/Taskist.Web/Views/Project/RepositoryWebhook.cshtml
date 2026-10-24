@@ -1,0 +1,66 @@
+@model RepositoryWebhookModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+    var isGitHub = Model.ProviderType == (int)Taskist.Core.Enums.GitProviderType.GitHub;
+}
+
+@section Scripts {
+    <script src="~/js/pages/masters/project-webhook.js" asp-append-version="true"></script>
+}
+
+<div class="repository-webhook" data-regenerate-url="@Url.Action("RegenerateWebhookSecret")" data-register-url="@Url.Action("RegisterWebhook")"
+     data-repository-id="@Model.RepositoryId" data-copied="@Localize("ProjectPage.GitLabWebhook.Copied").Text"
+     data-regenerate-confirm="@Localize("ProjectRepository.Webhook.RegenerateConfirm").Text">
+    @Html.AntiForgeryToken()
+    <h6 class="mb-3"><i class="fab @(isGitHub ? "fa-github" : "fa-gitlab") me-1"></i>@Model.RepositoryName</h6>
+
+    <label class="form-label">@Localize("ProjectRepository.Webhook.Url")</label>
+    <div class="input-group mb-2">
+        <input type="text" class="form-control gitlab-webhook-url" value="@Model.WebhookUrl" readonly />
+        <button type="button" class="btn btn-outline-secondary copy-webhook-url" data-copied="@Localize("ProjectPage.GitLabWebhook.Copied").Text">
+            <i class="far fa-copy me-1"></i>@Localize("ProjectPage.GitLabWebhook.Copy")
+        </button>
+    </div>
+
+    <div class="mb-3 small">
+        @if (Model.HasSecret)
+        {
+            <span class="text-success"><i class="fas fa-lock me-1"></i>@Localize("ProjectRepository.Webhook.SecretSet") @Model.SecretCreatedOn?.ToLocalTime().ToString("dd-MMM-yyyy")</span>
+        }
+        else
+        {
+            <span class="text-danger"><i class="fas fa-lock-open me-1"></i>@Localize("ProjectRepository.Webhook.NoSecret")</span>
+        }
+        @if (Model.LastDeliveryOn != null)
+        {
+            <span class="ms-2 text-muted">· @Localize("ProjectRepository.Webhook.LastDelivery") @Model.LastDeliveryOn.Value.ToLocalTime().ToString("dd-MMM-yyyy HH:mm")</span>
+        }
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="fw-semibold mb-1"><i class="fas fa-wand-magic-sparkles me-1"></i>@Localize("ProjectRepository.Webhook.AutoTitle")</div>
+            <div class="small text-muted mb-2">@Localize(isGitHub ? "ProjectRepository.Webhook.AutoHint.GitHub" : "ProjectRepository.Webhook.AutoHint.GitLab")</div>
+            <button type="button" class="btn btn-sm btn-primary repository-webhook__register"><i class="fas fa-plug me-1"></i>@Localize("ProjectRepository.Webhook.Register")</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="fw-semibold mb-1"><i class="fas fa-hand me-1"></i>@Localize("ProjectRepository.Webhook.ManualTitle")</div>
+            <ol class="small mb-2 ps-3">
+                <li>@Localize(isGitHub ? "ProjectRepository.Webhook.Manual1.GitHub" : "ProjectRepository.Webhook.Manual1.GitLab")</li>
+                <li>@Localize("ProjectRepository.Webhook.Manual2")</li>
+                <li>@Localize(isGitHub ? "ProjectRepository.Webhook.Manual3.GitHub" : "ProjectRepository.Webhook.Manual3.GitLab")</li>
+            </ol>
+            <button type="button" class="btn btn-sm btn-outline-danger repository-webhook__regenerate"><i class="fas fa-key me-1"></i>@Localize("ProjectRepository.Webhook.Regenerate")</button>
+            <div class="repository-webhook__secret d-none mt-2">
+                <div class="alert alert-warning small mb-1"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("ProjectRepository.Webhook.ShownOnce")</div>
+                <div class="input-group">
+                    <input type="text" class="form-control font-monospace gitlab-webhook-url repository-webhook__secret-value" readonly autocomplete="off" />
+                    <button type="button" class="btn btn-outline-secondary copy-webhook-url" data-copied="@Localize("ProjectPage.GitLabWebhook.Copied").Text"><i class="far fa-copy"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

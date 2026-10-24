@@ -1,0 +1,24 @@
+@model TagMergeModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<form asp-action="Merge" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+    <input type="hidden" asp-for="SourceId" />
+    <div class="validation-errors"></div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-warning py-2 px-3 small">
+                Merging <strong>@Model.SourceName</strong> into the selected tag re-points all its tasks and removes <strong>@Model.SourceName</strong>. This cannot be undone.
+            </div>
+        </div>
+        <div class="col-md-12">
+            <div class="mb-3">
+                <wc-label asp-for="TargetId" />
+                <select asp-for="TargetId" asp-items="Model.AvailableTargets" class="form-control select2"></select>
+                <span asp-validation-for="TargetId" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <partial name="_ModalButton" />
+</form>

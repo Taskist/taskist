@@ -1,0 +1,72 @@
+@model AnnouncementDisplayModel
+
+@functions {
+    string SeverityClass(AnnouncementSeverity s) => s switch
+    {
+        AnnouncementSeverity.Success => "ann-banner--success",
+        AnnouncementSeverity.Warning => "ann-banner--warning",
+        AnnouncementSeverity.Critical => "ann-banner--critical",
+        _ => "ann-banner--info"
+    };
+    string SeverityIcon(AnnouncementSeverity s) => s switch
+    {
+        AnnouncementSeverity.Success => "fas fa-circle-check",
+        AnnouncementSeverity.Warning => "fas fa-triangle-exclamation",
+        AnnouncementSeverity.Critical => "fas fa-circle-exclamation",
+        _ => "fas fa-circle-info"
+    };
+}
+
+@{
+    var banners = Model.Items.Where(x => x.Type == AnnouncementType.Sticky || x.Type == AnnouncementType.Standard).ToList();
+    var oneTimers = Model.Items.Where(x => x.Type == AnnouncementType.OneTime).ToList();
+}
+
+@if (banners.Any())
+{
+    <div class="ann-banner-stack">
+        @foreach (var a in banners)
+        {
+            <div class="ann-banner ann-banner--pending @SeverityClass(a.Severity)" data-ann-id="@a.Id" data-ann-type="@((int)a.Type)" role="status">
+                <span class="ann-banner__mega"><i class="fas fa-bullhorn"></i></span>
+                <i class="@SeverityIcon(a.Severity) ann-banner__icon"></i>
+                <div class="ann-banner__body">
+                    <span class="ann-banner__title">@a.Title</span>
+                    <span class="ann-banner__text">@Html.Raw(a.Body)</span>
+                </div>
+                @if (a.Type == AnnouncementType.Standard)
+                {
+                    <button type="button" class="btn btn-sm ann-banner__ack" data-ann-ack="@a.Id">
+                        <i class="fas fa-check me-1"></i>@Localize("Announcement.Acknowledge").Text
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="ann-banner__close" data-ann-dismiss="@a.Id" aria-label="Dismiss">&times;</button>
+                }
+            </div>
+        }
+    </div>
+}
+
+@if (oneTimers.Any())
+{
+    <script type="application/json" id="annData">
+        @Html.Raw(Model.OneTimeJson)
+    </script>
+
+    <div class="modal fade ann-modal" id="annModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="ann-modal__head" id="annModalHead">
+                    <span class="ann-modal__icon"><i class="fas fa-bullhorn" id="annModalIcon"></i></span>
+                    <h5 class="ann-modal__title" id="annModalTitle"></h5>
+                </div>
+                <div class="modal-body ann-modal__body" id="annModalBody"></div>
+                <div class="modal-footer ann-modal__footer">
+                    <button type="button" class="btn btn-primary" id="annModalAck"><i class="fas fa-check me-1"></i>@Localize("Announcement.GotIt").Text</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

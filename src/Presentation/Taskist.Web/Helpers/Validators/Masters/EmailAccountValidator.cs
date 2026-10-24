@@ -1,8 +1,8 @@
-using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Masters;
+using FluentValidation;
 
 namespace Taskist.Web.Helpers.Validators.Masters;
 
@@ -12,8 +12,8 @@ public class EmailAccountValidator : AbstractValidator<EmailAccountModel>
         IEmailAccountService emailAccountService)
     {
         RuleFor(r => r.Name)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Name.RequiredMsg"))
-            .MaximumLength(100).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Name.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailAccountModel.Name.RequiredMsg"))
+            .MaximumLength(100).WithMessage(localizationService.GetResource("EmailAccountModel.Name.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -23,33 +23,33 @@ public class EmailAccountValidator : AbstractValidator<EmailAccountModel>
                 }
                 var entity = await emailAccountService.GetByNameAsync(x.Name);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Name.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("EmailAccountModel.Name.UniqueMsg"));
 
         RuleFor(r => r.Description)
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Description.MaxLengthMsg"));
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailAccountModel.Description.MaxLengthMsg"));
 
         RuleFor(r => r.UserName)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.UserName.RequiredMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.UserName.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailAccountModel.UserName.RequiredMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailAccountModel.UserName.MaxLengthMsg"));
 
         RuleFor(r => r.Host)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Host.RequiredMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Host.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailAccountModel.Host.RequiredMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailAccountModel.Host.MaxLengthMsg"));
 
         RuleFor(r => r.Port)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Port.RequiredMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailAccountModel.Port.RequiredMsg"));
 
         RuleFor(r => r.Password)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Password.RequiredMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.Password.MaxLengthMsg"));
+            .NotEmpty().When(r => r.Id == 0).WithMessage(localizationService.GetResource("EmailAccountModel.Password.RequiredMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailAccountModel.Password.MaxLengthMsg"));
 
         RuleFor(r => r.FromEmail)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.FromEmail.RequiredMsg"))
-            .EmailAddress().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.FromEmail.InvalidEmailMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.FromEmail.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailAccountModel.FromEmail.RequiredMsg"))
+            .EmailAddress().WithMessage(localizationService.GetResource("EmailAccountModel.FromEmail.InvalidEmailMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailAccountModel.FromEmail.MaxLengthMsg"));
 
         RuleFor(r => r.FromName)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.FromName.RequiredMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailAccountModel.FromName.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailAccountModel.FromName.RequiredMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailAccountModel.FromName.MaxLengthMsg"));
     }
 }

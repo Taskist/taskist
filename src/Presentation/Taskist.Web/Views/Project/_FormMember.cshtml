@@ -1,5 +1,4 @@
-﻿@model UserProjectModel
-@Html.AntiForgeryToken()
+@model UserProjectModel
 <input type="hidden" asp-for="Id" />
 <input type="hidden" asp-for="ProjectId" />
 <div class="validation-errors"></div>
@@ -12,69 +11,117 @@
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanReport">
-                <wc-label asp-for="CanReport" />
+
+<fieldset class="member-perm-group">
+    <legend class="member-perm-title"><i class="fas fa-plus-circle me-1"></i>@Localize("UserProjectModel.Section.Report")</legend>
+    <div class="row g-2">
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanReportToDo" />
+                <wc-label asp-for="CanReportToDo" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanReportCR" />
+                <wc-label asp-for="CanReportCR" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanReportBug" />
+                <wc-label asp-for="CanReportBug" />
             </label>
         </div>
     </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanEdit">
+</fieldset>
+
+<fieldset class="member-perm-group">
+    <legend class="member-perm-title"><i class="fas fa-tasks me-1"></i>@Localize("UserProjectModel.Section.Work")</legend>
+    <div class="row g-2">
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanEdit" />
                 <wc-label asp-for="CanEdit" />
             </label>
         </div>
-    </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanClose">
-                <wc-label asp-for="CanClose" />
-            </label>
-        </div>
-    </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanDelete">
-                <wc-label asp-for="CanDelete" />
-            </label>
-        </div>
-    </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanReOpen">
-                <wc-label asp-for="CanReOpen" />
-            </label>
-        </div>
-    </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanComment">
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanComment" />
                 <wc-label asp-for="CanComment" />
             </label>
         </div>
-    </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanViewOthersTask">
-                <wc-label asp-for="CanViewOthersTask" />
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanClose" />
+                <wc-label asp-for="CanClose" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanReOpen" />
+                <wc-label asp-for="CanReOpen" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanChangeProject" />
+                <wc-label asp-for="CanChangeProject" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanDeleteTask" />
+                <wc-label asp-for="CanDeleteTask" />
             </label>
         </div>
     </div>
-    <div class="col-md-12">
-        <div class="mb-3">
-            <label class="form-check form-check-inline">
-                <input class="form-check-input" type="checkbox" asp-for="CanEditOthersTask">
+</fieldset>
+
+<fieldset class="member-perm-group">
+    <legend class="member-perm-title"><i class="fas fa-users me-1"></i>@Localize("UserProjectModel.Section.Others")</legend>
+    <div class="row g-2">
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanViewOthersTask" />
+                <wc-label asp-for="CanViewOthersTask" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanEditOthersTask" />
                 <wc-label asp-for="CanEditOthersTask" />
             </label>
         </div>
     </div>
-</div>
+</fieldset>
+
+<fieldset class="member-perm-group">
+    <legend class="member-perm-title"><i class="fas fa-book me-1"></i>@Localize("UserProjectModel.Section.Wiki")</legend>
+    <div class="row g-2">
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanAddWiki" />
+                <wc-label asp-for="CanAddWiki" />
+            </label>
+        </div>
+    </div>
+</fieldset>
+
+<fieldset class="member-perm-group">
+    <legend class="member-perm-title"><i class="fas fa-code-merge me-1"></i>@Localize("UserProjectModel.ReviewSection")</legend>
+    <div class="row g-2">
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanReviewMergeRequests" />
+                <wc-label asp-for="CanReviewMergeRequests" />
+            </label>
+        </div>
+        <div class="col-sm-6">
+            <label class="form-check">
+                <input class="form-check-input" type="checkbox" asp-for="CanMergeMergeRequests" />
+                <wc-label asp-for="CanMergeMergeRequests" />
+            </label>
+        </div>
+    </div>
+</fieldset>

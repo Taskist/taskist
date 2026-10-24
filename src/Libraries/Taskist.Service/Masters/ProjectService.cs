@@ -1,11 +1,11 @@
-using Taskist.Service.Common;
 using Microsoft.EntityFrameworkCore;
-using Taskist.Core.Caching;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.Users;
+using Taskist.Core.Extensions;
 using Taskist.Data.Repository;
-using Taskist.Data.Extensions;
 
 namespace Taskist.Service.Masters;
 
@@ -15,18 +15,15 @@ public class ProjectService : IProjectService
 
     protected readonly IRepository<Project> _projectRepository;
     protected readonly IRepository<UserProjectMap> _projectMemberMapRepository;
-    protected readonly ICacheManager _cacheManager;
 
     #endregion
 
     #region Ctor
     public ProjectService(IRepository<Project> projectRepository,
-        IRepository<UserProjectMap> projectMemberMapRepository,
-        ICacheManager cacheManager)
+        IRepository<UserProjectMap> projectMemberMapRepository)
     {
         _projectRepository = projectRepository;
         _projectMemberMapRepository = projectMemberMapRepository;
-        _cacheManager = cacheManager;
     }
     #endregion
 
@@ -38,7 +35,7 @@ public class ProjectService : IProjectService
         return await _projectRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBySafe(sortColumn, sortDirection);
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));
@@ -78,15 +75,6 @@ public class ProjectService : IProjectService
     {
         return await _projectMemberMapRepository.Table.Where(x => x.ProjectId == projectId && x.UserId == userId)
             .FirstOrDefaultAsync();
-    }
-
-    public async Task<IList<Project>> GetAllAccessibleAsync(int userId)
-    {
-        var query = from c in _projectMemberMapRepository.Table
-                    where !c.Project.Deleted && c.Project.Active && c.UserId == userId && c.CanReport
-                    select c.Project;
-
-        return await query.ToListAsync();
     }
 
     public async Task InsertAsync(Project entity)
@@ -134,7 +122,8 @@ public class ProjectService : IProjectService
             query = query.Where(x => x.ProjectId == projectId);
 
             if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(c => c.User.Name.Contains(search) ||
+                query = query.Where(c => c.User.FirstName.Contains(search) ||
+                c.User.LastName.Contains(search) ||
                 c.Project.Name.Contains(search));
 
             return query;
@@ -158,8 +147,6 @@ public class ProjectService : IProjectService
             throw new ArgumentNullException(nameof(entity));
 
         await _projectMemberMapRepository.InsertAsync(entity);
-
-        await InvalidateAccessibleProjectsAsync(entity.UserId);
     }
 
     public async Task UpdateMemberAsync(UserProjectMap entity)
@@ -169,8 +156,6 @@ public class ProjectService : IProjectService
             throw new ArgumentNullException(nameof(entity));
 
         await _projectMemberMapRepository.UpdateAsync(entity);
-
-        await InvalidateAccessibleProjectsAsync(entity.UserId);
     }
 
     public async Task DeleteMemberAsync(UserProjectMap entity)
@@ -178,23 +163,7 @@ public class ProjectService : IProjectService
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
 
-        var userId = entity.UserId;
-
         await _projectMemberMapRepository.DeleteAsync(entity);
-
-        await InvalidateAccessibleProjectsAsync(userId);
-    }
-
-    #endregion
-
-    #region Utilities
-
-    /// <summary>
-    /// Drops the cached accessible-project list so membership changes take effect immediately.
-    /// </summary>
-    protected async Task InvalidateAccessibleProjectsAsync(int userId)
-    {
-        await _cacheManager.RemoveAsync(string.Format(ServiceConstant.AccessibleProjectCacheKey, userId));
     }
 
     #endregion

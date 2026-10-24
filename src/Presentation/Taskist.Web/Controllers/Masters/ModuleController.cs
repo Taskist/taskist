@@ -1,16 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MapsterMapper;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
-using Taskist.Service.Security;
-using Taskist.Service.Masters;
+using Taskist.Core.Enums;
 using Taskist.Service.Localization;
-using Taskist.Service.Logging;
+using Taskist.Service.Masters;
+using Taskist.Service.Security;
 using Taskist.Service.Users;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Masters;
@@ -23,11 +21,8 @@ public class ModuleController : BaseController
 
     protected readonly IModuleService _moduleService;
     protected readonly IUserService _userService;
-    protected readonly IPermissionService _permissionService;
     protected readonly ILocalizationService _localizationService;
-    protected readonly IUserActivityService _userActivityService;
-    protected readonly IWorkContext _workContext;
-    protected readonly IMapper _mapper;
+    protected readonly MastersMapper _mapper;
 
     #endregion
 
@@ -35,18 +30,12 @@ public class ModuleController : BaseController
 
     public ModuleController(IModuleService moduleService,
         IUserService userService,
-        IPermissionService permissionService,
         ILocalizationService localizationService,
-        IUserActivityService userActivityService,
-        IWorkContext workContext,
-        IMapper mapper)
+        MastersMapper mapper)
     {
         _moduleService = moduleService;
         _userService = userService;
-        _permissionService = permissionService;
         _localizationService = localizationService;
-        _userActivityService = userActivityService;
-        _workContext = workContext;
         _mapper = mapper;
 
     }
@@ -55,13 +44,13 @@ public class ModuleController : BaseController
 
     #region Actions
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> Index()
     {
         return View();
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> Create()
     {
         var model = new ModuleModel();
@@ -71,94 +60,102 @@ public class ModuleController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> Create(ModuleModel model)
     {
         if (ModelState.IsValid)
         {
-            var entity = _mapper.Map<Module>(model);
-            var user = await _workContext.GetCurrentUserAsync();
+            var entity = _mapper.ToEntity(model);
 
             await _moduleService.InsertAsync(entity);
 
-            await _userActivityService.InsertAsync("Module", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), entity.Name), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.SaveSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _moduleService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
 
-        var model = _mapper.Map<ModuleModel>(entity);
+        var model = _mapper.ToModel(entity);
         await InitModelAsync(model);
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> Edit(ModuleModel model)
     {
         if (ModelState.IsValid)
         {
             var entity = await _moduleService.GetByIdAsync(model.Id);
-            entity = _mapper.Map(model, entity);
+            _mapper.Update(model, entity);
 
             await _moduleService.UpdateAsync(entity);
 
-            await _userActivityService.InsertAsync("Module", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Name), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> Delete(int id)
     {
         var entity = await _moduleService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.NoData,
+                Status = HttpStatusCode.NoData,
                 Message = await _localizationService.GetResourceAsync("FormNoData.Description")
             });
 
         await _moduleService.DeleteAsync(entity);
-        await _userActivityService.InsertAsync("Module", string.Format(await _localizationService.GetResourceAsync("Log.RecordDeleted"), entity.Name), entity);
 
         return Json(new JsonResponseModel
         {
-            Status = HttpStatusCodeEnum.Success,
+            Status = HttpStatusCode.Success,
             Message = await _localizationService.GetResourceAsync("Message.DeleteSuccess")
         });
+    }
+
+    #endregion
+
+    #region Ajax
+
+    public async Task<List<SelectListItem>> GetModules(int project)
+    {
+        var states = await _moduleService.GetAllActiveByProjectAsync(project);
+        return states.Select(x => new SelectListItem
+        {
+            Value = x.Id.ToString(),
+            Text = x.Name
+        }).ToList();
     }
 
     #endregion
@@ -166,7 +163,7 @@ public class ModuleController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_MODULE)]
+    [CheckPermission(nameof(PermissionProvider.ManageModule))]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
         var sortColumn = -1;
@@ -194,24 +191,10 @@ public class ModuleController : BaseController
         return Json(new
         {
             request.Draw,
-            data = data.Select(x => _mapper.Map<ModuleModel>(x)),
+            data = data.Select(x => _mapper.ToModel(x)),
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
         });
-    }
-
-    #endregion
-
-    #region Ajax
-
-    public async Task<List<SelectListItem>> GetModules(int project)
-    {
-        var states = await _moduleService.GetAllActiveByProjectAsync(project);
-        return states.Select(x => new SelectListItem
-        {
-            Value = x.Id.ToString(),
-            Text = x.Name
-        }).ToList();
     }
 
     #endregion
@@ -220,8 +203,7 @@ public class ModuleController : BaseController
 
     private async Task InitModelAsync(ModuleModel model)
     {
-        var loggedUser = await _workContext.GetCurrentUserAsync();
-        var projects = await _userService.GetAllAccessibleProjects(loggedUser.Id);
+        var projects = await _userService.GetAllAccessibleProjects(UserId);
 
         foreach (var item in projects)
         {

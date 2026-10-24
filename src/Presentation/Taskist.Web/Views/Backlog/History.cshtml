@@ -1,52 +1,39 @@
 @model IList<BacklogCommentGridModel>
-@functions {
-    // choose an icon + accent colour from the change label
-    static (string Icon, string Cls) EventStyle(string comment)
-    {
-        var c = (comment ?? "").ToLowerInvariant();
-        if (c.Contains("status")) return ("fas fa-flag", "ev-status");
-        if (c.Contains("assignee")) return ("fas fa-user-check", "ev-assignee");
-        if (c.Contains("severity")) return ("fas fa-triangle-exclamation", "ev-severity");
-        if (c.Contains("sprint")) return ("fas fa-bolt", "ev-sprint");
-        if (c.Contains("added file") || c.Contains("added a file")) return ("fas fa-paperclip", "ev-file");
-        if (c.Contains("deleted file")) return ("fas fa-trash", "ev-file");
-        if (c.Contains("module")) return ("fas fa-cube", "ev-module");
-        if (c.Contains("due date")) return ("fas fa-calendar-day", "ev-due");
-        if (c.Contains("title")) return ("fas fa-heading", "ev-title");
-        if (c.Contains("reporter")) return ("fas fa-user-pen", "ev-reporter");
-        return ("fas fa-pen", "ev-generic");
-    }
-
-    static string DayLabel(DateTime d)
-    {
-        var today = DateTime.Now.Date;
-        if (d.Date == today) return "Today";
-        if (d.Date == today.AddDays(-1)) return "Yesterday";
-        return d.ToString("dd MMM yyyy");
-    }
-}
 
 @if (Model.Any())
 {
-    <div class="history-timeline">
-        @{ string lastDay = null; }
+    <div class="history-timeline" data-history-ready="false">
         @foreach (var item in Model)
         {
-            var day = DayLabel(item.CommentOn);
-            if (day != lastDay)
-            {
-                lastDay = day;
-                <div class="history-day">@day</div>
-            }
-            var style = EventStyle(item.Comment);
             <div class="history-item">
-                <div class="history-dot @style.Cls"><i class="@style.Icon"></i></div>
+                <div class="history-dot"><img src="@Url.Action("Photo", "Profile", new { userId = item.CommentById })" alt="@item.CommentBy" /></div>
                 <div class="history-content">
                     <div class="history-meta">
                         <span class="history-author">@item.CommentBy</span>
-                        <span class="history-time" data-time="@item.CommentOn.ToString("o")" title="@item.CommentOn.ToString("dd-MMM-yyyy HH:mm")"></span>
+                        <span class="history-time" data-time="@DateTime.SpecifyKind(item.CommentOn, DateTimeKind.Utc).ToString("o")"></span>
                     </div>
-                    <div class="history-text">@Html.Raw(item.Comment)</div>
+                    @if (item.IsTextChange)
+                    {
+                        <div class="history-text history-change" data-old="@item.OldValue" data-new="@item.NewValue">
+                            <div class="history-change-head">
+                                <strong>@item.FieldLabel</strong>
+                                <span class="history-change-action history-change-action--@item.ChangeAction">@item.ChangeAction</span>
+                                <a href="#" class="history-change-toggle">View changes</a>
+                            </div>
+                            <div class="history-change-body d-none">
+                                <div class="btn-group btn-group-sm mb-2" role="group">
+                                    <button type="button" class="btn btn-outline-secondary active" data-view="diff">Changes</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-view="old">Before</button>
+                                    <button type="button" class="btn btn-outline-secondary" data-view="new">After</button>
+                                </div>
+                                <div class="history-change-view"></div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="history-text history-collapsible" data-html="@item.Comment"></div>
+                    }
                 </div>
             </div>
         }
@@ -57,11 +44,5 @@ else
     <div class="files-empty">
         <i class="far fa-clock"></i>
         <div>No history yet.</div>
-        <small>Field changes and file activity will appear here.</small>
     </div>
 }
-
-@* AJAX-injected partial: init call into the globally-loaded module *@
-<script>
-    if (window.BacklogHistory) BacklogHistory.init();
-</script>

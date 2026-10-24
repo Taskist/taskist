@@ -1,0 +1,48 @@
+/* Analytics report charts */
+.report-chart {
+    position: relative;
+    height: 300px;
+}
+
+.report-card-body {
+    min-height: 320px;
+}
+
+/* Stage-duration drill-down: proportional bar ranking */
+.stage-rank { display: flex; flex-direction: column; gap: 12px; }
+.stage-rank-row { display: flex; flex-direction: column; gap: 3px; }
+.stage-rank-head { display: flex; align-items: baseline; gap: 8px; }
+.stage-rank-id { flex: 0 0 auto; font-weight: 600; font-size: .82rem; text-decoration: none; }
+.stage-rank-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: .88rem;
+    color: #33455c;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.stage-rank-val {
+    flex: 0 0 auto;
+    font-weight: 700;
+    font-size: .82rem;
+    color: #1b2e4a;
+    font-variant-numeric: tabular-nums;
+}
+.stage-rank-bar-track {
+    height: 8px;
+    background: #eef2f7;
+    border-radius: 999px;
+    overflow: hidden;
+}
+.stage-rank-bar {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .4s ease;
+    min-width: 4px;
+}
+.stage-rank-bar.is-fast { background: #22c55e; }
+.stage-rank-bar.is-normal { background: #84cc16; }
+.stage-rank-bar.is-slow { background: #f59e0b; }
+.stage-rank-bar.is-critical { background: #ef4444; }
+.stage-rank-meta { font-size: .72rem; color: #7b8aa0; }

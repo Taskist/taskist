@@ -10,8 +10,8 @@ public class LocaleResourceValidator : AbstractValidator<LocaleResourceModel>
     public LocaleResourceValidator(ILocalizationService localizationService)
     {
         RuleFor(r => r.ResourceKey)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("LocaleResourceModel.ResourceKey.RequiredMsg"))
-            .MaximumLength(150).WithMessageAwait(localizationService.GetResourceAsync("LocaleResourceModel.ResourceKey.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("LocaleResourceModel.ResourceKey.RequiredMsg"))
+            .MaximumLength(150).WithMessage(localizationService.GetResource("LocaleResourceModel.ResourceKey.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -21,10 +21,10 @@ public class LocaleResourceValidator : AbstractValidator<LocaleResourceModel>
                 }
                 var entity = await localizationService.GetResourceByKeyAsync(x.LanguageId, x.ResourceKey);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("LocaleResourceModel.ResourceKey.UniqueMsg")); ;
+            }).WithMessage(localizationService.GetResource("LocaleResourceModel.ResourceKey.UniqueMsg")); ;
 
         RuleFor(r => r.ResourceValue)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("LocaleResourceModel.ResourceValue.RequiredMsg"))
-            .MaximumLength(100).WithMessageAwait(localizationService.GetResourceAsync("LocaleResourceModel.ResourceValue.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("LocaleResourceModel.ResourceValue.RequiredMsg"))
+            .MaximumLength(100).WithMessage(localizationService.GetResource("LocaleResourceModel.ResourceValue.MaxLengthMsg"));
     }
 }

@@ -8,6 +8,8 @@ public interface ICustomFieldService
     Task<IPagedList<CustomField>> GetPagedListAsync(int projectId, string search = "", int pageIndex = 0,
         int pageSize = int.MaxValue);
 
+    Task<IList<CustomField>> GetAllAsync(int projectId);
+
     Task<IList<CustomField>> GetAllAsync(int projectId, int placement);
 
     Task<IList<CustomField>> GetAllMandatoryAsync(int projectId);

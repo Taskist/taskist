@@ -1,36 +1,7 @@
-﻿let jcModal = null;
+let jcModal = null;
 let bsOffCanvas = null;
 let AppJS = (function () {
     let instance;
-    let options = {
-        "closeButton": true,
-        "debug": false,
-        "newestOnTop": false,
-        "progressBar": false,
-        "preventDuplicates": true,
-        "positionClass": "toast-top-center",
-        "onclick": null,
-        "showDuration": "300",
-        "hideDuration": "1000",
-        "timeOut": "5000",
-        "extendedTimeOut": "1000",
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut"
-    }
-
-    let Toast = Swal.mixin({
-        toast: true,
-        position: 'bottom',
-        iconColor: 'white',
-        customClass: {
-            popup: 'colored-toast'
-        },
-        showConfirmButton: false,
-        timerProgressBar: true,
-        timer: 30000
-    });
 
     function createInstance() {
         return {
@@ -57,7 +28,8 @@ let AppJS = (function () {
                     select2.each(function () {
                         let $this = $(this);
                         $this.wrap('<div class="position-relative"></div>').select2({
-                            placeholder: "Select value",
+                            placeholder: $this.data("placeholder") || "Select value",
+                            allowClear: $this.data("allow-clear") === true || $this.data("allow-clear") === "true",
                             dropdownParent: $this.parent()
                         });
                     });
@@ -118,6 +90,54 @@ let AppJS = (function () {
                         event.preventDefault();
                     }
                 });
+
+                this.initLadda();
+                this.bindLadda();
+
+                this.NavGuard.bind();
+            },
+            initLadda: function (scope) {
+                let $root = scope ? $(scope) : $(document);
+                $root.find('button[type="submit"]').each(function () {
+                    let $b = $(this);
+                    if ($b.hasClass('ladda-button') || $b.hasClass('no-ladda'))
+                        return;
+                    $b.addClass('ladda-button');
+                    if (!$b.attr('data-style'))
+                        $b.attr('data-style', 'zoom-out');
+                    if (!$b.children('.ladda-label').length)
+                        $b.wrapInner('<span class="ladda-label"></span>');
+                });
+            },
+            bindLadda: function () {
+                $(document).on('mousedown keydown', 'button[type="submit"].ladda-button', function () {
+                    $(this).closest('form').data('laddaClicked', this);
+                });
+
+                $(document).on('submit', 'form', function () {
+                    if (!window.Ladda)
+                        return;
+                    let $form = $(this);
+                    if ($form.hasClass('no-auto-ladda'))
+                        return;
+                    if ($form.find('[data-val="true"]').length && typeof $form.valid === 'function' && !$form.valid())
+                        return;
+                    let btn = $form.data('laddaClicked') || $form.find('button[type="submit"].ladda-button')[0];
+                    $form.removeData('laddaClicked');
+                    if (!btn)
+                        return;
+                    let ladda = $(btn).data('laddaInstance');
+                    if (!ladda) {
+                        ladda = Ladda.create(btn);
+                        $(btn).data('laddaInstance', ladda);
+                    }
+                    ladda.start();
+                });
+
+                $(document).ajaxComplete(function () {
+                    if (window.Ladda)
+                        Ladda.stopAll();
+                });
             },
             bindPartialViewEvent: function () {
                 $('.close-form').click(function () {
@@ -132,51 +152,41 @@ let AppJS = (function () {
                     let val = $(this).data('val');
                     let valRequired = $(this).data('val-required');
                     if (val && JSManager.hasValue(valRequired)) {
-                        var label = $(this).closest(".mb-3").find("label");
-                        if (label.length && !label.find(".text-danger").length) {
+                        let label = $(this).closest(".mb-3").find("label");
+                        if (label.length && !label.find(".text-danger").length && !label.hasClass('mandatory-added')) {
+                            label.addClass('mandatory-added');
                             label.append('<i class="far fa-asterisk mandatory-symbol mx-1"></i>');
                         }
                     }
                 });
             },
-            openOffCanvas: function (loadurl, title) {
+            openOffCanvas: function (loadurl, title, callBackOnShown, callBackOnHide) {
                 JSManager.renderPartial(loadurl, {}, 'pdOffCanvasBody', function (response) {
                     $('#pdOffCanvasBodyTitle').text(title);
                     bsOffCanvas = new bootstrap.Offcanvas('#pdOffCanvas');
+
+                    let offcanvasElement = document.getElementById('pdOffCanvas');
+                    offcanvasElement.addEventListener('shown.bs.offcanvas', function () {
+                        if (callBackOnShown !== undefined)
+                            callBackOnShown();
+                    });
+
+                    offcanvasElement.addEventListener('hide.bs.offcanvas', function () {
+                        if (callBackOnHide !== undefined)
+                            callBackOnHide();
+                    });
+
                     bsOffCanvas.show();
                 });
             },
-            openForm: function (loadurl, title, columnClass, mode = 4, callbackContentReady) {
-                //Mode: Create = 1, Update = 2, Delete = 3, View = 4
-                let buttonText = 'Save';
-                switch (mode) {
-                    case 1:
-                        buttonText = '<i class="fas fa-save mr-1"></i>Save';
-                        break;
-                    case 2:
-                        buttonText = '<i class="fas fa-save mr-1"></i>Update';
-                        break;
-                    case 3:
-                        buttonText = '<i class="fas fa-trash mr-1"></i>Delete';
-                        break;
-                }
-
+            openForm: function (loadurl, title, columnClass, callbackContentReady, hideButtons = true) {
                 if (columnClass === undefined || columnClass === null || columnClass === '')
                     columnClass = 'col-md-10';
+
                 jcModal = $.confirm({
                     title: title,
                     closeIcon: true,
-                    content: function () {
-                        let self = this;
-                        return $.ajax({
-                            url: loadurl
-                        }).done(function (response) {
-                            self.setContentAppend(response);
-                        }).fail(function (response) {
-                            JSManager.showAppError(response.responseJSON);
-                            jcModal.close();
-                        });
-                    },
+                    content: "URL:" + loadurl,
                     type: 'blue',
                     confirmButtonClass: 'hide',
                     theme: 'bootstrap',
@@ -185,21 +195,50 @@ let AppJS = (function () {
                     useBootstrap: true,
                     columnClass: columnClass,
                     containerFluid: true,
-                    buttons: {
-                        yes: {
-                            isHidden: true
-                        },
-                        no: {
-                            isHidden: true
-                        }
-                    },
                     escapeKey: false,
                     backgroundDismiss: false,
+                    buttons: {
+                        cancel: {
+                            text: 'Close'
+                        }
+                    },
+                    onOpenBefore: function () {
+                        if (hideButtons) {
+                            this.$jconfirmBox.find('.jconfirm-buttons').remove();
+                        }
+                    },
                     onContentReady: function () {
-                        $('.jconfirm-buttons').remove();
+                        JSManager.initPartialSelect2(this.$content);
+                        JSManager.initPartialDatepickers(this.$content);
+                        this.$content.trigger('partial:ready');
                         if (callbackContentReady !== undefined)
                             callbackContentReady();
                     }
+                });
+            },
+            initPartialSelect2: function (context) {
+                if (!$.fn.select2)
+                    return;
+                $('select.select2', context).each(function () {
+                    let $this = $(this);
+                    if ($this.hasClass('select2-hidden-accessible') || $this.data('select2'))
+                        return;
+                    $this.wrap('<div class="position-relative"></div>').select2({
+                        placeholder: $this.data('placeholder') || 'Select value',
+                        allowClear: $this.data('allow-clear') === true || $this.data('allow-clear') === 'true',
+                        width: '100%',
+                        dropdownParent: $this.parent()
+                    });
+                });
+            },
+            initPartialDatepickers: function (context) {
+                if (!$.fn.datepicker)
+                    return;
+                $('.datepicker', context).each(function () {
+                    let $this = $(this);
+                    if ($this.data('datepicker'))
+                        return;
+                    $this.datepicker({ format: 'dd-M-yyyy', viewMode: 'date', autoclose: true, todayHighlight: true });
                 });
             },
             closeOffCanvas: function () {
@@ -232,6 +271,38 @@ let AppJS = (function () {
                         }
                     }
                 });
+            },
+            NavGuard: {
+                dirty: false,
+                bypass: false,
+                _bound: false,
+                message: "You have unsaved changes. Leave without saving?",
+                markDirty: function () { this.dirty = true; },
+                clear: function () { this.dirty = false; },
+                isDirty: function () { return this.dirty === true; },
+                leaveTo: function (href) { this.bypass = true; this.dirty = false; window.location.href = href; },
+                bind: function () {
+                    if (this._bound) return;
+                    this._bound = true;
+                    let self = this;
+
+                    $(document).on("click", "a[href]", function (e) {
+                        if (self.bypass || !self.isDirty()) return;
+
+                        let $link = $(this);
+                        let href = $link.attr("href");
+                        if (!href || href === "#" || href.toLowerCase().indexOf("javascript:") === 0) return;
+                        if ($link.attr("target") === "_blank" || $link.is("[download]")) return;
+                        if ($link.attr("data-bs-toggle") || $link.attr("data-coreui-toggle")) return;
+
+                        e.preventDefault();
+                        JSManager.confirm(self.message, function () { self.leaveTo(href); });
+                    });
+
+                    window.addEventListener("beforeunload", function (e) {
+                        if (!self.bypass && self.isDirty()) { e.preventDefault(); e.returnValue = ""; }
+                    });
+                }
             },
             showDeleteConfirmation: function (url, displayName, deleteButtonText, cancelButtonText) {
                 if (displayName === undefined || displayName === null || displayName === '')
@@ -434,16 +505,20 @@ let AppJS = (function () {
                 });
             },
             reloadGrid: function (grid) {
-                if (grid != undefined)
-                    $('#' + grid).DataTable().ajax.reload(this.postGridReload(grid));
-                else
+                if (grid != undefined) {
+                    if ($('#' + grid).length)
+                        $('#' + grid).DataTable().ajax.reload(this.postGridReload(grid));
+                } else if ($('.dataTable').length) {
                     $('.dataTable').DataTable().ajax.reload(this.initPopover);
+                }
             },
             reloadChildGrid: function (grid) {
-                if (grid != undefined)
-                    $('#' + grid).DataTable().ajax.reload(this.initPopover);
-                else
+                if (grid != undefined) {
+                    if ($('#' + grid).length)
+                        $('#' + grid).DataTable().ajax.reload(this.initPopover);
+                } else if ($('.dataTable-child').length) {
                     $('.dataTable-child').DataTable().ajax.reload(this.initPopover);
+                }
             },
             postGridReload: function (grid) {
                 let g = $('#' + grid).DataTable();
@@ -463,7 +538,7 @@ let AppJS = (function () {
             blockUI: function (element, message) {
                 if (message === undefined)
                     message = "Processing...";
-                let block = $("#" + element);
+                let block = typeof element === "string" ? $("#" + element) : $(element);
                 $(block).block({
                     message: '<i class="icon-spinner4 spinner"></i> ' + message,
                     overlayCSS: {
@@ -483,23 +558,19 @@ let AppJS = (function () {
                 });
             },
             unblockUI: function (element) {
-                let block = $("#" + element);
+                let block = typeof element === "string" ? $("#" + element) : $(element);
                 $(block).unblock();
             },
             showInfo: function (message) {
-                toastr.options = options;
                 toastr["info"](message);
             },
             showError: function (message) {
-                toastr.options = options;
                 toastr["error"](message);
             },
             showWarning: function (message) {
-                toastr.options = options;
                 toastr["warning"](message);
             },
             showSuccess: function (message) {
-                toastr.options = options;
                 toastr["success"](message);
             },
             showAppError: function (message) {
@@ -521,7 +592,6 @@ let AppJS = (function () {
                 });
             },
             closeMessage: function (message) {
-                toastr.options = options;
                 toastr["remove"](message);
             },
             showSwal: function (message, type) {
@@ -556,28 +626,6 @@ let AppJS = (function () {
                     }
                 }
                 return result;
-            },
-            initTrackableSections: function (sectionSelector = 'section', trackSelector = 'track', saveBtnSelector = 'savebtn') {
-                const sectionClass = '.' + sectionSelector;
-                const trackClass = '.' + trackSelector;
-                const saveBtnClass = '.' + saveBtnSelector;
-
-                $(sectionClass).each(function () {
-                    const section = $(this);
-                    const elements = section.find(trackClass);
-                    const saveBtn = section.find(saveBtnClass);
-
-                    saveBtn.prop('disabled', true);
-
-                    elements.each(function () {
-                        $(this).data('originalValue', $(this).val());
-                    });
-
-                    section.on('input change', trackClass, function () {
-                        const isChanged = elements.toArray().some(el => $(el).val() !== $(el).data('originalValue'));
-                        saveBtn.prop('disabled', !isChanged);
-                    });
-                });
             },
             generateLink: function (row, curAction) {
                 let url = curAction.Url;
@@ -801,8 +849,10 @@ let AppJS = (function () {
                     return text;
                 let data = text.toString();
                 if (data.length > maxLength) {
-                    let newData = '<span data-toggle="popover" data-trigger="hover" data-content="' + data + '">' + data.substr(0, maxLength) + '…' + '</span>';
-                    return newData;
+                    let esc = function (s) {
+                        return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+                    };
+                    return '<span title="' + esc(data) + '">' + esc(data.substr(0, maxLength)) + '…' + '</span>';
                 }
                 return text;
             },
@@ -926,6 +976,18 @@ let AppJS = (function () {
 
                         }
                     }
+                });
+            },
+            printDiv: function (divId) {
+                $(`#${divId}`).print({
+                    globalStyles: false,
+                    mediaPrint: false,
+                    iframe: true,
+                    stylesheet: [
+                        "/lib/bootstrap/css/bootstrap.min.css"
+                    ],
+                    noPrintSelector: '.no-print',
+                    deferred: $.Deferred()
                 });
             }
         };

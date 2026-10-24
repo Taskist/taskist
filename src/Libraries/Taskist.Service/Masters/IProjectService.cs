@@ -19,8 +19,6 @@ public interface IProjectService
 
     Task<UserProjectMap> GetMappingForUserAsync(int projectId, int userId);
 
-    Task<IList<Project>> GetAllAccessibleAsync(int userId);
-
     Task InsertAsync(Project entity);
 
     Task InsertAsync(IList<Project> entities);

@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Taskist.Core.Domain.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Taskist.Core.Domain.Users;
 
 namespace Taskist.Data.Configuration.Users;
 
@@ -23,6 +23,13 @@ public class UserConfig : EntityTypeConfiguration<User>
             .HasMaxLength(50)
             .IsRequired();
 
+        builder.Property(p => p.FriendlyName)
+            .HasMaxLength(100);
+
+        builder.Property(p => p.MobileNumber)
+            .HasMaxLength(10)
+            .IsRequired();
+
         builder.Property(p => p.Email)
             .HasMaxLength(150)
             .IsRequired();
@@ -30,9 +37,18 @@ public class UserConfig : EntityTypeConfiguration<User>
         builder.Property(p => p.LastIPAddress)
             .HasMaxLength(100);
 
+        builder.Property(p => p.GitUserName)
+            .HasMaxLength(100);
+
         builder.HasOne(f => f.Language)
             .WithMany()
             .HasForeignKey(p => p.LanguageId)
+            .OnDelete(DeleteBehavior.NoAction)
+            .IsRequired(true);
+
+        builder.HasOne(f => f.Address)
+            .WithMany()
+            .HasForeignKey(p => p.AddressId)
             .OnDelete(DeleteBehavior.NoAction)
             .IsRequired(true);
 

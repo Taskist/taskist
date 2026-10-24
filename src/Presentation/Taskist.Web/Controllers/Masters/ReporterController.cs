@@ -1,12 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using MapsterMapper;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
-using Taskist.Service.Security;
-using Taskist.Service.Masters;
+using Taskist.Core.Enums;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Service.Localization;
-using Taskist.Service.Logging;
+using Taskist.Service.Masters;
+using Taskist.Service.Security;
 using Taskist.Service.Users;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
@@ -14,20 +10,20 @@ using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Masters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Taskist.Web.Controllers.Masters;
 
+[CheckPermission(nameof(PermissionProvider.ManageReporter))]
 public class ReporterController : BaseController
 {
     #region Fields
 
     protected readonly IReporterService _reporterService;
     protected readonly IUserService _userService;
-    protected readonly IPermissionService _permissionService;
     protected readonly ILocalizationService _localizationService;
-    protected readonly IUserActivityService _userActivityService;
-    protected readonly IWorkContext _workContext;
-    protected readonly IMapper _mapper;
+    protected readonly MastersMapper _mapper;
 
     #endregion
 
@@ -35,18 +31,12 @@ public class ReporterController : BaseController
 
     public ReporterController(IReporterService reporterService,
         IUserService userService,
-        IPermissionService permissionService,
         ILocalizationService localizationService,
-        IUserActivityService userActivityService,
-        IWorkContext workContext,
-        IMapper mapper)
+        MastersMapper mapper)
     {
         _reporterService = reporterService;
         _userService = userService;
-        _permissionService = permissionService;
         _localizationService = localizationService;
-        _userActivityService = userActivityService;
-        _workContext = workContext;
         _mapper = mapper;
 
     }
@@ -55,13 +45,11 @@ public class ReporterController : BaseController
 
     #region Actions
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Index()
     {
         return View();
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Create()
     {
         var model = new ReporterModel();
@@ -71,92 +59,82 @@ public class ReporterController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Create(ReporterModel model)
     {
         if (ModelState.IsValid)
         {
-            var entity = _mapper.Map<Reporter>(model);
-            var user = await _workContext.GetCurrentUserAsync();
+            var entity = _mapper.ToEntity(model);
 
             await _reporterService.InsertAsync(entity);
 
-            await _userActivityService.InsertAsync("Reporter", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), entity.Name), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.SaveSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _reporterService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
 
-        var model = _mapper.Map<ReporterModel>(entity);
+        var model = _mapper.ToModel(entity);
         await InitModelAsync(model);
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Edit(ReporterModel model)
     {
         if (ModelState.IsValid)
         {
             var entity = await _reporterService.GetByIdAsync(model.Id);
-            entity = _mapper.Map(model, entity);
+            _mapper.Update(model, entity);
 
             await _reporterService.UpdateAsync(entity);
 
-            await _userActivityService.InsertAsync("Reporter", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Name), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> Delete(int id)
     {
         var entity = await _reporterService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.NoData,
+                Status = HttpStatusCode.NoData,
                 Message = await _localizationService.GetResourceAsync("FormNoData.Description")
             });
 
         await _reporterService.DeleteAsync(entity);
-        await _userActivityService.InsertAsync("Reporter", string.Format(await _localizationService.GetResourceAsync("Log.RecordDeleted"), entity.Name), entity);
 
         return Json(new JsonResponseModel
         {
-            Status = HttpStatusCodeEnum.Success,
+            Status = HttpStatusCode.Success,
             Message = await _localizationService.GetResourceAsync("Message.DeleteSuccess")
         });
     }
@@ -166,7 +144,6 @@ public class ReporterController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_REPORTER)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
         var data = await _reporterService.GetPagedListAsync(request.SearchValue, request.Start,
@@ -175,7 +152,7 @@ public class ReporterController : BaseController
         return Json(new
         {
             request.Draw,
-            data = data.Select(x => _mapper.Map<ReporterModel>(x)),
+            data = data.Select(x => _mapper.ToModel(x)),
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
         });
@@ -187,8 +164,7 @@ public class ReporterController : BaseController
 
     private async Task InitModelAsync(ReporterModel model)
     {
-        var loggedUser = await _workContext.GetCurrentUserAsync();
-        var projects = await _userService.GetAllAccessibleProjects(loggedUser.Id);
+        var projects = await _userService.GetAllAccessibleProjects(UserId);
 
         foreach (var item in projects)
         {

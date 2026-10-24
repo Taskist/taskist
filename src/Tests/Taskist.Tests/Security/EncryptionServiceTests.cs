@@ -1,10 +1,9 @@
 using System.Security.Cryptography;
-using FluentAssertions;
-using Microsoft.Extensions.Options;
-using Taskist.Core.Domain.Common;
-using Taskist.Core.Domain.Users;
+using System.Text;
+using Microsoft.AspNetCore.DataProtection;
+using Taskist.Core.Enums;
+using Taskist.Core.Security;
 using Taskist.Service.Security;
-using Xunit;
 
 namespace Taskist.Tests.Security;
 
@@ -12,11 +11,17 @@ public class EncryptionServiceTests
 {
     #region Utilities
 
-    private const string TestKey = "unit-test-encryption-key-32-chars!!";
-
-    private static EncryptionService CreateService(string key = TestKey)
+    private static EncryptionService CreateService()
     {
-        return new EncryptionService(Options.Create(new SecurityOptions { EncryptionKey = key }));
+        return new EncryptionService(new SecretProtector(new EphemeralDataProtectionProvider()));
+    }
+
+    private static string HashWithIterations(string password, int iterations)
+    {
+        var salt = RandomNumberGenerator.GetBytes(16);
+        var hash = Rfc2898DeriveBytes.Pbkdf2(Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA512, 64);
+
+        return $"pbkdf2-sha512${iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
     }
 
     #endregion
@@ -24,48 +29,31 @@ public class EncryptionServiceTests
     #region Password hashing
 
     [Fact]
-    public void CreatePasswordHash_WithSameSalt_IsDeterministic()
+    public void HashPassword_UsesTheSelfDescribingPbkdf2Format()
     {
-        var service = CreateService();
-        var salt = service.CreatePasswordSalt();
+        var parts = CreateService().HashPassword("correct horse").Split('$');
 
-        var first = service.CreatePasswordHash("correct horse", salt, PasswordFormat.Pbkdf2);
-        var second = service.CreatePasswordHash("correct horse", salt, PasswordFormat.Pbkdf2);
-
-        second.Should().Be(first);
+        Assert.Equal(4, parts.Length);
+        Assert.Equal("pbkdf2-sha512", parts[0]);
+        Assert.Equal("210000", parts[1]);
+        Assert.Equal(16, Convert.FromBase64String(parts[2]).Length);
+        Assert.Equal(64, Convert.FromBase64String(parts[3]).Length);
     }
 
     [Fact]
-    public void CreatePasswordHash_WithDifferentSalts_ProducesDifferentHashes()
+    public void HashPassword_UsesAFreshSaltEachTime()
     {
         var service = CreateService();
 
-        var first = service.CreatePasswordHash("same password", service.CreatePasswordSalt(), PasswordFormat.Pbkdf2);
-        var second = service.CreatePasswordHash("same password", service.CreatePasswordSalt(), PasswordFormat.Pbkdf2);
+        var hashes = Enumerable.Range(0, 5).Select(_ => service.HashPassword("same password")).ToList();
 
-        second.Should().NotBe(first);
+        Assert.Equal(hashes.Count, hashes.Distinct().Count());
     }
 
     [Fact]
-    public void CreatePasswordHash_DefaultOverload_UsesPbkdf2()
+    public void HashPassword_WithNull_Throws()
     {
-        var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-
-        var viaDefault = service.CreatePasswordHash("hunter2", salt);
-        var viaPbkdf2 = service.CreatePasswordHash("hunter2", salt, PasswordFormat.Pbkdf2);
-
-        viaDefault.Should().Be(viaPbkdf2);
-    }
-
-    [Fact]
-    public void CreatePasswordSalt_ReturnsANewValueEachTime()
-    {
-        var service = CreateService();
-
-        var salts = Enumerable.Range(0, 25).Select(_ => service.CreatePasswordSalt()).ToList();
-
-        salts.Should().OnlyHaveUniqueItems();
+        Assert.Throws<ArgumentNullException>(() => CreateService().HashPassword(null!));
     }
 
     #endregion
@@ -76,92 +64,59 @@ public class EncryptionServiceTests
     public void VerifyPassword_WithCorrectPassword_Succeeds()
     {
         var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-        var hash = service.CreatePasswordHash("s3cret", salt, PasswordFormat.Pbkdf2);
 
-        service.VerifyPassword("s3cret", salt, hash, PasswordFormat.Pbkdf2).Should().BeTrue();
+        Assert.Equal(PasswordCheckResult.Success, service.VerifyPassword("s3cret", service.HashPassword("s3cret")));
     }
 
     [Fact]
     public void VerifyPassword_WithWrongPassword_Fails()
     {
         var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-        var hash = service.CreatePasswordHash("s3cret", salt, PasswordFormat.Pbkdf2);
 
-        service.VerifyPassword("not the password", salt, hash, PasswordFormat.Pbkdf2).Should().BeFalse();
+        Assert.Equal(PasswordCheckResult.Failed, service.VerifyPassword("not the password", service.HashPassword("s3cret")));
     }
 
     [Fact]
     public void VerifyPassword_IsCaseSensitive()
     {
         var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-        var hash = service.CreatePasswordHash("CaseSensitive", salt, PasswordFormat.Pbkdf2);
 
-        service.VerifyPassword("casesensitive", salt, hash, PasswordFormat.Pbkdf2).Should().BeFalse();
+        Assert.Equal(PasswordCheckResult.Failed, service.VerifyPassword("casesensitive", service.HashPassword("CaseSensitive")));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("plain-text-password")]
+    [InlineData("pbkdf2-sha512$210000$only-three")]
+    [InlineData("pbkdf2-sha512$abc$c2FsdA==$aGFzaA==")]
+    [InlineData("pbkdf2-sha512$210000$not-base64!!$aGFzaA==")]
+    [InlineData("pbkdf2-sha256$210000$c2FsdA==$aGFzaA==")]
+    public void VerifyPassword_WithMalformedStoredHash_FailsRatherThanThrows(string? storedHash)
+    {
+        Assert.Equal(PasswordCheckResult.Failed, CreateService().VerifyPassword("password", storedHash!));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public void VerifyPassword_WithEmptyPassword_Fails(string? password)
+    {
+        var service = CreateService();
+
+        Assert.Equal(PasswordCheckResult.Failed, service.VerifyPassword(password!, service.HashPassword("x")));
     }
 
     [Fact]
-    public void VerifyPassword_WithNullInput_FailsRatherThanThrows()
+    public void VerifyPassword_BelowTheMinimumIterationCount_Fails()
     {
-        var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-        var hash = service.CreatePasswordHash("whatever", salt, PasswordFormat.Pbkdf2);
-
-        service.VerifyPassword(null!, salt, hash, PasswordFormat.Pbkdf2).Should().BeFalse();
-        service.VerifyPassword("whatever", null!, hash, PasswordFormat.Pbkdf2).Should().BeFalse();
-        service.VerifyPassword("whatever", salt, null!, PasswordFormat.Pbkdf2).Should().BeFalse();
+        Assert.Equal(PasswordCheckResult.Failed, CreateService().VerifyPassword("password", HashWithIterations("password", 9999)));
     }
 
     [Fact]
-    public void VerifyPassword_WithCorruptSalt_FailsRatherThanThrows()
+    public void VerifyPassword_WithOlderIterationCount_AsksForARehash()
     {
-        var service = CreateService();
-
-        //a salt that is not valid base64 must not surface as an unhandled exception
-        var act = () => service.VerifyPassword("password", "not-base64-!!", "hash", PasswordFormat.Pbkdf2);
-
-        act.Should().NotThrow();
-        act().Should().BeFalse();
-    }
-
-    #endregion
-
-    #region Legacy hash compatibility
-
-    [Fact]
-    public void VerifyPassword_AcceptsLegacySha1Hashes()
-    {
-        //credentials created before the PBKDF2 migration must keep working
-        var service = CreateService();
-        var salt = "n1DRhPvrjpXMEA==";
-        var legacyHash = service.CreatePasswordHash("legacy password", salt, PasswordFormat.Sha1Legacy);
-
-        service.VerifyPassword("legacy password", salt, legacyHash, PasswordFormat.Sha1Legacy)
-            .Should().BeTrue();
-    }
-
-    [Fact]
-    public void LegacyAndPbkdf2_ProduceDifferentHashes()
-    {
-        var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-
-        var legacy = service.CreatePasswordHash("password", salt, PasswordFormat.Sha1Legacy);
-        var modern = service.CreatePasswordHash("password", salt, PasswordFormat.Pbkdf2);
-
-        modern.Should().NotBe(legacy);
-    }
-
-    [Fact]
-    public void VerifyPassword_DoesNotAcceptLegacyHashUnderPbkdf2Format()
-    {
-        var service = CreateService();
-        var salt = service.CreatePasswordSalt();
-        var legacyHash = service.CreatePasswordHash("password", salt, PasswordFormat.Sha1Legacy);
-
-        service.VerifyPassword("password", salt, legacyHash, PasswordFormat.Pbkdf2).Should().BeFalse();
+        Assert.Equal(PasswordCheckResult.SuccessRehashNeeded, CreateService().VerifyPassword("password", HashWithIterations("password", 100000)));
     }
 
     #endregion
@@ -173,51 +128,48 @@ public class EncryptionServiceTests
     {
         var service = CreateService();
 
-        var cipher = service.EncryptText("attack at dawn");
-
-        service.DecryptText(cipher).Should().Be("attack at dawn");
+        Assert.Equal("attack at dawn", service.DecryptText(service.EncryptText("attack at dawn")));
     }
 
     [Fact]
-    public void EncryptText_UsesAFreshIvPerCall()
+    public void EncryptText_ProducesTheCurrentFormat()
     {
-        //a fixed IV leaks that two ciphertexts hold the same plaintext
+        Assert.StartsWith(SecretProtector.Prefix, CreateService().EncryptText("value"));
+    }
+
+    [Fact]
+    public void EncryptText_ProducesDifferentCiphertextForTheSameInput()
+    {
         var service = CreateService();
 
-        var first = service.EncryptText("identical input");
-        var second = service.EncryptText("identical input");
-
-        second.Should().NotBe(first);
-        service.DecryptText(first).Should().Be(service.DecryptText(second));
+        Assert.NotEqual(service.EncryptText("identical input"), service.EncryptText("identical input"));
     }
 
     [Fact]
-    public void DecryptText_WithADifferentKey_DoesNotReturnThePlaintext()
+    public void DecryptText_WithAnotherKeyRing_ReturnsNull()
     {
         var cipher = CreateService().EncryptText("confidential");
-        var otherService = CreateService("a-completely-different-key-32chars!!");
 
-        var act = () => otherService.DecryptText(cipher);
+        Assert.Null(CreateService().DecryptText(cipher));
+    }
 
-        //either the padding check fails or the output is garbage; never the original
-        try
-        {
-            act().Should().NotBe("confidential");
-        }
-        catch (CryptographicException)
-        {
-            //expected outcome for an authenticated failure
-        }
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("plain value")]
+    [InlineData("enc:bGVnYWN5")]
+    public void DecryptText_WithoutTheCurrentPrefix_ReturnsNull(string? cipher)
+    {
+        Assert.Null(CreateService().DecryptText(cipher!));
     }
 
     [Fact]
-    public void DecryptText_WithMalformedPayload_Throws()
+    public void DecryptText_WithATamperedPayload_ReturnsNull()
     {
         var service = CreateService();
+        var cipher = service.EncryptText("value");
 
-        var act = () => service.DecryptText(Convert.ToBase64String([0x02, 0x03]));
-
-        act.Should().Throw<CryptographicException>();
+        Assert.Null(service.DecryptText(cipher[..^4] + "AAAA"));
     }
 
     [Theory]
@@ -225,7 +177,7 @@ public class EncryptionServiceTests
     [InlineData("")]
     public void EncryptText_WithEmptyInput_ReturnsInput(string? input)
     {
-        CreateService().EncryptText(input!).Should().Be(input);
+        Assert.Equal(input, CreateService().EncryptText(input!));
     }
 
     #endregion
@@ -240,7 +192,7 @@ public class EncryptionServiceTests
 
         var tokens = Enumerable.Range(0, 10).Select(_ => service.GenerateToken(code)).ToList();
 
-        tokens.Should().OnlyHaveUniqueItems();
+        Assert.Equal(tokens.Count, tokens.Distinct().Count());
     }
 
     [Fact]
@@ -251,43 +203,36 @@ public class EncryptionServiceTests
 
         var decrypted = service.DecryptText(service.GenerateToken(code));
 
-        decrypted.Split('|').First().Should().Be(code.ToString());
+        Assert.Equal(code.ToString(), decrypted.Split('|')[0]);
     }
 
     [Fact]
     public void ValidateToken_AcceptsAFreshToken()
     {
         var service = CreateService();
-        var decrypted = service.DecryptText(service.GenerateToken(Guid.NewGuid()));
-        var timestampPart = decrypted.Split('|')[1];
+        var timestampPart = service.DecryptText(service.GenerateToken(Guid.NewGuid())).Split('|')[1];
 
-        service.ValidateToken(timestampPart, 10).Should().BeTrue();
+        Assert.True(service.ValidateToken(timestampPart, 10));
     }
 
     [Fact]
     public void ValidateToken_RejectsAnExpiredToken()
     {
         var service = CreateService();
-        var decrypted = service.DecryptText(service.GenerateToken(Guid.NewGuid()));
-        var timestampPart = decrypted.Split('|')[1];
+        var timestampPart = service.DecryptText(service.GenerateToken(Guid.NewGuid())).Split('|')[1];
 
-        //a zero minute window means anything already issued has expired
-        service.ValidateToken(timestampPart, 0).Should().BeFalse();
+        Assert.False(service.ValidateToken(timestampPart, 0));
     }
 
     [Theory]
-    [InlineData("")]
     [InlineData(null)]
+    [InlineData("")]
+    [InlineData("   ")]
     [InlineData("not-base64-!!!")]
     [InlineData("AAA=")]
     public void ValidateToken_RejectsMalformedInputWithoutThrowing(string? token)
     {
-        var service = CreateService();
-
-        var act = () => service.ValidateToken(token!);
-
-        act.Should().NotThrow();
-        act().Should().BeFalse();
+        Assert.False(CreateService().ValidateToken(token!));
     }
 
     #endregion

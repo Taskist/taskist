@@ -1,359 +1,233 @@
-# 📝 Open-Source Task & Bug Tracking - Designed for Simplicity.
+<div align="center">
 
-A web-based **Task, Change Request (CR), and Bug Management System** built with **ASP.NET Core MVC (.NET 8)**, using **Microsoft SQL Server** as the database.
+<img src="src/Presentation/Taskist.Web/wwwroot/images/brand/logo.png" alt="Taskist" height="72">
 
-This system helps teams manage tasks, track bugs, handle change requests, and organize projects efficiently.
+### Open-source task & bug tracking for software teams
+
+Backlog · Board · Releases · Code reviews · Wiki — self-hosted on .NET and SQL Server
 
 [![CI](https://github.com/Taskist/taskist/actions/workflows/ci.yml/badge.svg)](https://github.com/Taskist/taskist/actions/workflows/ci.yml)
-![License](https://img.shields.io/github/license/taskist/taskist)
-![Issues](https://img.shields.io/github/issues/taskist/taskist)
-![Stars](https://img.shields.io/github/stars/taskist/taskist)
-![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
+[![License: MIT](https://img.shields.io/github/license/taskist/taskist)](LICENSE)
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)
+[![GitHub Discussions](https://img.shields.io/github/discussions/taskist/taskist?logo=github)](https://github.com/Taskist/taskist/discussions)
+[![Stars](https://img.shields.io/github/stars/taskist/taskist?style=social)](https://github.com/Taskist/taskist/stargazers)
 
-## 🚀 Live Demo
+**[Live demo](https://demo.taskist.org)** · **[Documentation](https://docs.taskist.org)** · **[Quick start](#-quick-start)** · **[Changelog](CHANGELOG.md)** · **[Discussions](https://github.com/Taskist/taskist/discussions)**
 
-Experience Taskist in action: 👉 [**demo.taskist.org**](https://demo.taskist.org)
+<br>
 
-## 📚 Documentation
+<img src="docs/images/backlog.png" alt="Taskist backlog with tasks, change requests and bugs across projects" width="100%">
 
-Looking for detailed setup guides, module explanations, and screenshots?  
-Check out the complete **Taskist Documentation Site** below 👇  
+</div>
 
-🔗 **Visit:** 👉 [**docs.taskist.org**](https://docs.taskist.org)
+<br>
 
-## 💬 Join the Discussion on Zulip
+Taskist is a self-hosted **task, change request and bug tracker** built with ASP.NET Core MVC and Microsoft SQL Server. Plan work on a backlog and board, ship it in versioned releases, review merge requests from GitHub or GitLab, and keep your team's knowledge in a built-in wiki — without per-seat pricing.
 
-Stay connected with the Taskist community on **[Zulip](https://taskist.zulipchat.com)** — our hub for collaboration, support, and ideas.
+**Why Taskist?**
 
-[![Chat on Zulip](https://img.shields.io/badge/chat-on%20Zulip-3C7EBB?logo=zulip&logoColor=white)](https://taskist.zulipchat.com)
+- **Yours to run** — MIT-licensed and self-hosted; your data stays in your own SQL Server.
+- **Code-aware** — branches, merge/pull requests, reviews and issue sync for GitHub and GitLab, cloud or self-hosted.
+- **Ready in minutes** — one `docker compose up` gives you the app, the database and a seeded admin.
+- **Secure by default** — PBKDF2 passwords, encrypted secrets, permission-checked attachments and hardened outbound requests ([SECURITY.md](SECURITY.md)).
 
-| Channel            | Purpose                                                           | Link                                                                          |
-| ------------------ | ----------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| 📢 **General**     | General discussions, announcements, and community updates.        | [Join #general](https://taskist.zulipchat.com/#narrow/channel/539615-general) |
-| 💻 **Development** | Development discussions, code reviews, and architecture planning. | [Join #dev](https://taskist.zulipchat.com/#narrow/channel/539614-dev)         |
-| 🛠️ **Support**     | Get help setting up Taskist, report bugs, or troubleshoot issues. | [Join #support](https://taskist.zulipchat.com/#narrow/channel/539613-support) |
+## 📸 Screenshots
 
-📝 **Tip:**  
-You can join directly with your GitHub or email account — no setup required.  
-All discussions are public and searchable to help new contributors learn quickly.
-
-## 📑 Table of Contents
-
-1. [✨ Features](#-features)
-2. [🏛 Master Modules](#-master-modules)
-3. [⚡ Transaction Modules](#-transaction-modules)
-4. [🗂 Module Hierarchy](#-module-hierarchy)
-5. [🛠 Technology Stack](#-technology-stack)
-6. [🐳 Quick Start with Docker](#-quick-start-with-docker)
-7. [🚀 Local Development Setup](#-local-development-setup)
-8. [⚙️ Configuration](#-configuration)
-9. [💾 Database Migrations](#-database-migrations)
-10. [🔐 Security](#-security)
-11. [🐛 GitHub Issues & Contribution](#-github-issues--contribution)
-12. [📄 License](#-license)
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/dashboard.png" alt="Dashboard with task overview, due tasks and charts"><br><sub><b>Dashboard</b> — due tasks, workload and trends at a glance</sub></td>
+    <td width="50%"><img src="docs/images/backlog_form.png" alt="Task editor with rich-text description and status timeline"><br><sub><b>Task editor</b> — status timeline, rich text, sub-tasks and attachments</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/wiki.png" alt="Project wiki with page tree and editor"><br><sub><b>Wiki</b> — per-project pages with categories and history</sub></td>
+    <td width="50%"><img src="docs/images/login.png" alt="Sign-in page"><br><sub><b>Sign-in</b> — branded with your company name</sub></td>
+  </tr>
+</table>
 
 ## ✨ Features
 
-- 👤 User authentication and authorization with roles & permissions.
-- 🏢 Client and project management.
-- 🐞 Task, Change Request, and Bug tracking with status, severity, and reporter.
-- 📆 Sprint and backlog management.
-- 🧩 Modular system design with configurable menus and settings.
-- 📊 Full audit and tracking for project activities.
+<table>
+  <tr>
+    <td width="50%" valign="top">
 
-## 🏛 Master Modules
+**📋 Work items**
+- **Backlog** of tasks, change requests and bugs — severity, reporter, tags, attachments, comments, history and a full filter panel
+- **Board** and **Timeline** views of the same work
+- **Releases** with auto-generated versions from a per-project format (`{major}.{minor}.{patch}`, `{yyyy}.{MM}.{seq}`, …)
+- **Closing checklist** — a status can require root cause, resolution or a merge request
 
-| Module                      | Description                                                         |
-| --------------------------- | ------------------------------------------------------------------- |
-| 👤 User                     | System users who can create or manage tasks.                        |
-| 🔑 User Roles & Permissions | Define roles (Admin, Manager, Developer, Tester) and access rights. |
-| 🏢 Client                   | Organizations or clients associated with projects.                  |
-| 📁 Project                  | Projects under a client.                                            |
-| 🧩 Module                   | Main functional modules of a project.                               |
-| 🔹 SubModule                | Sub-divisions under each module.                                    |
-| 📝 Reporter                 | Person reporting a task, bug, or CR.                                |
-| ⚠️ Severity                 | Priority/impact of tasks/bugs (High, Medium, Low).                  |
-| 🔄 Status                   | Current status of a task (Open, In Progress, Closed, etc.).         |
-| 🗂 TaskType                  | Type of work (Task, Bug, CR).                                       |
-| 📜 Menu                     | Configurable navigation menu items.                                 |
-| ⚙️ Setting                  | Application or system-wide settings.                                |
+</td>
+    <td width="50%" valign="top">
 
-## ⚡ Transaction Modules
+**🔗 Code**
+- **GitHub and GitLab**, cloud or self-hosted — create branches and merge/pull requests from a task
+- **Webhooks** move tasks when merge requests open, merge or close
+- **Reviews** — approve, comment, rebase and merge under the reviewer's own account
+- **Issue sync** — import, export or two-way
 
-| Module     | Description                          |
-| ---------- | ------------------------------------ |
-| 📋 Backlog | Manage pending tasks, CRs, and bugs. |
-| 🏃 Sprint  | Plan, track, and close sprints.      |
+</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
 
-## 🗂 Module Hierarchy
+**👥 Team**
+- **Wiki** with categories and version history
+- **Announcements** with read acknowledgements
+- **Chat notifications** to Teams, Slack, Google Chat, Discord, Mattermost or any JSON webhook
+- **Reports** — task explorer, resource load, stage duration and Excel export
 
-```
-Master Modules
-├─ User
-├─ User Roles & Permissions
-├─ Client
-├─ Project
-├─ Module
-│  └─ SubModule
-├─ Reporter
-├─ Severity
-├─ Status
-├─ TaskType
-├─ Menu
-└─ Setting
+</td>
+    <td width="50%" valign="top">
 
-Transaction Modules
-├─ Backlog
-└─ Sprint
-```
+**⚙️ Administration**
+- Users, roles and fine-grained permissions
+- Masters for clients, projects, modules, statuses, task types, severities, tags and reporters — shared or per project
+- Database-driven translations, e-mail templates and settings
+- Light, dark and system themes with an accent colour per user; activity log; background-jobs dashboard
 
-💡 **Note:** Master modules define core entities. Transaction modules handle activities/records based on master data.
+</td>
+  </tr>
+</table>
 
-## 🛠 Technology Stack
+**Built with** ASP.NET Core MVC (.NET 10) · EF Core 10 · SQL Server 2019+ · Hangfire · Mapperly · FluentValidation · CoreUI + Bootstrap 5 · ClosedXML — every front-end library vendored locally, no CDN.
 
-- **Backend:** ASP.NET Core MVC (.NET 8)
-- **Frontend:** Razor Views, Bootstrap
-- **Database:** Microsoft SQL Server 2019+
-- **ORM:** Entity Framework Core 8
-- **Background jobs:** Hangfire
-- **Validation:** FluentValidation
-- **Containers:** Docker & Docker Compose
+## 🚀 Quick start
 
-## 🐳 Quick Start with Docker
-
-The fastest way to try Taskist. This starts SQL Server, applies migrations, seeds reference data and runs the app.
-
-**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (or Docker Engine with Compose v2).
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with Compose v2.
 
 ```bash
 git clone https://github.com/Taskist/taskist.git
 cd taskist
-
-# 1. Create your environment file
-cp .env.example .env
-
-# 2. Generate an encryption key and paste it into .env
-openssl rand -base64 32
-
-# 3. Start everything
+cp .env.example .env        # then set a strong MSSQL_SA_PASSWORD
 docker compose up -d
 ```
 
-Open **http://localhost:8080** and sign in:
-
-| Email               | Password      |
-| ------------------- | ------------- |
-| `admin@taskist.org` | `Admin@12345` |
+Open **http://localhost:8080** and sign in as **`admin@taskist.org`** / **`Admin@123`**.
 
 > [!WARNING]
-> Change this password immediately after the first sign-in, and never expose the seeded account on a reachable network. Taskist upgrades the stored hash to PBKDF2 automatically the first time this account signs in.
+> Change the admin password right after the first sign-in, and never expose the seeded account on a reachable network.
 
-Useful commands:
+- Set `SEED_DUMMY_DATA=true` in `.env` before the first start for a sample client, project and modules.
+- `docker compose logs -f web` follows the logs; `docker compose down -v` deletes everything, including the encryption keys.
+- The sample stack serves plain HTTP (`TASKIST_REQUIRE_HTTPS_COOKIES=false`). Put it behind TLS before exposing it — see [Configuration](#configuration).
 
-```bash
-docker compose logs -f web     # follow application logs
-docker compose down            # stop, keeping data
-docker compose down -v         # stop and delete all data
-```
+<a name="local-development"></a>
 
-Want sample projects and tasks to explore? Set `SEED_DUMMY_DATA=true` in `.env` before the first start.
+## 🛠 Local development
 
-## 🚀 Local Development Setup
-
-**Prerequisites:** [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) and SQL Server (Express or LocalDB is fine).
+**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), SQL Server (Express, LocalDB or Docker), and the EF Core tools (`dotnet tool install --global dotnet-ef`).
 
 1. Clone and restore:
 
-```powershell
-git clone https://github.com/Taskist/taskist.git
-cd taskist
-dotnet restore src/Taskist.sln
-```
+   ```powershell
+   git clone https://github.com/Taskist/taskist.git
+   cd taskist
+   dotnet restore src/Taskist.sln
+   ```
 
-2. Configure your connection string and encryption key. `appsettings.Development.json` is git-ignored, so it is safe for local values:
+2. Create `src/Presentation/Taskist.Web/appsettings.Development.json` (git-ignored):
 
-```json
-{
-  "ConnectionStrings": {
-    "AppContext": "Server=.\\SQLEXPRESS;Database=Taskist;Integrated Security=True;TrustServerCertificate=True;"
-  },
-  "Security": {
-    "EncryptionKey": "a-local-development-key-at-least-32-chars"
-  }
-}
-```
+   ```json
+   {
+     "ConnectionStrings": {
+       "AppContext": "Server=.\\SQLEXPRESS;Database=Taskist;Integrated Security=True;TrustServerCertificate=True;"
+     }
+   }
+   ```
 
 3. Create the schema:
 
-```powershell
-cd src/Libraries/Taskist.Data
-dotnet ef database update --startup-project ../../Presentation/Taskist.Web
-```
+   ```powershell
+   dotnet ef database update --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
+   ```
 
-4. Seed reference data by running the scripts in [`sql script/mssql/`](sql%20script/mssql/) **in order**:
+4. Run `sql-scripts/02_defaults.sql`, then `03_locale.sql` (see [Database](#database)).
 
-| Script | Required | Contents |
-| ------ | -------- | -------- |
-| `1_defaults.sql` | ✅ | Menus, roles, permissions, language and the administrator account |
-| `2_locale_resource.sql` | ✅ | English (India) translations |
-| `3_dummy_data.sql` | Optional | Sample clients, projects and tasks for evaluation |
+5. Start the app and browse to **https://localhost:7025**:
 
-Each script runs in a transaction and is safe to re-run — rows are matched on their business key, so nothing is duplicated.
+   ```powershell
+   dotnet run --project src/Presentation/Taskist.Web
+   ```
 
-5. Run:
+In Development, background jobs run inline instead of on a Hangfire server, so webhooks and notifications work without extra setup. Run the tests with `dotnet test src/Taskist.sln` — no database needed.
 
-```powershell
-cd src/Presentation/Taskist.Web
-dotnet run
-```
 
-Browse to the URL shown in the console (typically `https://localhost:7169`).
-
+<a name="configuration"></a>
 ## ⚙️ Configuration
 
-Taskist reads configuration from `appsettings.json`, environment variables prefixed with `TASKIST_`, and user-secrets. Environment variables win, so they are the preferred way to supply secrets.
-
-Nested keys use a double underscore: `Security:EncryptionKey` becomes `TASKIST_Security__EncryptionKey`.
-
-### Required
-
-The application **will not start** without these.
-
-| Setting | Environment variable | Description |
-| ------- | -------------------- | ----------- |
-| `ConnectionStrings:AppContext` | `TASKIST_ConnectionStrings__AppContext` | SQL Server connection string |
-| `Security:EncryptionKey` | `TASKIST_Security__EncryptionKey` | Minimum 32 characters, unique per deployment. Generate with `openssl rand -base64 32` |
-
-### Optional
+Taskist reads `appsettings.json`, `appsettings.{Environment}.json`, user-secrets and environment variables; environment variables win. Nested keys use a double underscore: `Security:RequireHttpsCookies` → `Security__RequireHttpsCookies`.
 
 | Setting | Default | Description |
 | ------- | ------- | ----------- |
-| `Security:MaxFailedAccessAttempts` | `5` | Failed sign-ins before an account locks |
-| `Security:LockoutMinutes` | `15` | How long the lockout lasts |
-| `Security:RequireHttpsCookies` | `true` | Restrict cookies to HTTPS. Set `false` only when deliberately serving plain HTTP |
-| `Sentry:Enabled` | `false` | Enable Sentry error reporting |
+| `ConnectionStrings:AppContext` | — | **Required.** SQL Server connection string |
+| `App:BaseUrl` | `https://localhost:7025/` | Public address, used in e-mail links, OAuth callbacks and webhook URLs |
+| `Security:RequireHttpsCookies` | `true` | Sign-in cookie over HTTPS only. `false` is for deliberate plain-HTTP setups and also skips HTTPS redirection and HSTS |
+| `Security:ForwardedHeaders:Enabled` | `false` | Trust `X-Forwarded-For` / `X-Forwarded-Proto` from a reverse proxy |
+| `Security:ForwardedHeaders:KnownProxies` | `[]` | Proxy IP addresses to trust (loopback is always trusted) |
+| `Security:ForwardedHeaders:KnownNetworks` | `[]` | Proxy networks in CIDR form, e.g. `172.16.0.0/12` |
+| `DataProtection:KeysPath` | `App_Data/DataProtectionKeys` | Encryption key ring folder; must be writable |
+| `DataProtection:CertificatePath` / `CertificatePassword` | — | Encrypt the key ring at rest with a PFX certificate |
+| `DataProtection:CertificateThumbprint` | — | …or with a certificate from the machine store |
+| `DataProtection:ProtectWithDpapi` / `DpapiLocalMachine` | `false` | …or with Windows DPAPI |
+| `App:IsBeta` / `App:BetaMessage` | `true` / text | Beta banner |
 
-> [!IMPORTANT]
-> `Security:RequireHttpsCookies` defaults to `true`, so **sign-in will not work over plain HTTP**. The Docker Compose stack sets it to `false` because it serves HTTP on localhost. Set it back to `true` once you are behind TLS.
+Everything else — password policy, lockout, session length, e-mail, Git, notifications, report layouts — lives in the app under **Configuration → Settings**.
 
-## 💾 Database Migrations
+**Behind a reverse proxy** (nginx, Traefik, IIS, a cloud load balancer): keep `RequireHttpsCookies=true`, set `ForwardedHeaders:Enabled=true` and list the proxy in `KnownProxies` or `KnownNetworks`, and set `App:BaseUrl` to the public `https://` address. In Docker these are `TASKIST_REQUIRE_HTTPS_COOKIES`, `TASKIST_FORWARDED_HEADERS`, `TASKIST_PROXY_NETWORK` and `APP_BASE_URL` in `.env`.
 
-Run EF Core commands from the `src/Libraries/Taskist.Data` folder:
+
+<a name="database"></a>
+## 💾 Database
+
+**Schema = EF Core migrations:**
 
 ```powershell
-cd src/Libraries/Taskist.Data
-
-# apply pending migrations
-dotnet ef database update --startup-project ../../Presentation/Taskist.Web
-
-# add a migration after changing an entity
-dotnet ef migrations add YourMigrationName --startup-project ../../Presentation/Taskist.Web
-
-# remove the last migration (only if not yet applied)
-dotnet ef migrations remove --startup-project ../../Presentation/Taskist.Web
+dotnet ef database update --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
 ```
 
-Upgrading an existing install? See **[UPGRADING.md](UPGRADING.md)** — the security hardening release requires new configuration and a migration.
+`Taskist.Data` is its own startup project; add `--connection "<connection string>"` to target another database.
+
+**Seed data** lives in [`sql-scripts/`](sql-scripts/) as idempotent scripts, matched on business keys, so re-running them is safe. Run them in numeric order (with `sqlcmd`, pass `-f 65001`):
+
+| Script | Required | Contents |
+| ------ | -------- | -------- |
+| `01_schema.sql` | Alternative | Full idempotent schema, for when you can't run `dotnet ef` |
+| `02_defaults.sql` | ✅ | Language, roles and permissions, menu, task types / severities / statuses, settings, email templates, administrator account (only into an empty user table) |
+| `03_locale.sql` | ✅ | English (India) translations |
+| `04_demo.sql` | Optional | Sample client, project and modules |
+
+Upgrading? See [UPGRADING.md](UPGRADING.md) and the [changelog](CHANGELOG.md).
+
 
 ## 🔐 Security
 
-To report a vulnerability, please follow **[SECURITY.md](SECURITY.md)** rather than opening a public issue.
+Please report vulnerabilities privately as described in **[SECURITY.md](SECURITY.md)**, not as public issues.
 
-Deployment checklist:
+Before going live: serve over HTTPS, change the seeded admin password, use a least-privilege SQL login, and **back up the Data Protection key folder** — losing it signs everyone out and makes stored Git tokens, webhook secrets and notification URLs unreadable. SECURITY.md has the full deployment checklist.
 
-- Serve over HTTPS and keep `Security:RequireHttpsCookies` set to `true`
-- Set a unique `Security:EncryptionKey`
-- Change the default `admin@taskist.org` password (`Admin@12345`)
-- Use a least-privilege SQL account rather than `sa`
-- Back up `App_Data/DataProtectionKeys` — losing it invalidates every session
+## 💬 Community & contributing
 
-## 🐛 GitHub Issues & Contribution
-
-New contributors are very welcome. **[CONTRIBUTING.md](CONTRIBUTING.md)** covers environment setup, coding conventions and what CI expects.
-
-### Raising an Issue
-
-Open a [new issue](https://github.com/Taskist/taskist/issues/new/choose) and pick a template. Bug reports ask for reproduction steps, your version and how you deploy Taskist — that detail is usually what decides whether a bug can be fixed.
-
-Found a security vulnerability? Please report it privately following **[SECURITY.md](SECURITY.md)** instead of opening an issue.
-
-Setup questions are usually answered faster on [Zulip](https://taskist.zulipchat.com/#narrow/channel/539613-support).
-
-### Submitting a Pull Request
-
-For anything beyond a small fix, please discuss it first via an issue or on [Zulip](https://taskist.zulipchat.com/#narrow/channel/539614-dev), so your time is not spent on something that does not fit the project's direction.
-
-```bash
-# 1. Fork, then branch
-git checkout -b feature/YourFeatureName
-
-# 2. Make your changes, then verify what CI will check
-dotnet build src/Taskist.sln
-dotnet test src/Taskist.sln
-
-# 3. Push and open a pull request against main
-git push origin feature/YourFeatureName
-```
-
-**Code guidelines**
-
-- Follow C# naming conventions and match the structure of the file you are editing
-- Keep methods short and modular
-- Use EF Core migrations for schema changes — CI fails if the model changes without one
-- Add tests for authentication, permissions, data access or file upload changes
+| | |
+| --- | --- |
+| 🙏 **Questions** | [Discussions → Q&A](https://github.com/Taskist/taskist/discussions/categories/q-a) |
+| 💡 **Ideas** | [Discussions → Ideas](https://github.com/Taskist/taskist/discussions/categories/ideas) |
+| 🐛 **Bugs** | [Open an issue](https://github.com/Taskist/taskist/issues/new/choose) |
+| 🛠 **Code** | [CONTRIBUTING.md](CONTRIBUTING.md) — setup, conventions and what CI checks |
+| 📖 **Docs** | [docs.taskist.org](https://docs.taskist.org) · [Git integration](docs/git-integration.md) |
 
 By participating, you agree to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
 
+## 💖 Sponsors & partners
+
+Thanks to the providers who support this project with free licenses and services:
+
+[![Sentry](https://img.shields.io/badge/Sentry-error%20tracking-362D59?logo=sentry&logoColor=white&style=for-the-badge)](https://sentry.io/for/open-source/)
+[![Confluence](https://img.shields.io/badge/Confluence-docs-172B4D?logo=confluence&logoColor=white&style=for-the-badge)](https://www.atlassian.com/software/confluence)
+[![MonsterASP.NET](https://img.shields.io/badge/MonsterASP.NET-hosting-0A66C2?style=for-the-badge)](https://monsterasp.net)
+[![GitBook](https://img.shields.io/badge/GitBook-documentation-3884FF?logo=gitbook&logoColor=white&style=for-the-badge)](https://gitbook.com)
+
+If Taskist helps you, ⭐ star the repository and share it with your team.
+
 ## 📄 License
 
-This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.
-
-## 💖 Open Source Sponsors & Partners
-
-We gratefully acknowledge the generous support of the following providers who offer free licenses or services to our open-source project:
-
-<table>
-<tbody>
-<tr>
-<td>
-    <a href="https://sentry.io/for/open-source/" target="_blank" title="Sentry – Free error tracking for open-source projects">
-        <img src="assets/sentry.png" alt="Sentry" />
-    </a>
-</td>
-<td>
-    <a href="https://www.atlassian.com/software/confluence" target="_blank" title="Atlassian Confluence">
-        <img src="assets/confluence.png" alt="Atlassian Confluence" />
-    </a>
- </td>
- <td>
-    <a href="https://monsterasp.net" target="_blank" title="MonsterASP.Net">
-        <img src="assets/monsterasp.net.png" alt="MonsterASP.Net" />
-    </a>
- </td>
- <td>
-    <a href="https://zulip.com" target="_blank" title="Zulip - Organized team chat app">
-        <img src="assets/zulip.png" alt="Zulip - Organized team chat app" />
-    </a>
- </td>
- <td>
-    <a href="https://gitbook.com" target="_blank" title="Create and publish beautiful documentation">
-        <img src="assets/gitbook.png" alt="Create and publish beautiful documentation" />
-    </a>
- </td>
-</tr>
-</tbody>
-</table>
-
-## 🌟 Support the Project
-
-If you find **Taskist** helpful, please consider supporting it! ❤️
-Your support helps keep the project growing and maintained.
-
-### 🪙 Ways to Support
-
-- ⭐ **Star this repository** on GitHub to show appreciation
-- 🪙 **Share it** with other developers or teams
-- ☕ **Buy Me a Coffee** to support ongoing development
-<p>
-  <a href="https://www.buymeacoffee.com/somaraj" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-</p>
+[MIT](LICENSE) © 2025-2026 Somaraj and Taskist contributors. Bundled third-party libraries keep their own licences — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

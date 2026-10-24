@@ -1,0 +1,140 @@
+﻿@model ClosingCommentModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+    var req = Model.Requirement;
+}
+
+@section Scripts {
+    <script src="~/js/pages/backlog/backlog-closing.js" asp-append-version="true"></script>
+}
+
+<form asp-action="ClosingComment" class="closing-form" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="closingCommentSaved" data-ajax-complete="ajaxComplete">
+    <input type="hidden" asp-for="Status" />
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="MergeRequestId" class="closing-mr-value" />
+    <input type="hidden" asp-for="MergeRequestRepositoryId" class="closing-mr-repo" />
+
+    <div class="closing-hero">
+        <div class="closing-hero__icon"><i class="fas fa-flag-checkered"></i></div>
+        <div class="closing-hero__text">
+            <div class="closing-hero__title">@Localize("ClosingComment.BeforeMoving") <span class="closing-hero__status">@Model.StatusName</span></div>
+            <div class="closing-hero__task">#@Model.Id · @Model.TaskTitle</div>
+        </div>
+    </div>
+
+    <ul class="closing-steps">
+        @if (req.RootCauseRequired)
+        {
+            <li class="closing-steps__item @(req.HasRootCause ? "is-done" : "is-missing")">
+                <i class="fas @(req.HasRootCause ? "fa-circle-check" : "fa-circle-exclamation")"></i>@Localize("BacklogPage.RootCauseFix.RootCause")
+                <span>@(req.HasRootCause ? Localize("ClosingComment.AlreadyAdded") : Localize("ClosingComment.AddBelow"))</span>
+            </li>
+        }
+        @if (req.ResolutionRequired)
+        {
+            <li class="closing-steps__item @(req.HasResolution ? "is-done" : "is-missing")">
+                <i class="fas @(req.HasResolution ? "fa-circle-check" : "fa-circle-exclamation")"></i>@Localize("BacklogPage.RootCauseFix.Resolution")
+                <span>@(req.HasResolution ? Localize("ClosingComment.AlreadyAdded") : Localize("ClosingComment.AddBelow"))</span>
+            </li>
+        }
+        @if (req.MrRequired)
+        {
+            <li class="closing-steps__item @(req.HasMr ? "is-done" : "is-missing")">
+                <i class="fas @(req.HasMr ? "fa-circle-check" : "fa-circle-exclamation")"></i>@Localize("BacklogPage.ClosingChecklist.Mr")
+                <span>
+                    @if (req.HasMr)
+                    {
+                        @($"!{req.ClosingMergeRequestId}")
+                    }
+                    else
+                    {
+                        @Localize("ClosingComment.AddBelow")
+                    }
+                </span>
+            </li>
+        }
+    </ul>
+
+    <div class="validation-errors"></div>
+
+    @if (req.RootCauseMissing)
+    {
+        <div class="closing-field closing-field--cause">
+            <label class="closing-field__label" for="RootCauseAnalysis"><i class="fas fa-bug me-2"></i>@Localize("BacklogPage.RootCauseFix.RootCause")</label>
+            <div class="closing-field__hint">@Localize("BacklogPage.RootCauseFix.RootCauseHint")</div>
+            <textarea asp-for="RootCauseAnalysis" class="form-control rt-body" rows="4"></textarea>
+        </div>
+    }
+
+    @if (req.ResolutionMissing)
+    {
+        <div class="closing-field closing-field--fix">
+            <label class="closing-field__label" for="ResolutionDetails"><i class="fas fa-screwdriver-wrench me-2"></i>@Localize("BacklogPage.RootCauseFix.Resolution")</label>
+            <div class="closing-field__hint">@Localize("BacklogPage.RootCauseFix.ResolutionHint")</div>
+            <textarea asp-for="ResolutionDetails" class="form-control rt-body" rows="4"></textarea>
+        </div>
+    }
+
+    @if (req.MrMissing)
+    {
+        <div class="closing-field closing-field--mr">
+            <div class="closing-field__label"><i class="fas fa-code-merge me-2"></i>@Localize("ClosingComment.PickMr")</div>
+            @if (req.MrLookupFailed || !string.IsNullOrEmpty(Model.GitLabWarning))
+            {
+                <div class="alert alert-warning py-1 px-2 small mb-2">
+                    <i class="fas fa-plug-circle-exclamation me-1"></i>@Localize("ClosingComment.GitLabUnreachable")
+                    @if (!string.IsNullOrEmpty(Model.GitLabWarning ?? req.MrLookupMessage))
+                    {
+                        <div class="closing-gitlab-detail">@(Model.GitLabWarning ?? req.MrLookupMessage)</div>
+                    }
+                </div>
+            }
+            <div class="closing-mr-list">
+                @foreach (var mr in Model.AvailableMergeRequests)
+                {
+                    <label class="closing-mr">
+                        <input type="radio" name="closingMrPick" value="@mr.Iid" data-repository-id="@mr.RepositoryId" />
+                        <span class="closing-mr__body">
+                            <span class="closing-mr__title">@(mr.RefPrefix)@mr.Iid @mr.Title</span>
+                            @if (!string.IsNullOrEmpty(mr.RepositoryName))
+                            {
+                                <span class="closing-mr__tag"><i class="fas fa-box-archive me-1"></i>@mr.RepositoryName</span>
+                            }
+                            <span class="closing-mr__meta">
+                                @if (mr.Linked)
+                                {
+                                    <span class="closing-mr__tag"><i class="fas fa-link me-1"></i>@Localize("ClosingComment.LinkedToTask")</span>
+                                }
+                                @if (!string.IsNullOrEmpty(mr.SourceBranch))
+                                {
+                                    <span><i class="fas fa-code-branch me-1"></i>@mr.SourceBranch</span>
+                                }
+                                @if (!string.IsNullOrEmpty(mr.Author))
+                                {
+                                    <span>· @mr.Author</span>
+                                }
+                            </span>
+                        </span>
+                    </label>
+                }
+                <label class="closing-mr closing-mr--manual">
+                    <input type="radio" name="closingMrPick" value="manual" @(Model.AvailableMergeRequests.Any() ? "" : "checked") />
+                    <span class="closing-mr__body">
+                        <span class="closing-mr__title">@Localize("ClosingComment.MrNotListed")</span>
+                        <span class="closing-mr__manual">
+                            <span class="input-group input-group-sm">
+                                <span class="input-group-text">@(Model.AvailableMergeRequests.FirstOrDefault()?.RefPrefix ?? "#")</span>
+                                <input type="number" min="1" class="form-control closing-mr-manual" placeholder="@Localize("ClosingComment.MrNumberPlaceholder").Text" />
+                            </span>
+                        </span>
+                    </span>
+                </label>
+            </div>
+        </div>
+    }
+
+    <div class="closing-actions">
+        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-flag-checkered me-1"></i>@Localize("ClosingComment.SaveAndMove") @Model.StatusName</button>
+        <button type="button" class="btn btn-secondary btn-sm close-form"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")</button>
+    </div>
+</form>

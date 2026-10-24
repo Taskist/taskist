@@ -33,7 +33,6 @@ services:
       MSSQL_DATABASE: ${MSSQL_DATABASE:-Taskist}
       SEED_DATA: ${SEED_DATA:-true}
       SEED_DUMMY_DATA: ${SEED_DUMMY_DATA:-false}
-      TASKIST_ConnectionStrings__AppContext: "Server=db,1433;Database=${MSSQL_DATABASE:-Taskist};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
     depends_on:
       db:
         condition: service_healthy
@@ -45,16 +44,18 @@ services:
       dockerfile: Dockerfile
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
-      TASKIST_ConnectionStrings__AppContext: "Server=db,1433;Database=${MSSQL_DATABASE:-Taskist};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
-      TASKIST_Security__EncryptionKey: ${TASKIST_SECURITY_ENCRYPTIONKEY:?set TASKIST_SECURITY_ENCRYPTIONKEY in .env}
-      # the sample stack serves plain HTTP, so secure-only cookies would block sign-in.
+      ConnectionStrings__AppContext: "Server=db,1433;Database=${MSSQL_DATABASE:-Taskist};User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True;"
+      App__BaseUrl: ${APP_BASE_URL:-http://localhost:8080/}
+      # the sample stack serves plain HTTP, so secure-only sign-in cookies would block sign-in.
       # set this to true once you put Taskist behind TLS.
-      TASKIST_Security__RequireHttpsCookies: ${TASKIST_REQUIRE_HTTPS_COOKIES:-false}
+      Security__RequireHttpsCookies: ${TASKIST_REQUIRE_HTTPS_COOKIES:-false}
+      # enable when a reverse proxy terminates TLS in front of this container
+      Security__ForwardedHeaders__Enabled: ${TASKIST_FORWARDED_HEADERS:-false}
+      Security__ForwardedHeaders__KnownNetworks__0: ${TASKIST_PROXY_NETWORK:-172.16.0.0/12}
     ports:
       - "${TASKIST_PORT:-8080}:8080"
     volumes:
       - taskist-keys:/app/App_Data/DataProtectionKeys
-      - taskist-uploads:/app/wwwroot/uploads
     depends_on:
       db:
         condition: service_healthy
@@ -71,4 +72,3 @@ services:
 volumes:
   taskist-db:
   taskist-keys:
-  taskist-uploads:

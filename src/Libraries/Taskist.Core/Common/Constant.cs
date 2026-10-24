@@ -1,4 +1,4 @@
-﻿namespace Taskist.Core.Common;
+namespace Taskist.Core.Common;
 
 public static class Constant
 {
@@ -8,18 +8,13 @@ public static class Constant
 
     public static string IsPostBeingDoneRequestItem => "Taskist.IsPOSTBeingDone";
 
-    /// <summary>
-    /// Substituted for the %company% placeholder in email templates.
-    /// </summary>
-    public static string CompanyName => "Taskist";
+    public static string SessionCookie => ".Session";
 
-    public static string SessionCookie => ".Taskist.Session";
-
-    public static string AntiForgeryCookie => ".Taskist.Antiforgery";
+    public static string AntiForgeryCookie => ".Antiforgery";
 
     #endregion
 
-    #region System employee roles
+    #region System user roles
 
     public static string AdministratorRoleName => "SystemAdministrator";
 
@@ -28,6 +23,8 @@ public static class Constant
     public static string DeveloperRoleName => "Developer";
 
     public static string RepoterRoleName => "Reporter";
+
+    public static string QualityAssuranceRoleName => "QualityAssurance";
 
     public static string LastVisitedPageAttribute => "LastVisitedPage";
 
@@ -47,7 +44,11 @@ public static class Constant
 
     #region Session
 
-    public static string ActiveProjectSession => "ActiveProjectSession";
+    public static string BacklogFilterPresets => "BacklogFilterPresets";
+
+    public static string BacklogVisibleColumns => "BacklogVisibleColumns";
+
+    public static string BacklogGroupByParent => "BacklogGroupByParent";
 
     #endregion
 }

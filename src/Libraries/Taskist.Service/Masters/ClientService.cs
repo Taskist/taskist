@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Extensions;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
-using Taskist.Data.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 
 namespace Taskist.Service.Masters;
 
@@ -29,7 +31,7 @@ public class ClientService : IClientService
         return await _clientRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBySafe(sortColumn, sortDirection);
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));

@@ -1,0 +1,20 @@
+@model ReleaseModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<form asp-action="Edit" class="release-edit-form" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete"
+      data-open-tasks-url="@Url.Action("OpenTasks", new { id = Model.Id })"
+      data-original-status="@Model.Status"
+      data-released-status="@((int)ReleaseStatus.Released)"
+      data-carry-title="@Localize("ReleaseCarryOver.Title").Text"
+      data-carry-msg="@Localize("ReleaseCarryOver.Prompt").Text"
+      data-carry-select="@Localize("ReleaseCarryOver.SelectTarget").Text"
+      data-carry-none="@Localize("ReleaseCarryOver.NoTargets").Text"
+      data-carry-move="@Localize("ReleaseCarryOver.MoveAndRelease").Text"
+      data-carry-anyway="@Localize("ReleaseCarryOver.ReleaseAnyway").Text">
+    <input type="hidden" asp-for="ConfirmOpenTasks" value="false" />
+    <input type="hidden" asp-for="CarryOverReleaseId" value="" />
+    @await Html.PartialAsync("_Form", Model)
+    <partial name="_ModalButton" />
+</form>

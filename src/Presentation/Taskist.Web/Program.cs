@@ -1,37 +1,48 @@
 using System.Net;
-using Taskist.Web.Helpers.Infrastructure;
+using Taskist.Core.Domain.Settings;
+using Taskist.Service;
+using Taskist.Web.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Configuration.AddEnvironmentVariables("TASKIST_");
+builder.Configuration.AddEnvironmentVariables();
 ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;
 
 builder.Host.UseDefaultServiceProvider(options =>
 {
-    //scope validation catches scoped services captured by singletons
-    options.ValidateScopes = builder.Environment.IsDevelopment();
-    options.ValidateOnBuild = true;
+	options.ValidateScopes = false;
+	options.ValidateOnBuild = true;
 });
 
-var connectionString = builder.Configuration.GetConnectionString("AppContext");
-
-if (string.IsNullOrWhiteSpace(connectionString))
-    throw new InvalidOperationException(
-        "ConnectionStrings:AppContext is not configured. Set it through configuration, user-secrets " +
-        "or the TASKIST_ConnectionStrings__AppContext environment variable.");
-
 builder.Services
-    .AddTaskistSecurity(builder.Configuration)
-    .AddTaskistData(connectionString, builder.Environment)
-    .AddTaskistCaching(builder.Configuration)
-    .AddTaskistServices()
-    .AddTaskistMvc(builder.Environment)
-    .AddTaskistJobs(connectionString);
+	.AddWebContext()
+	.AddHostSecurity(builder.Configuration)
+	.AddDataProtectionAndSession(builder.Environment, builder.Configuration)
+	.AddPersistence(builder.Configuration, builder.Environment)
+	.AddApplicationCaching()
+	.AddApplicationServices()
+	.AddAppUrl(builder.Configuration)
+	.AddApplicationSettings()
+	.AddObjectMapping()
+	.AddAssetPipeline()
+	.AddPresentation()
+	.AddAppAuthentication()
+	.AddProfiling()
+	.AddBackgroundJobs(builder.Configuration, startServer: !builder.Environment.IsDevelopment());
 
-builder.AddTaskistMonitoring();
+builder.Services.AddSingleton(new Taskist.Core.Configuration.BackgroundJobMode { ServerEnabled = !builder.Environment.IsDevelopment() });
 
 var app = builder.Build();
 
-app.UseTaskistPipeline();
+app.LogSecurityWarnings();
+
+await GitStartup.UpgradeLegacySettingsAsync(app.Services);
+
+app.UseApplicationPipeline();
+
+if (!app.Environment.IsDevelopment())
+{
+	RecurringJobScheduler.RegisterLogPurge();
+	RecurringJobScheduler.RegisterGitJobs();
+}
 
 await app.RunAsync();

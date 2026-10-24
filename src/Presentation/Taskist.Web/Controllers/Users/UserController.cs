@@ -1,22 +1,25 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MapsterMapper;
+using System.Data;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
-using Taskist.Service.Security;
-using Taskist.Service.Masters;
+using Taskist.Core.Enums;
+using Taskist.Service.Git;
 using Taskist.Service.Localization;
-using Taskist.Service.Logging;
+using Taskist.Service.Masters;
+using Taskist.Service.Security;
 using Taskist.Service.Users;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Users;
 
 namespace Taskist.Web.Controllers.Users;
 
+[CheckPermission(nameof(PermissionProvider.ManageUser))]
 public class UserController : BaseController
 {
     #region Fields
@@ -24,11 +27,11 @@ public class UserController : BaseController
     protected readonly IUserService _userService;
     protected readonly IDocumentService _documentService;
     protected readonly ILanguageService _languageService;
-    protected readonly IPermissionService _permissionService;
     protected readonly ILocalizationService _localizationService;
-    protected readonly IUserActivityService _userActivityService;
+    protected readonly IGitRepositoryService _gitRepositoryService;
     protected readonly IWorkContext _workContext;
-    protected readonly IMapper _mapper;
+    protected readonly UsersMapper _usersMapper;
+    protected readonly MastersMapper _mastersMapper;
 
     #endregion
 
@@ -36,34 +39,40 @@ public class UserController : BaseController
 
     public UserController(IUserService userService,
         IDocumentService documentService,
-        IPermissionService permissionService,
         ILanguageService languageService,
         ILocalizationService localizationService,
-        IUserActivityService userActivityService,
+        IGitRepositoryService gitRepositoryService,
         IWorkContext workContext,
-        IMapper mapper)
+        UsersMapper usersMapper,
+        MastersMapper mastersMapper)
     {
         _userService = userService;
         _documentService = documentService;
-        _permissionService = permissionService;
         _languageService = languageService;
         _localizationService = localizationService;
-        _userActivityService = userActivityService;
+        _gitRepositoryService = gitRepositoryService;
         _workContext = workContext;
-        _mapper = mapper;
+        _usersMapper = usersMapper;
+        _mastersMapper = mastersMapper;
     }
 
     #endregion
 
     #region Action
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Index()
     {
-        return View();
+        var model = new UserListModel();
+
+        foreach (var s in Enum.GetValues<UserStatus>())
+            model.AvailableStatuses.Add(new SelectListItem { Text = s.ToString(), Value = ((int)s).ToString(), Selected = s == UserStatus.Active });
+
+        foreach (var r in await _userService.GetAllUserRolesAsync())
+            model.AvailableRoles.Add(new SelectListItem { Text = r.Name, Value = r.Id.ToString() });
+
+        return View(model);
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Create()
     {
         var model = new UserRegistrationModel();
@@ -73,31 +82,29 @@ public class UserController : BaseController
     }
 
     [HttpPost, FormName("save-continue", "continueEditing")]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Create(UserRegistrationModel model, bool continueEditing)
     {
         if (ModelState.IsValid)
         {
             var loggedUser = await _workContext.GetCurrentUserAsync();
-            var userEntity = _mapper.Map<User>(model.User);
+            var userEntity = _usersMapper.ToEntity(model.User);
+            var addressEntity = _mastersMapper.ToEntity(model.Address);
 
-            var status = await _userService.RegisterAsync(userEntity, model.User.SelectedRoleIds,
+            var status = await _userService.RegisterAsync(userEntity, addressEntity, model.User.SelectedRoleIds,
                 loggedUser, model.User.EmailWelcomeKit);
 
             switch (status)
             {
-                case RegistrationResultEnum.InvalidEmpCode:
+                case RegistrationResult.InvalidEmpCode:
                     ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Error.UnableToRegisterUser"));
                     break;
             }
 
-            if (status == RegistrationResultEnum.Successful)
+            if (status == RegistrationResult.Successful)
             {
-                await _userActivityService.InsertAsync("User", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), userEntity.Name), userEntity);
                 return continueEditing ? RedirectToAction("Create") : RedirectToAction("Index");
             }
 
-            await _userActivityService.InsertAsync("User", string.Format(await _localizationService.GetResourceAsync("Log.RecordError"), userEntity.Name), userEntity);
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Error.UnableToRegisterUser"));
         }
 
@@ -105,7 +112,6 @@ public class UserController : BaseController
         return View(model);
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _userService.GetByIdAsync(id);
@@ -114,10 +120,11 @@ public class UserController : BaseController
 
         var model = new UserRegistrationModel
         {
-            User = _mapper.Map<UserModel>(entity)
+            User = _usersMapper.ToModel(entity),
+            Address = _mastersMapper.ToModel(entity.Address)
         };
 
-        model.User.SelectedRoleIds = entity.UserRoleMaps.Select(x => x.UserRoleId).ToList();
+        model.User.SelectedRoleIds = entity.UserUserRoleMaps.Select(x => x.UserRoleId).ToList();
 
         await InitModelAsync(model);
 
@@ -125,24 +132,25 @@ public class UserController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> Edit(UserRegistrationModel model)
     {
         if (ModelState.IsValid)
         {
+
             var entity = await _userService.GetByIdAsync(model.User.Id);
-            entity = _mapper.Map(model.User, entity);
+            _usersMapper.Update(model.User, entity);
+            _mastersMapper.Update(model.Address, entity.Address);
 
             #region Roles
 
             var avaliableRoles = await _userService.GetAllUserRolesAsync();
-            var activeRoles = avaliableRoles.Where(x => entity.UserRoleMaps.Any(y => y.UserRoleId == x.Id)).ToList();
+            var activeRoles = avaliableRoles.Where(x => entity.UserUserRoleMaps.Any(y => y.UserRoleId == x.Id)).ToList();
             var selectedRoles = avaliableRoles.Where(x => model.User.SelectedRoleIds.Any(y => y == x.Id)).ToList();
             var rolesToAdd = selectedRoles.Except(activeRoles);
             var rolesToDelete = activeRoles.Except(selectedRoles);
 
             foreach (var role in rolesToDelete)
-                entity.RemoveFromRole(entity.UserRoleMaps.First(x => x.UserRoleId == role.Id));
+                entity.RemoveFromRole(entity.UserUserRoleMaps.First(x => x.UserRoleId == role.Id));
 
             foreach (var role in rolesToAdd)
                 entity.AddToRole(new UserRoleMap { UserId = entity.Id, UserRoleId = role.Id });
@@ -150,7 +158,6 @@ public class UserController : BaseController
             #endregion
 
             await _userService.UpdateAsync(entity);
-            await _userActivityService.InsertAsync("User", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Name), entity);
 
             return RedirectToAction("Index");
         }
@@ -162,7 +169,6 @@ public class UserController : BaseController
         return View(model);
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> ResetPassword(int id)
     {
         var model = new ResetPasswordModel { Id = id };
@@ -171,7 +177,6 @@ public class UserController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
     public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
     {
         if (ModelState.IsValid)
@@ -179,20 +184,44 @@ public class UserController : BaseController
             await _userService.ResetPasswordAsync(model.Id, model.Password);
 
             var user = await _userService.GetByIdAsync(model.Id);
-            await _userActivityService.InsertAsync("ResetPassword", string.Format(await _localizationService.GetResourceAsync("Log.PasswordReset"), user.Name), user);
 
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.SaveSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
+        });
+    }
+
+    public async Task<IActionResult> Unlock(int id)
+    {
+        var entity = await _userService.GetByIdAsync(id);
+        if (entity == null)
+            return RedirectToAction("Index");
+
+        var model = _usersMapper.ToModel(entity);
+
+        return PartialView(model);
+    }
+
+    [HttpPost, ActionName("Unlock")]
+    public async Task<IActionResult> UnlockConfirmed(int id)
+    {
+        var unlocked = await _userService.UnlockAsync(id);
+
+        return Json(new JsonResponseModel
+        {
+            Status = unlocked ? HttpStatusCode.Success : HttpStatusCode.NoData,
+            Message = await _localizationService.GetResourceAsync(unlocked
+                ? "UserUnlock.SuccessMsg"
+                : "FormNoData.Description")
         });
     }
 
@@ -201,16 +230,28 @@ public class UserController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_USER)]
-    public async Task<IActionResult> DataRead(DataTableRequest request)
+    public async Task<IActionResult> DataRead(DataTableRequest request, UserFilterModel filter)
     {
-        var data = await _userService.GetPagedListAsync(request.SearchValue, request.Start,
-            request.Length, request.SortColumn, request.SortDirection);
+        filter ??= new UserFilterModel();
+        var pageIndex = request.Length > 0 ? request.Start / request.Length : 0;
+
+        var data = await _userService.GetPagedListAsync(request.SearchValue, pageIndex,
+            request.Length, request.SortColumn, request.SortDirection,
+            filter.StatusValues, filter.RoleValues, filter.LockedValue);
 
         return Json(new
         {
             request.Draw,
-            data = data.Select(x => _mapper.Map<UserModel>(x)),
+            data = data.Select(x => new
+            {
+                x.Id,
+                x.FirstName,
+                x.LastName,
+                x.Email,
+                x.MobileNumber,
+                StatusName = ((UserStatus)x.Status).ToString(),
+                x.Locked
+            }),
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
         });
@@ -220,8 +261,28 @@ public class UserController : BaseController
 
     #region Helper
 
+    public async Task<JsonResult> GetGitLabUsers(string q)
+    {
+        var connection = await _gitRepositoryService.GetDefaultConnectionAsync();
+        if (connection == null)
+            return Json(Array.Empty<SelectListItem>());
+
+        var provider = _gitRepositoryService.ProviderFor(connection);
+        var users = await provider.SearchUsersAsync(q);
+        if (users.Count == 0 && !string.IsNullOrEmpty(provider.LastError))
+            return Json(new { error = provider.LastError });
+
+        return Json(users.Select(u => new SelectListItem
+        {
+            Value = u.UserName,
+            Text = string.IsNullOrWhiteSpace(u.Name) ? u.UserName : $"{u.Name} ({u.UserName})"
+        }));
+    }
+
     private async Task InitModelAsync(UserRegistrationModel model)
     {
+        model.User.GitLabConfigured = await _gitRepositoryService.GetDefaultConnectionAsync() != null;
+
         var languages = await _languageService.GetAllActiveAsync();
         var userRoles = await _userService.GetAllUserRolesAsync();
 

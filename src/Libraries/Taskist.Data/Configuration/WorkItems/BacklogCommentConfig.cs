@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Taskist.Core.Domain.WorkItems;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Taskist.Data.Configuration.WorkItems;
 
@@ -14,6 +14,9 @@ public class BacklogCommentConfig : EntityTypeConfiguration<BacklogComment>
 
         builder.Property(p => p.Comment)
             .IsRequired();
+
+        builder.Property(p => p.FieldName)
+            .HasMaxLength(100);
 
         builder.HasOne(f => f.Backlog)
             .WithMany()

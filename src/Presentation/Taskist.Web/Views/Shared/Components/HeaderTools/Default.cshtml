@@ -1,8 +1,8 @@
 @model HeaderToolsModel
 
-@if (Model.ShowSearch)
-{
-    <div class="header-tools">
+<div class="header-tools">
+    @if (Model.CanSearch)
+    {
         <div class="header-search" id="navSearch">
             <i class="fas fa-magnifying-glass header-search__icon"></i>
             <input type="text" id="navSearchInput" class="form-control" autocomplete="off"
@@ -12,46 +12,64 @@
             <kbd class="header-search__kbd">Ctrl K</kbd>
             <div class="header-search__results" id="navSearchResults"></div>
         </div>
-    </div>
-}
+    }
 
-@if (Model.ShowCreate)
-{
-    <div class="dropdown header-create-wrap">
-        <button class="btn btn-sm header-create" type="button" data-coreui-toggle="dropdown"
-                aria-expanded="false" title="@Localize("Header.Create").Text">
-            <i class="fas fa-plus"></i>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end tk-menu tk-menu--compact">
-            <li><div class="tk-menu__label">@Localize("Header.Create").Text</div></li>
+    @await Html.PartialAsync("Sections/_BetaBanner")
 
-            @if (Model.CanCreateTask)
-            {
+    <div class="header-tools__right">
+        @if (Model.HasCreate)
+        {
+            <div class="dropdown">
+                <button class="btn btn-sm header-create" type="button" data-coreui-toggle="dropdown" aria-expanded="false" title="@Localize("Header.Create").Text">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end wp-menu wp-menu--compact">
+                    <li><div class="wp-menu__label">@Localize("Header.Create").Text</div></li>
+                    @if (Model.CanCreateBacklog)
+                    {
+                        <li><a class="dropdown-item" asp-action="Create" asp-controller="Backlog"><span class="wp-menu__chip wp-menu__chip--teal"><i class="fas fa-list-check"></i></span>@Localize("Header.NewTask").Text</a></li>
+                    }
+                    @if (Model.CanWiki)
+                    {
+                        <li><a class="dropdown-item" asp-action="Index" asp-controller="WikiDocument"><span class="wp-menu__chip wp-menu__chip--blue"><i class="fas fa-book"></i></span>@Localize("Header.NewWiki").Text</a></li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="dropdown" id="alertBell" data-can-backlog="@Model.CanBacklog.ToString().ToLower()">
+            <button class="btn btn-sm header-bell" type="button" data-coreui-toggle="dropdown" data-coreui-auto-close="outside" aria-expanded="false" title="@Localize("Header.Alerts").Text">
+                <i class="fas fa-bell"></i>
+                <span class="header-bell__badge @(Model.AlertCount > 0 ? "" : "d-none")" id="alertBadge">@Model.AlertCount</span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end wp-menu header-alerts">
                 <li>
-                    <a class="dropdown-item" href="@Url.Action("Create", "Backlog")">
-                        <span class="tk-menu__chip tk-menu__chip--blue"><i class="fas fa-list-check"></i></span>
-                        @Localize("Header.NewTask").Text
-                    </a>
+                    <div class="wp-menu__label">
+                        @Localize("Header.Notifications").Text
+                        <span class="badge bg-danger rounded-pill @(Model.AlertCount > 0 ? "" : "d-none")" id="alertHeaderCount">@Model.AlertCount</span>
+                    </div>
                 </li>
-            }
-            @if (Model.CanCreateProject)
-            {
+                <li id="alertEmpty" class="@(Model.AlertCount == 0 ? "" : "d-none")"><div class="wp-menu__empty"><i class="fas fa-circle-check"></i><span>@Localize("Header.AllClear").Text</span></div></li>
+                @if (Model.CanBacklog)
+                {
+                    <li id="alertOverdue" class="@(Model.OverdueTasks > 0 ? "" : "d-none")"><a class="dropdown-item" asp-action="Index" asp-controller="Backlog" asp-route-filter="6"><span class="wp-menu__chip wp-menu__chip--amber"><i class="fas fa-triangle-exclamation"></i></span><span class="wp-menu__text"><span class="wp-menu__title"><span id="alertOverdueCount">@Model.OverdueTasks</span> @Localize("Header.OverdueTasks").Text</span></span><i class="fas fa-chevron-right wp-menu__chevron"></i></a></li>
+                }
                 <li>
-                    <a class="dropdown-item" href="javascript:JSManager.openForm('@Url.Action("Create", "Project")','@Localize("Header.NewProject").Text','col-md-8')">
-                        <span class="tk-menu__chip tk-menu__chip--indigo"><i class="fas fa-folder-plus"></i></span>
-                        @Localize("Header.NewProject").Text
-                    </a>
+                    <div class="header-notif__head">
+                        <span>@Localize("Header.Activity").Text</span>
+                        <span class="badge bg-primary rounded-pill @(Model.UnreadNotifications > 0 ? "" : "d-none")" id="notifUnreadCount">@Model.UnreadNotifications</span>
+                        <button type="button" class="btn btn-link btn-sm p-0 ms-auto header-notif__readall">@Localize("Header.MarkAllRead").Text</button>
+                    </div>
                 </li>
-            }
-            @if (Model.CanCreateClient)
-            {
                 <li>
-                    <a class="dropdown-item" href="javascript:JSManager.openForm('@Url.Action("Create", "Client")','@Localize("Header.NewClient").Text','col-md-8')">
-                        <span class="tk-menu__chip tk-menu__chip--teal"><i class="fas fa-user-plus"></i></span>
-                        @Localize("Header.NewClient").Text
-                    </a>
+                    <div class="header-notif" id="notifList"
+                         data-url="@Url.Action("Recent", "Notification")"
+                         data-read-url="@Url.Action("MarkRead", "Notification")"
+                         data-read-all-url="@Url.Action("MarkAllRead", "Notification")">
+                        <div class="header-notif__loading"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+                    </div>
                 </li>
-            }
-        </ul>
+            </ul>
+        </div>
     </div>
-}
+</div>

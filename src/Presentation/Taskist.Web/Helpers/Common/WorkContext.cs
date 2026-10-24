@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Localization;
+using Taskist.Core.Enums;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Localization;
-using Taskist.Core.Domain.Users;
 using Taskist.Service.Authentication;
+using Taskist.Service.Common;
 using Taskist.Service.Localization;
+using Microsoft.AspNetCore.Localization;
+using System.Security.Claims;
+using Taskist.Core.Domain.Users;
 
 namespace Taskist.Web.Helpers.Common;
 
@@ -23,8 +25,8 @@ public class WorkContext : IWorkContext
     #region Ctor
 
     public WorkContext(IAuthenticationService authenticationService,
-        IHttpContextAccessor httpContextAccessor,
-        ILanguageService languageService)
+                IHttpContextAccessor httpContextAccessor,
+                ILanguageService languageService)
     {
         _authenticationService = authenticationService;
         _httpContextAccessor = httpContextAccessor;
@@ -45,12 +47,30 @@ public class WorkContext : IWorkContext
         return _cachedUser;
     }
 
-    public async Task SetCurrentUserAsync(User? user = null)
+    public int? GetCurrentUserId()
+    {
+        if (_cachedUser != null)
+            return _cachedUser.Id;
+
+        var idClaim = _httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+
+        return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
+    }
+
+    public int? GetCurrentUserLanguageId()
+    {
+        if (_cachedUser != null)
+            return _cachedUser.LanguageId;
+
+        return GetLanguageIdFromClaim();
+    }
+
+    public async Task SetCurrentUserAsync(User user = null)
     {
         if (user == null)
             user = await _authenticationService.GetAuthenticatedUserAsync();
 
-        if (user != null && !user.Deleted && user.Status == (int)UserStatusEnum.Active)
+        if (user != null && !user.Deleted && user.Status == (int)UserStatus.Active)
         {
             SetUserCookie(user.Code);
             _cachedUser = user;
@@ -62,9 +82,8 @@ public class WorkContext : IWorkContext
         if (_cachedLanguage != null)
             return _cachedLanguage;
 
-        var user = await GetCurrentUserAsync();
+        var currentLanguageId = GetLanguageIdFromClaim() ?? (await GetCurrentUserAsync())?.LanguageId ?? 0;
 
-        var currentLanguageId = user.LanguageId;
         var allStoreLanguages = await _languageService.GetAllAsync();
 
         var detectedLanguage = allStoreLanguages.FirstOrDefault(language => language.Id == currentLanguageId);
@@ -80,29 +99,32 @@ public class WorkContext : IWorkContext
 
     #region  Helper
 
+    protected int? GetLanguageIdFromClaim()
+    {
+        var claim = _httpContextAccessor.HttpContext?.User?.FindFirst(ServiceConstant.LanguageIdClaim);
+
+        return claim != null && int.TryParse(claim.Value, out var languageId) ? languageId : null;
+    }
+
     protected void SetUserCookie(Guid code)
     {
         if (_httpContextAccessor.HttpContext?.Response?.HasStarted ?? true)
             return;
 
-        //delete current cookie value
         var cookieName = WebConstant.UserCookie;
         _httpContextAccessor.HttpContext.Response.Cookies.Delete(cookieName);
 
-        //get date of cookie expiration
         var cookieExpires = WebConstant.UserCookieExpires;
         var cookieExpiresDate = DateTime.Now.AddHours(cookieExpires);
 
-        //if passed guid is empty set cookie as expired
         if (code == Guid.Empty)
             cookieExpiresDate = DateTime.Now.AddMonths(-1);
 
-        //set new cookie value
         var options = new CookieOptions
         {
             HttpOnly = true,
             Expires = cookieExpiresDate,
-            // Secure = _webHelper.IsCurrentConnectionSecured()
+
         };
 
         _httpContextAccessor.HttpContext.Response.Cookies.Append(cookieName, code.ToString(), options);
@@ -113,14 +135,12 @@ public class WorkContext : IWorkContext
         if (_httpContextAccessor.HttpContext?.Response?.HasStarted ?? true)
             return;
 
-        //delete current cookie value
         var cookieName = WebConstant.CultureCookie;
         _httpContextAccessor.HttpContext.Response.Cookies.Delete(cookieName);
 
         if (string.IsNullOrEmpty(language?.LanguageCulture))
             return;
 
-        //set new cookie value
         var value = CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(language.LanguageCulture));
         var options = new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) };
         _httpContextAccessor.HttpContext.Response.Cookies.Append(cookieName, value, options);

@@ -1,9 +1,9 @@
-﻿using Taskist.Web.Helpers.Attributes;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class ClientModel : BasePageModel
+public class ClientModel : BaseModel
 {
     [LocalizedDisplayName("ClientModel.Name")]
     public string Name { get; set; }

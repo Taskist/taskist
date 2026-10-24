@@ -1,0 +1,236 @@
+/* Appearance: accent colour (data-app-accent on <html>) and the CoreUI primary colour mapped onto it.
+   Indigo is CoreUI's own primary, so the default accent changes nothing. Dark mode itself is CoreUI's
+   data-coreui-theme="dark" plus the dark tokens in theme-tokens.css / vendor-dark.css. */
+
+html {
+    --app-accent: #5856d6;
+    --app-accent-rgb: 88, 86, 214;
+}
+
+html[data-app-accent=teal] { --app-accent: #0d7f81; --app-accent-rgb: 13, 127, 129; }
+html[data-app-accent=blue] { --app-accent: #2563eb; --app-accent-rgb: 37, 99, 235; }
+html[data-app-accent=purple] { --app-accent: #7c3aed; --app-accent-rgb: 124, 58, 237; }
+html[data-app-accent=green] { --app-accent: #15803d; --app-accent-rgb: 21, 128, 61; }
+html[data-app-accent=orange] { --app-accent: #c2410c; --app-accent-rgb: 194, 65, 12; }
+html[data-app-accent=rose] { --app-accent: #e11d48; --app-accent-rgb: 225, 29, 72; }
+
+html[data-app-accent] {
+    --app-accent-hover: color-mix(in srgb, var(--app-accent) 85%, #000);
+    --app-accent-active: color-mix(in srgb, var(--app-accent) 78%, #000);
+    --app-accent-text: var(--app-accent);
+    --app-accent-subtle: color-mix(in srgb, var(--app-accent) 14%, #fff);
+    --app-accent-border: color-mix(in srgb, var(--app-accent) 50%, #fff);
+    --cui-primary: var(--app-accent);
+    --cui-primary-rgb: var(--app-accent-rgb);
+    --cui-link-color: var(--app-accent-text);
+    --cui-link-color-rgb: var(--app-accent-rgb);
+    --cui-link-hover-color: var(--app-accent-hover);
+    --cui-primary-text-emphasis: color-mix(in srgb, var(--app-accent) 70%, #000);
+    --cui-primary-bg-subtle: var(--app-accent-subtle);
+    --cui-primary-border-subtle: var(--app-accent-border);
+    --cui-focus-ring-color: rgba(var(--app-accent-rgb), .25);
+}
+
+html[data-coreui-theme=dark] { --app-accent-text-rgb: 152, 150, 230; }
+html[data-coreui-theme=dark][data-app-accent=teal] { --app-accent-text-rgb: 105, 176, 177; }
+html[data-coreui-theme=dark][data-app-accent=blue] { --app-accent-text-rgb: 120, 158, 243; }
+html[data-coreui-theme=dark][data-app-accent=purple] { --app-accent-text-rgb: 174, 133, 244; }
+html[data-coreui-theme=dark][data-app-accent=green] { --app-accent-text-rgb: 110, 176, 135; }
+html[data-coreui-theme=dark][data-app-accent=orange] { --app-accent-text-rgb: 217, 137, 104; }
+html[data-coreui-theme=dark][data-app-accent=rose] { --app-accent-text-rgb: 236, 115, 142; }
+
+html[data-app-accent][data-coreui-theme=dark] {
+    --app-accent-text: rgb(var(--app-accent-text-rgb));
+    --cui-link-color-rgb: var(--app-accent-text-rgb);
+    --app-accent-subtle: color-mix(in srgb, var(--app-accent) 22%, #212631);
+    --app-accent-border: color-mix(in srgb, var(--app-accent) 55%, #212631);
+    --cui-link-hover-color: color-mix(in srgb, var(--app-accent) 45%, #fff);
+    --cui-primary-text-emphasis: color-mix(in srgb, var(--app-accent) 55%, #fff);
+}
+
+/* Buttons */
+html[data-app-accent] .btn-primary {
+    --cui-btn-bg: var(--app-accent);
+    --cui-btn-border-color: var(--app-accent);
+    --cui-btn-hover-bg: var(--app-accent-hover);
+    --cui-btn-hover-border-color: var(--app-accent-hover);
+    --cui-btn-focus-shadow-rgb: var(--app-accent-rgb);
+    --cui-btn-active-bg: var(--app-accent-active);
+    --cui-btn-active-border-color: var(--app-accent-active);
+    --cui-btn-disabled-bg: var(--app-accent);
+    --cui-btn-disabled-border-color: var(--app-accent);
+}
+
+html[data-app-accent] .btn-outline-primary {
+    --cui-btn-color: var(--app-accent-text);
+    --cui-btn-border-color: var(--app-accent);
+    --cui-btn-hover-bg: var(--app-accent);
+    --cui-btn-hover-border-color: var(--app-accent);
+    --cui-btn-focus-shadow-rgb: var(--app-accent-rgb);
+    --cui-btn-active-bg: var(--app-accent-active);
+    --cui-btn-active-border-color: var(--app-accent-active);
+    --cui-btn-disabled-color: var(--app-accent-text);
+}
+
+html[data-app-accent] .btn-ghost-primary {
+    --cui-btn-color: var(--app-accent-text);
+    --cui-btn-hover-bg: var(--app-accent);
+    --cui-btn-hover-border-color: var(--app-accent);
+    --cui-btn-active-bg: var(--app-accent-active);
+    --cui-btn-active-border-color: var(--app-accent-active);
+    --cui-btn-disabled-color: var(--app-accent-text);
+}
+
+html[data-app-accent] .btn-link { --cui-btn-focus-shadow-rgb: var(--app-accent-rgb); }
+html[data-app-accent][data-coreui-theme=dark] .text-bg-primary { background-color: var(--app-accent) !important; }
+html[data-app-accent] .callout-primary { --cui-callout-border-left-color: var(--app-accent); }
+html[data-app-accent] .border-top-primary { border-top-color: var(--app-accent) !important; }
+html[data-app-accent] .border-end-primary { border-right-color: var(--app-accent) !important; }
+html[data-app-accent] .border-bottom-primary { border-bottom-color: var(--app-accent) !important; }
+html[data-app-accent] .border-start-primary { border-left-color: var(--app-accent) !important; }
+
+/* Focus rings */
+html[data-app-accent] .form-control:focus,
+html[data-app-accent] .form-select:focus,
+html[data-app-accent] .form-check-input:focus {
+    border-color: var(--app-accent-border);
+    box-shadow: 0 0 0 .25rem rgba(var(--app-accent-rgb), .25);
+}
+
+html[data-app-accent] .nav-link:focus-visible { box-shadow: 0 0 0 .25rem rgba(var(--app-accent-rgb), .25); }
+html[data-app-accent] .accordion { --cui-accordion-btn-focus-box-shadow: 0 0 0 .25rem rgba(var(--app-accent-rgb), .25); }
+html[data-app-accent] .pagination { --cui-pagination-focus-box-shadow: 0 0 0 .25rem rgba(var(--app-accent-rgb), .25); }
+html[data-app-accent] .form-range:focus::-webkit-slider-thumb { box-shadow: 0 0 0 1px var(--cui-body-bg), 0 0 0 .25rem rgba(var(--app-accent-rgb), .25); }
+html[data-app-accent] .form-range:focus::-moz-range-thumb { box-shadow: 0 0 0 1px var(--cui-body-bg), 0 0 0 .25rem rgba(var(--app-accent-rgb), .25); }
+
+/* Third-party controls that carry their own blue/indigo */
+html[data-app-accent] .select2-container--default .select2-results__option--highlighted[aria-selected],
+html[data-app-accent] .select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+    background-color: var(--app-accent);
+    color: #fff;
+}
+
+html[data-app-accent] .select2-container--default.select2-container--focus .select2-selection--multiple,
+html[data-app-accent] .select2-container--default.select2-container--open .select2-selection--single,
+html[data-app-accent] .select2-container--default.select2-container--open .select2-selection--multiple {
+    border-color: var(--app-accent-border);
+}
+
+html[data-app-accent] .select2-container--default .select2-selection--multiple .select2-selection__choice {
+    background-color: var(--app-accent-subtle) !important;
+    border-color: var(--app-accent-border) !important;
+    color: var(--cui-body-color);
+}
+
+html[data-app-accent] .page-item.active .page-link,
+html[data-app-accent] .dataTables_wrapper .pagination .page-item.active .page-link {
+    background-color: var(--app-accent);
+    border-color: var(--app-accent);
+    color: #fff;
+}
+
+html[data-app-accent] .datepicker table tr td.active,
+html[data-app-accent] .datepicker table tr td.active:hover,
+html[data-app-accent] .datepicker table tr td.active.active,
+html[data-app-accent] .datepicker table tr td span.active,
+html[data-app-accent] .datepicker table tr td span.active:hover {
+    background: var(--app-accent) !important;
+    background-image: none !important;
+    border-color: var(--app-accent) !important;
+    color: #fff !important;
+    text-shadow: none;
+}
+
+html[data-app-accent] .swal2-styled.swal2-confirm { background-color: var(--app-accent); }
+html[data-app-accent] .swal2-styled:focus { box-shadow: 0 0 0 3px rgba(var(--app-accent-rgb), .5); }
+html[data-app-accent] .jconfirm .jconfirm-box.jconfirm-type-blue { border-top-color: var(--app-accent); }
+html[data-app-accent] .ladda-button[data-style] .ladda-spinner { color: inherit; }
+
+/* Appearance picker (My profile) */
+.appearance-modes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.appearance-mode {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    padding: .5rem;
+    border: 2px solid var(--cui-border-color);
+    border-radius: .5rem;
+    background: var(--cui-body-bg);
+    color: var(--cui-body-color);
+    cursor: pointer;
+    text-align: left;
+}
+
+.appearance-mode:hover { border-color: var(--app-accent-border); }
+
+.appearance-mode.is-selected {
+    border-color: var(--app-accent);
+    box-shadow: 0 0 0 .2rem rgba(var(--app-accent-rgb), .2);
+}
+
+.appearance-mode-label {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-weight: 600;
+    font-size: .85rem;
+}
+
+.appearance-preview {
+    display: flex;
+    height: 64px;
+    border-radius: .35rem;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, .12);
+}
+
+.appearance-preview-side { width: 24%; background: #1b2e4a; }
+.appearance-preview-main { flex: 1; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.appearance-preview-bar { height: 7px; border-radius: 4px; }
+.appearance-preview-bar.is-accent { width: 40%; background: var(--app-accent); }
+.appearance-preview--light .appearance-preview-main { background: #f3f4f7; }
+.appearance-preview--light .appearance-preview-bar:not(.is-accent) { background: #d9dde4; }
+.appearance-preview--dark .appearance-preview-main { background: #212631; }
+.appearance-preview--dark .appearance-preview-bar:not(.is-accent) { background: #3a4252; }
+.appearance-preview--auto .appearance-preview-main { background: linear-gradient(135deg, #f3f4f7 0 50%, #212631 50% 100%); }
+.appearance-preview--auto .appearance-preview-bar:not(.is-accent) { background: #8a93a2; }
+
+.appearance-accents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+}
+
+.appearance-accent {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid var(--cui-body-bg);
+    box-shadow: 0 0 0 1px var(--cui-border-color);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    padding: 0;
+}
+
+.appearance-accent i { visibility: hidden; font-size: .8rem; }
+.appearance-accent.is-selected { box-shadow: 0 0 0 2px var(--cui-body-color); }
+.appearance-accent.is-selected i { visibility: visible; }
+.appearance-accent[data-accent=indigo] { background: #5856d6; }
+.appearance-accent[data-accent=teal] { background: #0d7f81; }
+.appearance-accent[data-accent=blue] { background: #2563eb; }
+.appearance-accent[data-accent=purple] { background: #7c3aed; }
+.appearance-accent[data-accent=green] { background: #15803d; }
+.appearance-accent[data-accent=orange] { background: #c2410c; }
+.appearance-accent[data-accent=rose] { background: #e11d48; }
+
+@media (max-width: 575.98px) {
+    .appearance-modes { grid-template-columns: 1fr; }
+}

@@ -1,6 +1,6 @@
-﻿using System.Linq.Expressions;
-using Taskist.Core.Domain.Common;
 using Taskist.Core.Common;
+using Taskist.Core.Domain.Common;
+using System.Linq.Expressions;
 
 namespace Taskist.Data.Repository;
 
@@ -8,7 +8,11 @@ public interface IRepository<T> where T : BaseEntity
 {
     #region Methods
 
-    Task<T> GetByIdAsync(int id, bool includeDeleted = true);
+    Task<IQueryable<T>> GetQueryableAsync(Expression<Func<T, bool>>? filter = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+        string includeProperties = "");
+
+    Task<T> GetByIdAsync(int id, bool includeDeleted = true, params Expression<Func<T, object>>[] includes);
 
     T GetById(int id, bool includeDeleted = true);
 
@@ -39,6 +43,8 @@ public interface IRepository<T> where T : BaseEntity
     void Update(T entity);
 
     Task UpdateAsync(IList<T> entities);
+
+    Task RewritePropertiesAsync(T entity, params string[] propertyNames);
 
     void Update(IList<T> entities);
 

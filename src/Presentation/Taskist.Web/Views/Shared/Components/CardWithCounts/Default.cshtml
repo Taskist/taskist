@@ -1,33 +1,16 @@
-@model List<CardModel>
+@model CardWithCountsModel
 @{
-    // gradient variant + watermark icon per card, cycled in order
-    var variants = new[] { "tk-stat-primary", "tk-stat-warning", "tk-stat-danger", "tk-stat-primary" };
-
-    string IconFor(string name) => name switch
-    {
-        "My Tasks" => "fa-user-check",
-        "Reopened Tasks" => "fa-rotate-left",
-        "Closed Tasks" => "fa-circle-check",
-        _ => "fa-list-check"
-    };
-
+    var accents = new[] { "wp-stat--teal", "wp-stat--amber", "wp-stat--red", "wp-stat--green" };
+    var icons = new[] { "fa-layer-group", "fa-list-check", "fa-rotate-left", "fa-circle-check" };
     var i = 0;
 }
 
-<div class="row g-4">
-    @foreach (var card in Model)
-    {
-        <div class="col-12 col-sm-6 col-xl-4 col-xxl-3">
-            <div class="card tk-stat-card @variants[i % variants.Length]">
-                <div class="card-body card-count">
-                    <a class="text-white text-decoration-none d-block" asp-action="Index" asp-controller="Backlog" asp-route-filter="@card.FilterMode">
-                        <div class="fs-2 fw-bold lh-1">@card.Count</div>
-                        <div class="text-white-50 mt-1">@card.Name</div>
-                    </a>
-                    <i class="fas @IconFor(card.Name) tk-stat-icon"></i>
-                </div>
-            </div>
-        </div>
-        i++;
-    }
-</div>
+@foreach (var card in Model.Cards)
+{
+    <a asp-action="Index" asp-controller="Backlog" asp-route-filter="@card.FilterMode" asp-route-project="@Model.SelectedProjectId" class="wp-stat @accents[i % accents.Length]">
+        <span class="wp-stat__icon"><i class="fas @icons[i % icons.Length]"></i></span>
+        <span class="wp-stat__value">@card.Count</span>
+        <span class="wp-stat__label">@card.Name</span>
+    </a>
+    i++;
+}

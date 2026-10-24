@@ -12,8 +12,8 @@ public class UserRoleValidator : AbstractValidator<UserRoleModel>
     IUserService userService)
     {
         RuleFor(r => r.Name)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.Name.RequiredMsg"))
-            .MaximumLength(50).WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.Name.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("UserRoleModel.Name.RequiredMsg"))
+            .MaximumLength(50).WithMessage(localizationService.GetResource("UserRoleModel.Name.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -24,11 +24,11 @@ public class UserRoleValidator : AbstractValidator<UserRoleModel>
 
                 var entity = await userService.GetUserRoleByNameAsync(x.Name);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.Name.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("UserRoleModel.Name.UniqueMsg"));
 
         RuleFor(r => r.SystemName)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.SystemName.RequiredMsg"))
-            .MaximumLength(50).WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.SystemName.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("UserRoleModel.SystemName.RequiredMsg"))
+            .MaximumLength(50).WithMessage(localizationService.GetResource("UserRoleModel.SystemName.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -38,9 +38,9 @@ public class UserRoleValidator : AbstractValidator<UserRoleModel>
                 }
                 var entity = await userService.GetUserRoleBySystemNameAsync(x.SystemName);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.SystemName.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("UserRoleModel.SystemName.UniqueMsg"));
 
         RuleFor(r => r.Description)
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("UserRoleModel.Description.MaxLengthMsg"));
+            .MaximumLength(250).WithMessage(localizationService.GetResource("UserRoleModel.Description.MaxLengthMsg"));
     }
 }

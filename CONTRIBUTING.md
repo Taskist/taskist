@@ -1,42 +1,29 @@
 # Contributing to Taskist
 
-We welcome and appreciate all contributions to the **Taskist** project! Whether you're fixing bugs, adding features, or helping the community, your efforts are vital to our success.
+We welcome and appreciate all contributions to **Taskist** — bug fixes, features, documentation, translations, and help for other users in the community.
 
-## 💡 How to Contribute
+## 💡 Before You Start
 
-### Discuss Changes First
+**For anything beyond a small fix, please discuss the change first** in an [issue](https://github.com/Taskist/taskist/issues), in [GitHub Discussions](https://github.com/Taskist/taskist/discussions/categories/ideas), or by [email](mailto:taskist@outlook.in). It saves your time if the idea doesn't fit the project's direction.
 
-**When contributing to this repository, please first discuss the change you wish to make via [issue](https://www.google.com/url?sa=E&source=gmail&q=https://github.com/Taskist/Taskist/issues), [Zulip](https://taskist.zulipchat.com/#narrow/channel/539614-dev) or [email](mailto:hello@taskist.org) with the owners of this repository before making a change.** This helps ensure that your work aligns with the project's direction and minimizes rework.
+Other ways to help:
 
-### General Contribution Opportunities
+- Answer questions in [GitHub Discussions](https://github.com/Taskist/taskist/discussions/categories/q-a)
+- Improve the [documentation](https://docs.taskist.org)
+- Spread the word — write about Taskist or link to it
 
-You are more than welcome to contribute to the success of Taskist by:
-
-* Helping out in the realization of the project's source code.
-
-* Participating in the forums or community discussions.
-
-* Spreading the word about Taskist! If you have a site, write about us or place a hyperlink!
-
-We are committed to nurturing the growth of the Taskist community!
-
-### More Information on Specific Contributions
-
-* Working with source code and contributions: [more info](https://taskist.org)
-
-* Sharing your plugins, themes, and language packs: [more info](https://taskist.org)
-
-* Contributing to the documentation: [more info](https://taskist.org)
+Found a vulnerability? Please **do not** open a public issue or pull request. Follow [SECURITY.md](SECURITY.md) to report it privately.
 
 ## 🛠 Setting Up Your Development Environment
 
 ### Prerequisites
 
-* [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-* SQL Server (Express, LocalDB or the Docker image is fine)
-* Optionally [Docker Desktop](https://www.docker.com/products/docker-desktop/), which is the quickest way to get a database running
+- [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- SQL Server (Express, LocalDB or the Docker image)
+- EF Core tools: `dotnet tool install --global dotnet-ef`
+- Optional: [Docker Desktop](https://www.docker.com/products/docker-desktop/) for the full stack
 
-### Getting Started
+### Getting started
 
 ```bash
 git clone https://github.com/Taskist/taskist.git
@@ -44,77 +31,109 @@ cd taskist
 dotnet restore src/Taskist.sln
 ```
 
-Taskist requires a connection string and an encryption key, and **will not start without them**. This is deliberate — it prevents insecure defaults reaching production.
-
-Create `src/Presentation/Taskist.Web/appsettings.Development.json` (git-ignored, so it is safe for local values):
+Create `src/Presentation/Taskist.Web/appsettings.Development.json` (git-ignored):
 
 ```json
 {
   "ConnectionStrings": {
     "AppContext": "Server=.\\SQLEXPRESS;Database=Taskist;Integrated Security=True;TrustServerCertificate=True;"
-  },
-  "Security": {
-    "EncryptionKey": "a-local-development-key-at-least-32-chars"
   }
 }
 ```
 
-Then create the schema and seed reference data:
+Create the schema, then run `sql-scripts/02_defaults.sql` and `03_locale.sql` (`04_demo.sql` adds optional sample data):
 
 ```bash
-cd src/Libraries/Taskist.Data
-dotnet ef database update --startup-project ../../Presentation/Taskist.Web
+dotnet ef database update --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
 ```
 
-Run `1_defaults.sql` then `2_locale_resource.sql` from [`sql script/mssql/`](sql%20script/mssql/). `3_dummy_data.sql` adds optional sample content for local testing.
-
-The seed scripts are transactional and idempotent — they match on business keys rather than identity values, so re-running them is safe. If you add seed data, follow the same `INSERT ... SELECT ... WHERE NOT EXISTS` pattern and never use `SET IDENTITY_INSERT`.
-
-Finally:
+Run the app and sign in with `admin@taskist.org` / `Admin@123`:
 
 ```bash
-cd src/Presentation/Taskist.Web
-dotnet run
+dotnet run --project src/Presentation/Taskist.Web
 ```
 
-The full setup, including the Docker route, is documented in the [README](README.md).
+### Solution layout
+
+| Project | Contents |
+| ------- | -------- |
+| `src/Libraries/Taskist.Core` | Entities, enums, DTOs, settings, shared helpers |
+| `src/Libraries/Taskist.Data` | EF Core context, configurations, migrations, repositories |
+| `src/Libraries/Taskist.Service` | Business services (registered automatically by assembly scan) |
+| `src/Presentation/Taskist.Web` | MVC controllers, views, view models, validators, `wwwroot` |
+| `src/Tests/Taskist.Tests` | xUnit tests (no database needed) |
+| `sql-scripts/` | Idempotent seed scripts, run in numeric order |
+| `tools/theme/` | Dark-theme generator (`generate-dark-css.py`) |
 
 ## ✅ Before Opening a Pull Request
 
-Please make sure the following pass locally, since CI runs the same checks:
+CI runs these on every pull request, so please run them locally first:
 
 ```bash
-# build
 dotnet build src/Taskist.sln
-
-# tests
 dotnet test src/Taskist.sln
+
+# fails if the model changed without a migration
+dotnet ef migrations has-pending-model-changes --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
 ```
 
-If you changed an entity or anything under `Taskist.Data`, add a migration:
+If you changed an entity, add a migration:
 
 ```bash
-cd src/Libraries/Taskist.Data
-dotnet ef migrations add YourMigrationName --startup-project ../../Presentation/Taskist.Web
+dotnet ef migrations add YourMigrationName --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
 ```
 
-CI fails if the model changes without a matching migration.
+Rebuild first; a stale build can produce an empty migration.
 
 ## 📐 Code Guidelines
 
-* Follow standard C# naming conventions
-* Match the structure of the file you are editing — the codebase groups members with `#region` blocks (`Fields`, `Ctor`, `Utilities`, `Methods`) and uses `protected readonly` for injected dependencies
-* Keep methods short and focused
-* Put database changes in an EF Core migration, never in a hand-edited script
-* Add tests for anything touching authentication, permissions, data access or file uploads
+Please match the style of the file you are editing. In particular:
 
-### Security-Sensitive Changes
+**C#**
 
-Take extra care with code that touches authentication, authorization, file uploads or query building, and call it out in your pull request description.
+- **No comments in `.cs` files.** Group members with `#region` blocks instead (`Fields`, `Ctor`, `Methods`, `Utilities`, …).
+- **One top-level type per file**, named after the type. Nested types stay with their parent.
+- Inject dependencies through the constructor into `private readonly` fields.
 
-Two rules matter in particular:
+**Views and front end**
 
-* **Never interpolate user input into a query expression.** Sorting and grouping go through `OrderBySafe`, which validates the column against the entity's real properties. Bypassing it reintroduces an injection vector.
-* **Always scope data access to the caller.** Loading a record by ID is not sufficient — confirm the signed-in user may reach it (see `CanAccessAsync` in `BacklogItemService`).
+- **No inline `<script>` or `<style>` blocks.** Put JavaScript in `wwwroot/js` and CSS in `wwwroot/css`.
+- **No CDNs.** Vendor libraries locally under `wwwroot/lib`.
+- **No `ViewBag` / `ViewData`** for passing data (the layout title is the only exception). Every view has a typed `@model`; put UI-only flags on a view model in `Taskist.Web/Models`.
+- Empty, setup and error states use the `<wp-empty-state>` tag helper.
+- After changing a colour in `wwwroot/css`, regenerate the dark theme with `python tools/theme/generate-dark-css.py` (Python 3.8+, no packages) and commit the result; CI fails if it is stale. Never edit `theme-dark.generated.css` by hand; dark fixes the generator can't infer go in `theme-dark.css`.
 
-Found a vulnerability? Please **do not** open a public issue or pull request. Follow [SECURITY.md](SECURITY.md) to report it privately.
+**Text and translations**
+
+- UI text comes from the database. Add new keys to `sql-scripts/03_locale.sql`; labels don't render until the script runs.
+- Seed scripts containing non-ASCII characters must stay **UTF-8 with BOM**.
+
+**Database**
+
+- Schema changes go in an EF Core migration only; never hand-written DDL.
+- Migrations must be **additive and non-destructive**: add nullable columns or relax constraints. Don't drop columns holding data or rewrite existing values. Installs run in production with live data.
+- Seed data follows the existing `INSERT … SELECT … WHERE NOT EXISTS` pattern, matched on business keys. Never use `SET IDENTITY_INSERT`.
+- Edit forms must always include the record's current value in drop-downs, so saving can't silently clear a foreign key.
+
+**Dependencies**
+
+- Only permissively licensed (MIT, Apache 2.0, BSD) packages. No commercial, dual-licensed or "non-commercial" packages — for example FluentAssertions 8+ or EPPlus 5+.
+
+**Tests**
+
+- New pure logic (parsers, rules, calculations) should come with tests in `src/Tests/Taskist.Tests`. Use plain xUnit `Assert`.
+
+### Adding a master (CRUD screen)
+
+Entity (`BaseEntity` + `ISoftDeletedEntity` + `IAuditableEntity`) → EF configuration → service interface and implementation → model (`[LocalizedDisplayName]`) → controller (`[CheckPermission]`) → views (index DataTable, `_Form` create/edit) → FluentValidation validator → Mapperly mapping → permission in `PermissionProvider` and `02_defaults.sql` → menu entry in `02_defaults.sql` → labels in `03_locale.sql`.
+
+## 🔐 Security-Sensitive Changes
+
+Take extra care with code that touches authentication, authorization, file uploads, outbound HTTP or query building, and call it out in your pull request description.
+
+- **Never interpolate user input into a query expression.** Grid sorting goes through `ApplySafeSort`, which only accepts real property names. Don't bypass it.
+- **Always scope data access to the caller.** Loading a record by ID is not enough; check that the signed-in user may reach it (project membership, `CanEditTaskAsync`, …).
+- **Outbound requests** to user-configured URLs must use the hardened named `HttpClient`s, which block loopback, link-local and metadata addresses.
+- **Secrets** are stored through `[Encrypted]` properties or `ISecretProtector`, never in plain text, and never logged.
+
+By participating, you agree to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).

@@ -1,0 +1,20 @@
+@model TestEmailModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<form asp-action="SendTest" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+    <input type="hidden" asp-for="Id" />
+    <div class="validation-errors"></div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="mb-3">
+                <wc-label asp-for="ToEmail" />
+                <input asp-for="ToEmail" class="form-control" autocomplete="off" />
+                <span asp-validation-for="ToEmail" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane me-1"></i>@Localize("TestEmail.Send")</button>
+    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="offcanvas"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")</button>
+</form>

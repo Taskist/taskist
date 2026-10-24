@@ -1,8 +1,8 @@
-using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Masters;
+using FluentValidation;
 
 namespace Taskist.Web.Helpers.Validators.Masters;
 
@@ -12,8 +12,8 @@ public class ModuleValidator : AbstractValidator<ModuleModel>
         IModuleService moduleService)
     {
         RuleFor(r => r.Name)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("ModuleModel.Name.RequiredMsg"))
-            .MaximumLength(100).WithMessageAwait(localizationService.GetResourceAsync("ModuleModel.Name.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("ModuleModel.Name.RequiredMsg"))
+            .MaximumLength(100).WithMessage(localizationService.GetResource("ModuleModel.Name.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -23,9 +23,9 @@ public class ModuleValidator : AbstractValidator<ModuleModel>
                 }
                 var entity = await moduleService.GetByNameAsync(x.Name);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("ModuleModel.Name.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("ModuleModel.Name.UniqueMsg"));
 
         RuleFor(r => r.Description)
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("ModuleModel.Description.MaxLengthMsg"));
+            .MaximumLength(250).WithMessage(localizationService.GetResource("ModuleModel.Description.MaxLengthMsg"));
     }
 }

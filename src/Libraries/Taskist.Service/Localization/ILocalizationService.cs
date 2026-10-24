@@ -15,9 +15,13 @@ public interface ILocalizationService
     Task<LocaleResource> GetByIdAsync(int id);
 
     Task<string> GetResourceAsync(int languageId, string resourceKey, bool logIfNotFound = false,
-        string defaultValue = "", bool returnEmptyIfNotFound = false);
+            string defaultValue = "", bool returnEmptyIfNotFound = false);
 
     Task<string> GetResourceAsync(string resourceKey);
+
+    string GetResource(string resourceKey);
+
+    string GetResource(int languageId, string resourceKey, string defaultValue = "");
 
     Task<LocaleResource> GetResourceByKeyAsync(int languageId, string resourceKey);
 

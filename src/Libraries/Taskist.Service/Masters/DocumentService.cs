@@ -1,7 +1,8 @@
-using Taskist.Service.Common;
-using Microsoft.AspNetCore.Http;
 using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.WorkItems;
 using Taskist.Data.Repository;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Taskist.Service.Masters;
 
@@ -10,13 +11,16 @@ public class DocumentService : IDocumentService
     #region Fields
 
     protected readonly IRepository<Document> _documentRepository;
+    protected readonly IRepository<BacklogDocument> _backlogDocumentRepository;
 
     #endregion
 
     #region Ctor
-    public DocumentService(IRepository<Document> documentRepository)
+    public DocumentService(IRepository<Document> documentRepository,
+        IRepository<BacklogDocument> backlogDocumentRepository)
     {
         _documentRepository = documentRepository;
+        _backlogDocumentRepository = backlogDocumentRepository;
     }
     #endregion
 
@@ -27,42 +31,15 @@ public class DocumentService : IDocumentService
         return id == 0 ? null : await _documentRepository.GetByIdAsync(id);
     }
 
-    public bool IsAllowed(IFormFile file, out string rejectReason)
+    public async Task<bool> IsTaskAttachmentAsync(int documentId)
     {
-        rejectReason = string.Empty;
-
-        if (file == null || file.Length == 0)
-        {
-            rejectReason = "No file uploaded";
-            return false;
-        }
-
-        if (file.Length > ServiceConstant.MaxUploadBytes)
-        {
-            rejectReason = $"File exceeds the {ServiceConstant.MaxUploadBytes / (1024 * 1024)} MB limit";
-            return false;
-        }
-
-        //use only the final extension so "report.pdf.exe" is judged as ".exe"
-        var extension = Path.GetExtension(file.FileName);
-
-        if (string.IsNullOrWhiteSpace(extension) ||
-            !ServiceConstant.AllowedUploadExtensions.Contains(extension))
-        {
-            rejectReason = "This file type is not allowed";
-            return false;
-        }
-
-        return true;
+        return await _backlogDocumentRepository.Table.AnyAsync(x => x.DocumentId == documentId);
     }
 
     public async Task<Document> InsertAsync(IFormFile file)
     {
         if (file == null)
-            throw new ArgumentNullException(nameof(file));
-
-        if (!IsAllowed(file, out _))
-            return null;
+            throw new ArgumentNullException();
 
         var fileData = GetBytesFromFile(file);
 
@@ -83,6 +60,23 @@ public class DocumentService : IDocumentService
         return new Document();
     }
 
+    public async Task<Document> InsertAsync(byte[] data, string fileName, string contentType)
+    {
+        if (data == null || data.Length == 0)
+            throw new ArgumentNullException(nameof(data));
+
+        var entity = new Document
+        {
+            FileName = Path.GetFileNameWithoutExtension(fileName),
+            FileData = data,
+            ContentType = contentType,
+            FileSize = data.Length,
+            Extension = Path.GetExtension(fileName)
+        };
+
+        return await _documentRepository.InsertAndGetAsync(entity);
+    }
+
     public async Task UpdateAsync(int documentId, IFormFile file)
     {
 
@@ -90,9 +84,6 @@ public class DocumentService : IDocumentService
 
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
-
-        if (!IsAllowed(file, out _))
-            return;
 
         var fileData = GetBytesFromFile(file);
 

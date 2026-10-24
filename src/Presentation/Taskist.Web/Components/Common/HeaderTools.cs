@@ -1,46 +1,64 @@
-using Microsoft.AspNetCore.Mvc;
+using Taskist.Core.Common;
+using Taskist.Service.Messages;
 using Taskist.Service.Security;
+using Taskist.Service.WorkItems;
 using Taskist.Web.Models.Common;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Taskist.Web.Components.Common;
 
-/// <summary>
-/// Renders the top-bar tools: global search + the permission-gated quick-add ("+") menu.
-/// </summary>
 public class HeaderTools : ViewComponent
 {
-    #region Fields
+	#region Fields
 
-    private readonly IPermissionService _permissionService;
+	protected readonly IPermissionService _permissionService;
+	protected readonly IWorkContext _workContext;
+	protected readonly IBacklogService _backlogService;
+	protected readonly IUserNotificationService _userNotificationService;
 
-    #endregion
+	#endregion
 
-    #region Ctor
+	#region Ctor
 
-    public HeaderTools(IPermissionService permissionService)
-    {
-        _permissionService = permissionService;
-    }
+	public HeaderTools(IPermissionService permissionService,
+		IWorkContext workContext,
+		IBacklogService backlogService,
+		IUserNotificationService userNotificationService)
+	{
+		_userNotificationService = userNotificationService;
+		_permissionService = permissionService;
+		_workContext = workContext;
+		_backlogService = backlogService;
+	}
 
-    #endregion
+	#endregion
 
-    #region Methods
+	#region Methods
 
-    /// <param name="section">"search" renders the global search, "create" renders the quick-add menu.
-    /// Defaults to both (kept for backwards compatibility).</param>
-    public async Task<IViewComponentResult> InvokeAsync(string section = "all")
-    {
-        var model = new HeaderToolsModel
-        {
-            Section = section,
-            CanSearch = await _permissionService.AuthorizeAsync(PermissionProvider.General.MANAGE_DASHBOARD),
-            CanCreateTask = await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG),
-            CanCreateProject = await _permissionService.AuthorizeAsync(PermissionProvider.Configuration.MANAGE_PROJECT),
-            CanCreateClient = await _permissionService.AuthorizeAsync(PermissionProvider.Configuration.MANAGE_CLIENT)
-        };
+	public async Task<IViewComponentResult> InvokeAsync()
+	{
+		var userId = _workContext.GetCurrentUserId() ?? 0;
 
-        return View(model);
-    }
+		var model = new HeaderToolsModel
+		{
+			CanBacklog = await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog),
+			CanWiki = await _permissionService.AuthorizeAsync(PermissionProvider.ManageWiki)
+		};
 
-    #endregion
+		var canUsers = await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser);
+		model.CanSearch = model.CanBacklog || canUsers;
+
+		if (model.CanBacklog && userId > 0)
+		{
+			var due = await _backlogService.GetDueTasksAsync(userId);
+			model.OverdueTasks = due.GetValueOrDefault("Overdue", 0);
+		}
+
+		if (userId > 0)
+			model.UnreadNotifications = await _userNotificationService.GetUnreadCountAsync(userId);
+
+		return View(model);
+	}
+
+	#endregion
 }

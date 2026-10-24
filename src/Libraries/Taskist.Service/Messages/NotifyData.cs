@@ -1,4 +1,4 @@
-﻿namespace Taskist.Service.Messages;
+namespace Taskist.Service.Messages;
 
 public struct NotifyData
 {

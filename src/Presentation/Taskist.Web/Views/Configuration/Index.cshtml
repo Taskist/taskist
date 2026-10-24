@@ -1,0 +1,448 @@
+@using Taskist.Web.Models.Configuration
+@model ConfigurationModel
+@{
+    ViewData["Title"] = Localize("ConfigurationPage.Title");
+}
+
+@section PageStyles {
+    <link href="~/css/pages/configuration.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="card">
+    <div class="card-header">
+        <ul class="nav nav-pills card-header-pills config-tabs" data-bs-toggle="tabs" role="tablist">
+            @if (Model.CanNotifications)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabNotifications" class="nav-link @(Model.ActiveTab == "notifications" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="far fa-bell me-2"></i>Notifications
+                    </a>
+                </li>
+            }
+            @if (Model.CanGeneral)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabGeneral" class="nav-link @(Model.ActiveTab == "general" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-sliders-h me-2"></i>General
+                    </a>
+                </li>
+            }
+            @if (Model.CanWorkItem)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabWorkItem" class="nav-link @(Model.ActiveTab == "workitem" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-tasks me-2"></i>Work Items
+                    </a>
+                </li>
+            }
+            @if (Model.CanIntegration)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabIntegration" class="nav-link @(Model.ActiveTab == "integration" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-plug me-2"></i>Integrations
+                    </a>
+                </li>
+            }
+            @if (Model.CanSecurity)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabSecurity" class="nav-link @(Model.ActiveTab == "security" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-shield-alt me-2"></i>Security
+                    </a>
+                </li>
+            }
+            @if (Model.CanReports)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabReports" class="nav-link @(Model.ActiveTab == "reports" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-file-excel me-2"></i>Report Columns
+                    </a>
+                </li>
+            }
+            @if (Model.CanResource)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabResource" class="nav-link @(Model.ActiveTab == "resource" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-gauge-high me-2"></i>Resource Load
+                    </a>
+                </li>
+            }
+            @if (Model.CanStageDuration)
+            {
+                <li class="nav-item" role="presentation">
+                    <a href="#tabStageDuration" class="nav-link @(Model.ActiveTab == "stageduration" ? "active" : "")" data-bs-toggle="tab" role="tab">
+                        <i class="fas fa-stopwatch me-2"></i>Stage Durations
+                    </a>
+                </li>
+            }
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content">
+
+            @if (Model.CanNotifications)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "notifications" ? "active show" : "")" id="tabNotifications" role="tabpanel">
+                    <form asp-action="SaveNotifications" method="post">
+                        <div class="cfg-switches">
+                            <label class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" asp-for="Notifications.EnableDailyDigest"><span class="ms-2">Enable daily digests (master switch)</span></label>
+                            <label class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" asp-for="Notifications.EnableOpenTaskDigest"><span class="ms-2">Daily open-task digest</span></label>
+                            <label class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" asp-for="Notifications.EnableProjectStatusDigest"><span class="ms-2">Daily project status-count summary to PM/TL</span></label>
+                            <label class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" asp-for="Notifications.SummaryForProjectManager"><span class="ms-2">Open-task summary to Project Managers</span></label>
+                            <label class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" asp-for="Notifications.SummaryForTeamLead"><span class="ms-2">Open-task summary to Team Leads</span></label>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanGeneral)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "general" ? "active show" : "")" id="tabGeneral" role="tabpanel">
+                    <form asp-action="SaveGeneral" method="post">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Company name</label>
+                            <div class="col-sm-8 col-lg-5"><input asp-for="General.CompanyName" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Support email</label>
+                            <div class="col-sm-8 col-lg-5"><input asp-for="General.SupportEmail" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Items per page</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="General.ItemsPerPage" type="number" min="5" max="200" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanWorkItem)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "workitem" ? "active show" : "")" id="tabWorkItem" role="tabpanel">
+                    <form asp-action="SaveWorkItem" method="post">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Default due-date (days from creation)</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="WorkItem.DefaultDueInDays" type="number" min="0" max="365" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Max reopen count (0 = unlimited)</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="WorkItem.MaxReopenCount" type="number" min="0" max="100" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Allow self-assignment</label>
+                            <div class="col-sm-8 col-lg-5 d-flex align-items-center">
+                                <div class="form-check form-switch mb-0"><input class="form-check-input" type="checkbox" role="switch" asp-for="WorkItem.AllowSelfAssign"></div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Default release version format</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="WorkItem.ReleaseVersionFormat" class="form-control" maxlength="50" autocomplete="off" placeholder="{major}.{minor}.{patch}" /></div>
+                            <div class="col-12 form-text">Used for releases spanning several or all projects, and for projects without their own format. Tokens: {major} {minor} {patch} {seq} {yyyy} {yy} {MM} {dd}; any other text is kept as-is (e.g. v{major}.{minor}.{patch}, {yyyy}.{MM}.{seq}).</div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Full release increments</label>
+                            <div class="col-sm-8 col-lg-3"><select asp-for="WorkItem.ReleaseFullIncrement" asp-items="Html.GetEnumSelectList<ReleaseVersionPart>()" class="form-select"></select></div>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanIntegration)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "integration" ? "active show" : "")" id="tabIntegration" role="tabpanel">
+                    <form asp-action="SaveIntegration" method="post">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Git connections</label>
+                            <div class="col-sm-8 col-lg-7">
+                                @if (Model.Integration.GitConnectionCount > 0)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check me-1"></i>@Model.Integration.GitConnectionCount connection(s)</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary"><i class="fas fa-triangle-exclamation me-1"></i>No Git connection yet</span>
+                                }
+                                <a href="@Url.Action("Index", "GitConnection")" class="btn btn-sm btn-outline-primary ms-2"><i class="fas fa-plug me-1"></i>Manage Git connections</a>
+                                <div class="form-text">GitHub and GitLab servers (URL, service credentials, OAuth app) are managed under Git connections. Each project links its repositories, webhooks and issue sync on its own page under Masters → Projects → Repositories.</div>
+                                @if (!Model.Integration.KeyRingProtected)
+                                {
+                                    <div class="alert alert-warning py-1 px-2 small mt-2 mb-0"><i class="fas fa-shield-halved me-1"></i>The Data Protection key ring that encrypts tokens and secrets is stored unprotected on disk. Configure <code>DataProtection:CertificatePath</code> (or thumbprint, or <code>ProtectWithDpapi</code> on Windows) and back up the key folder.</div>
+                                }
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Branch creation</label>
+                            <div class="col-sm-8 col-lg-7">
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="Integration.AllowBranchCreation" class="form-check-input" type="checkbox" role="switch" />
+                                    <label class="form-check-label" asp-for="Integration.AllowBranchCreation">Allow developers to create branches from tasks</label>
+                                </div>
+                                <div class="form-text">Branches, merge/pull requests and reviews are done with each developer's own GitHub or GitLab account: they connect once under My profile → Git connections. The connection's service credentials are only used to read, to receive webhooks and for issue sync. Branches are never deleted from Taskist.</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Task key in branch names</label>
+                            <div class="col-sm-8 col-lg-4">
+                                <input asp-for="Integration.BranchTaskKeyPrefix" class="form-control" autocomplete="off" maxlength="10" placeholder="(none)" />
+                                <div class="form-text">Optional, e.g. <code>WP</code> gives <code>bugfix/WP-2520-…</code>. Leave empty for <code>bugfix/2520-…</code>.</div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Status when an MR is opened</label>
+                            <div class="col-sm-8 col-lg-5">
+                                <div class="form-check form-switch mb-2">
+                                    <input asp-for="Integration.MoveTasksOnMergeRequestOpen" class="form-check-input" type="checkbox" role="switch" />
+                                    <label class="form-check-label" asp-for="Integration.MoveTasksOnMergeRequestOpen">Move linked tasks automatically</label>
+                                </div>
+                                <select asp-for="Integration.OpenedStatusId" asp-items="Model.Integration.AvailableStatuses" class="form-select">
+                                    <option value="">(use the status named "Pushed &amp; MR Created")</option>
+                                </select>
+                                @if (Model.Integration.OpenedStatusMissing)
+                                {
+                                    <div class="text-danger small mt-1"><i class="fas fa-triangle-exclamation me-1"></i>The mapped status no longer exists or is inactive. Opened MRs will not move tasks until one is chosen.</div>
+                                }
+                                <div class="form-text">When an MR is opened, reopened, or a draft is marked ready (drafts never move tasks). Tasks already in this status, and Resolved/Archived tasks, are left alone.</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Status when an MR is merged</label>
+                            <div class="col-sm-8 col-lg-5">
+                                <select asp-for="Integration.MergedStatusId" asp-items="Model.Integration.AvailableStatuses" class="form-select">
+                                    <option value="">(use the status named "MR Merged")</option>
+                                </select>
+                                @if (Model.Integration.MergedStatusMissing)
+                                {
+                                    <div class="text-danger small mt-1"><i class="fas fa-triangle-exclamation me-1"></i>The mapped status no longer exists or is inactive. Merges will not move tasks until one is chosen.</div>
+                                }
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Status when an MR is closed without merging</label>
+                            <div class="col-sm-8 col-lg-5">
+                                <select asp-for="Integration.RejectedStatusId" asp-items="Model.Integration.AvailableStatuses" class="form-select">
+                                    <option value="">(use the status named "MR Rejected")</option>
+                                </select>
+                                @if (Model.Integration.RejectedStatusMissing)
+                                {
+                                    <div class="text-danger small mt-1"><i class="fas fa-triangle-exclamation me-1"></i>The mapped status no longer exists or is inactive. Closed MRs will not move tasks until one is chosen.</div>
+                                }
+                                <div class="form-text">Resolved and Archived tasks are never moved; they get a history note instead.</div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Shared branch limit</label>
+                            <div class="col-sm-8 col-lg-3">
+                                <input asp-for="Integration.SharedBranchFallbackLimit" type="number" min="0" max="50" class="form-control" />
+                            </div>
+                            <div class="col-sm-8 col-lg-7 offset-sm-4 offset-lg-3 form-text">When an MR names no task, it applies to every task linked to its branch only if the branch has this many tasks or fewer (0 or 1 = only branches linked to a single task). Branches created from Taskist for a group of tasks always apply to all of them.</div>
+                        </div>
+
+                        <h6 class="integration-section-title">Code review</h6>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Default reviewer</label>
+                            <div class="col-sm-8 col-lg-7">
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="Integration.AutoAssignTeamLeadReviewer" class="form-check-input" type="checkbox" role="switch" />
+                                    <label class="form-check-label" asp-for="Integration.AutoAssignTeamLeadReviewer">Set the project's Team Lead as reviewer on new merge requests</label>
+                                </div>
+                                <div class="form-text">Only when the MR is first opened and has no reviewer yet; a reviewer chosen by the developer is never replaced. If the Team Lead wrote the MR (or has not connected that Git account), the project's Code Reviewer is used instead. Needs the connection's service credentials to be allowed to set reviewers (GitLab: <code>api</code> scope; GitHub: Pull requests write).</div>
+                            </div>
+                        </div>
+
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanSecurity)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "security" ? "active show" : "")" id="tabSecurity" role="tabpanel">
+                    <form asp-action="SaveSecurity" method="post">
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Password minimum length</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Security.PasswordMinLength" type="number" min="4" max="64" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Max failed login attempts</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Security.MaxFailedLoginAttempts" type="number" min="0" max="20" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Session timeout (minutes)</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Security.SessionTimeoutMinutes" type="number" min="5" max="1440" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Password expiry (days, 0 = never)</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Security.PasswordExpiryDays" type="number" min="0" max="3650" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Activation / reset link expiry (minutes)</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Security.TokenExpiryMinutes" type="number" min="5" max="1440" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">"Remember me" duration (days)</label>
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Security.RememberMeDurationDays" type="number" min="1" max="365" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanReports)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "reports" ? "active show" : "")" id="tabReports" role="tabpanel">
+                    <form asp-action="SaveReports" method="post" id="reportSettingsForm">
+                        <p class="text-muted small mb-3"><i class="fas fa-users me-1"></i>@Localize("ReportSettings.DefaultHint")</p>
+                        <input type="hidden" asp-for="Reports.LayoutsJson" id="reportLayoutsJson" />
+                        <div class="row mb-3">
+                            <label class="col-sm-4 col-lg-3 col-form-label">Report</label>
+                            <div class="col-sm-8 col-lg-6 d-flex align-items-center gap-3">
+                                <select id="reportSelect" class="form-control select2">
+                                    @foreach (var r in Model.Reports.Reports)
+                                    {
+                                        <option value="@r.Key">@r.Name</option>
+                                    }
+                                </select>
+                                <label class="form-check form-switch mb-0 text-nowrap">
+                                    <input class="form-check-input" type="checkbox" id="reportJsonToggle">
+                                    <span class="ms-2">Edit JSON</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div id="reportBuilders">
+                            @foreach (var r in Model.Reports.Reports)
+                            {
+                                <div class="report-layout @(r.Key == Model.Reports.Reports.FirstOrDefault()?.Key ? "" : "d-none")" data-report="@r.Key">
+                                    <p class="text-muted small mb-2"><i class="fas fa-circle-info me-1"></i>Drag to reorder, toggle to include/exclude, edit the column title.</p>
+                                    <partial name="~/Views/Shared/Reports/_ReportColumnList.cshtml" model="r" />
+                                </div>
+                            }
+                        </div>
+
+                        <div id="reportJsonEditor" class="d-none mb-3">
+                            <textarea id="reportLayoutsJsonText" class="form-control" rows="16" spellcheck="false"></textarea>
+                            <div class="form-text">Power-user mode: edit the raw layout JSON. Invalid JSON is rejected on save.</div>
+                        </div>
+
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanResource)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "resource" ? "active show" : "")" id="tabResource" role="tabpanel">
+                    <form asp-action="SaveResource" method="post">
+                        <p class="text-muted small mb-3"><i class="fas fa-circle-info me-1"></i>Workload bands used by the Resource Load report. A resource with 0 open items is "Free"; up to the light cap is "Light"; up to the balanced cap is "Balanced"; above that is "Overloaded".</p>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.LightMax" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.LightMax" type="number" min="1" max="100" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.BalancedMax" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.BalancedMax" type="number" min="2" max="200" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.DueSoonDays" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.DueSoonDays" type="number" min="1" max="60" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <hr />
+                        <p class="text-muted small mb-3">Severity weights (used only when "Severity-weighted load" is enabled on the report).</p>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.CriticalWeight" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.CriticalWeight" type="number" min="0.5" step="0.5" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.HighWeight" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.HighWeight" type="number" min="0.5" step="0.5" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.MediumWeight" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.MediumWeight" type="number" min="0.5" step="0.5" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="row mb-3">
+                            <wc-label asp-for="Resource.LowWeight" class="col-sm-4 col-lg-3 col-form-label" />
+                            <div class="col-sm-8 col-lg-3"><input asp-for="Resource.LowWeight" type="number" min="0.5" step="0.5" class="form-control" autocomplete="off" /></div>
+                        </div>
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+            @if (Model.CanStageDuration)
+            {
+                <div class="tab-pane @(Model.ActiveTab == "stageduration" ? "active show" : "")" id="tabStageDuration" role="tabpanel">
+                    <form asp-action="SaveStageDuration" method="post" id="stageDurationForm">
+                        <input type="hidden" asp-for="StageDuration.MetricsJson" id="stageMetricsJson" />
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-circle-info me-1"></i>Define From → To status pairs to measure elapsed time (first-pass). Metrics marked
+                            <i class="far fa-eye"></i> show as chips on the task, and all metrics appear in the Stage Duration report.
+                        </p>
+
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle" id="stageMetricsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="min-width:160px;">Name</th>
+                                        <th style="min-width:150px;">From status</th>
+                                        <th style="min-width:150px;">To status</th>
+                                        <th style="min-width:150px;">Project</th>
+                                        <th class="text-center">On task</th>
+                                        <th class="text-center">Active</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stageMetricsBody"></tbody>
+                            </table>
+                        </div>
+
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddStageMetric"><i class="fas fa-plus me-1"></i>Add metric</button>
+
+                        <select class="d-none" id="stageStatusOptions">
+                            <option value="0">Select</option>
+                            @foreach (var s in Model.StageDuration.AvailableStatuses)
+                            {
+                                <option value="@s.Value">@s.Text</option>
+                            }
+                        </select>
+                        <select class="d-none" id="stageProjectOptions">
+                            <option value="">All projects</option>
+                            @foreach (var p in Model.StageDuration.AvailableProjects)
+                            {
+                                <option value="@p.Value">@p.Text</option>
+                            }
+                        </select>
+
+                        <div class="text-end mt-3"><button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button></div>
+                    </form>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="teamsPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-eye me-2"></i>@Localize("TeamsTest.Preview")</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="teamsPreviewFrame" title="@Localize("TeamsTest.Preview")" style="width:100%;height:320px;border:0;"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts {
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/js/report-column-editor.js" asp-append-version="true"></script>
+    <script src="~/js/pages/configuration/configuration-reports.js" asp-append-version="true"></script>
+    <script src="~/js/pages/configuration/configuration-hr.js" asp-append-version="true"></script>
+    <script src="~/js/pages/configuration/configuration-stageduration.js" asp-append-version="true"></script>
+}

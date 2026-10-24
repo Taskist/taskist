@@ -1,47 +1,41 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MapsterMapper;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
-using Taskist.Service.Security;
-using Taskist.Service.Masters;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Taskist.Core.Enums;
 using Taskist.Service.Localization;
-using Taskist.Service.Logging;
+using Taskist.Service.Masters;
+using Taskist.Service.Security;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Masters;
 
 namespace Taskist.Web.Controllers.Masters;
 
+[CheckPermission(nameof(PermissionProvider.ManageStatus))]
 public class StatusController : BaseController
 {
     #region Fields
 
     protected readonly IStatusService _statusService;
-    protected readonly IPermissionService _permissionService;
+    protected readonly IProjectService _projectService;
     protected readonly ILocalizationService _localizationService;
-    protected readonly IUserActivityService _userActivityService;
-    protected readonly IWorkContext _workContext;
-    protected readonly IMapper _mapper;
+    protected readonly MastersMapper _mapper;
 
     #endregion
 
     #region Ctor
 
     public StatusController(IStatusService statusService,
-        IPermissionService permissionService,
+        IProjectService projectService,
         ILocalizationService localizationService,
-        IUserActivityService userActivityService,
-        IWorkContext workContext,
-        IMapper mapper)
+        MastersMapper mapper)
     {
         _statusService = statusService;
-        _permissionService = permissionService;
+        _projectService = projectService;
         _localizationService = localizationService;
-        _userActivityService = userActivityService;
-        _workContext = workContext;
         _mapper = mapper;
 
     }
@@ -50,104 +44,111 @@ public class StatusController : BaseController
 
     #region Actions
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> Index()
     {
         return View();
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> Create()
     {
-        var model = new StatusModel();
+        var model = new StatusModel
+        {
+            BackgroundColor = "#ffffff"
+        };
+
+        await InitModelAsync(model);
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> Create(StatusModel model)
     {
         if (ModelState.IsValid)
         {
-            var entity = _mapper.Map<Status>(model);
+            if (model.ProjectId == 0)
+                model.ProjectId = null;
+
+            var entity = _mapper.ToEntity(model);
 
             await _statusService.InsertAsync(entity);
-            await _userActivityService.InsertAsync("Status", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), entity.Name), entity);
 
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.SaveSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _statusService.GetByIdAsync(id);
         if (entity == null)
             return NoDataPartial();
 
-        var model = _mapper.Map<StatusModel>(entity);
+        var model = _mapper.ToModel(entity);
+        if (string.IsNullOrEmpty(model.BackgroundColor))
+            model.BackgroundColor = "#ffffff";
+        if (string.IsNullOrEmpty(model.TextColor))
+            model.BackgroundColor = "#000000";
+
+        await InitModelAsync(model);
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> Edit(StatusModel model)
     {
         if (ModelState.IsValid)
         {
+            if (model.ProjectId == 0)
+                model.ProjectId = null;
+
             var entity = await _statusService.GetByIdAsync(model.Id);
-            entity = _mapper.Map(model, entity);
+            _mapper.Update(model, entity);
 
             await _statusService.UpdateAsync(entity);
 
-            await _userActivityService.InsertAsync("Status", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Name), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> Delete(int id)
     {
         var entity = await _statusService.GetByIdAsync(id);
         if (entity == null)
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.NoData,
+                Status = HttpStatusCode.NoData,
                 Message = await _localizationService.GetResourceAsync("FormNoData.Description")
             });
 
         await _statusService.DeleteAsync(entity);
-        await _userActivityService.InsertAsync("Status", string.Format(await _localizationService.GetResourceAsync("Log.RecordDeleted"), entity.Name), entity);
 
         return Json(new JsonResponseModel
         {
-            Status = HttpStatusCodeEnum.Success,
+            Status = HttpStatusCode.Success,
             Message = await _localizationService.GetResourceAsync("Message.DeleteSuccess")
         });
     }
@@ -157,7 +158,6 @@ public class StatusController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_STATUS)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
         var data = await _statusService.GetPagedListAsync(request.SearchValue, request.Start,
@@ -171,7 +171,7 @@ public class StatusController : BaseController
                 Id = x.Id,
                 Name = x.Name,
                 Description = x.Description,
-                GroupName = ((StatusGroupEnum)x.GroupId).ToString(),
+                GroupName = ((StatusGroup)x.GroupId).ToString(),
                 TextColor = x.TextColor,
                 BackgroundColor = x.BackgroundColor,
                 IconClass = x.IconClass,
@@ -181,6 +181,30 @@ public class StatusController : BaseController
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
         });
+    }
+
+    #endregion
+
+    #region Helper
+
+    private async Task InitModelAsync(StatusModel model)
+    {
+        model.AvailableProjects.Add(new SelectListItem
+        {
+            Text = "— All projects —",
+            Value = "0",
+            Selected = model.ProjectId == null || model.ProjectId == 0
+        });
+
+        foreach (var item in await _projectService.GetAllActiveAsync())
+        {
+            model.AvailableProjects.Add(new SelectListItem
+            {
+                Text = item.Name,
+                Value = item.Id.ToString(),
+                Selected = item.Id == model.ProjectId
+            });
+        }
     }
 
     #endregion

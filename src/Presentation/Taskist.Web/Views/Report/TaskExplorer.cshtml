@@ -1,0 +1,86 @@
+@model TaskExplorerPageModel
+@{
+    ViewData["Title"] = Localize("TaskExplorerPage.Title");
+}
+
+@section PageStyles {
+    <link href="~/lib/pivottable/pivot.min.css" rel="stylesheet" />
+    <link href="~/css/pages/task-explorer.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div id="tx-config" class="d-none"
+     data-data-url="@Url.Action("GetPivotData")"
+     data-details-url="@Url.Action("PivotDetails")"></div>
+
+<div class="container-fluid mt-3">
+    <div class="tlr-toolbar mb-2">
+        <div class="tlr-toolbar-group">
+            <div class="tx-project">
+                <select class="form-control form-control-sm select2" id="txProject" asp-items="Model.AvailableProjects"></select>
+            </div>
+            <div class="dropdown">
+                <button type="button" class="btn btn-sm btn-outline-primary dropdown-toggle tx-preset-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-table-cells me-1"></i><span id="txPresetLabel">Quick views</span>
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item tx-preset" href="#" data-preset="workload">Assignee × Status</a></li>
+                    <li><a class="dropdown-item tx-preset" href="#" data-preset="hotspots">Module × Severity</a></li>
+                    <li><a class="dropdown-item tx-preset" href="#" data-preset="reopens">Reopens by Assignee</a></li>
+                    <li><a class="dropdown-item tx-preset" href="#" data-preset="portfolio">Project × Status Group</a></li>
+                    <li><a class="dropdown-item tx-preset" href="#" data-preset="type">Task Type × Status</a></li>
+                </ul>
+            </div>
+            <span class="tx-help text-muted" role="button" tabindex="0" data-bs-toggle="tooltip"
+                  title="Drag fields to rows/columns, pick a summary, then click any number to see the tasks behind it."><i class="far fa-circle-question"></i></span>
+        </div>
+        <div class="tlr-toolbar-group ms-auto">
+            <button type="button" class="btn btn-sm btn-outline-secondary tlr-filter-btn" id="btnFilters" data-bs-toggle="collapse" data-bs-target="#txFilterCollapse" aria-expanded="false">
+                <i class="fas fa-sliders me-1"></i>Filters<span class="tlr-filter-count" id="txFilterCount"></span>
+            </button>
+            <button type="button" class="btn btn-sm btn-success text-white" id="exportExcel"><i class="fas fa-file-excel me-1"></i>Excel</button>
+            <button type="button" class="btn btn-sm btn-danger text-white" id="exportPdf"><i class="fas fa-file-pdf me-1"></i>PDF</button>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="collapse mb-2" id="txFilterCollapse">
+        <div class="card"><div class="card-body p-3">
+            <div class="row g-3 align-items-end" id="txFilter">
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small text-muted mb-1">Status group</label>
+                    <select class="form-control form-control-sm tx-multi" id="fltStatusGroups" multiple></select>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small text-muted mb-1">Task type</label>
+                    <select class="form-control form-control-sm tx-multi" id="fltTaskTypes" multiple></select>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small text-muted mb-1">Severity</label>
+                    <select class="form-control form-control-sm tx-multi" id="fltSeverities" multiple></select>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <label class="form-label small text-muted mb-1">Assignee</label>
+                    <select class="form-control form-control-sm tx-multi" id="fltAssignees" multiple></select>
+                </div>
+                <div class="col-12 d-flex gap-2 justify-content-end">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnReset"><i class="fas fa-rotate-left me-1"></i>Reset</button>
+                </div>
+            </div>
+        </div></div>
+    </div>
+
+    <div class="card mb-0"><div class="card-body">
+        <div id="pivot" class="pivot"></div>
+    </div></div>
+</div>
+
+@section PageScripts {
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/lib/pivottable/pivot.min.js"></script>
+    <script src="~/lib/plotly/plotly-latest.min.js"></script>
+    <script src="~/lib/pivottable/plotly_renderers.min.js"></script>
+    <script src="~/lib/xlsx/xlsx.full.min.js"></script>
+    <script src="~/lib/jspdf/jspdf.umd.min.js"></script>
+    <script src="~/lib/jspdf/jspdf.plugin.autotable.min.js"></script>
+    <script src="~/js/pages/report/task-explorer.js" asp-append-version="true"></script>
+}

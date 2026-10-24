@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Taskist.Web.Models.Masters;
 
-public class ModuleModel : BasePageModel
+public class ModuleModel : BaseModel
 {
     public ModuleModel()
     {

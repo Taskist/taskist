@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserProjectModel : BasePageModel
+public class UserProjectModel : BaseModel
 {
 	public UserProjectModel()
 	{
@@ -18,8 +18,14 @@ public class UserProjectModel : BasePageModel
 
 	public string UserName { get; set; }
 
-	[LocalizedDisplayName("UserProjectModel.CanReport")]
-	public bool CanReport { get; set; }
+	[LocalizedDisplayName("UserProjectModel.CanReportToDo")]
+	public bool CanReportToDo { get; set; }
+
+	[LocalizedDisplayName("UserProjectModel.CanReportCR")]
+	public bool CanReportCR { get; set; }
+
+	[LocalizedDisplayName("UserProjectModel.CanReportBug")]
+	public bool CanReportBug { get; set; }
 
 	[LocalizedDisplayName("UserProjectModel.CanEdit")]
 	public bool CanEdit { get; set; }
@@ -27,10 +33,7 @@ public class UserProjectModel : BasePageModel
 	[LocalizedDisplayName("UserProjectModel.CanClose")]
 	public bool CanClose { get; set; }
 
-    [LocalizedDisplayName("UserProjectModel.CanDelete")]
-    public bool CanDelete { get; set; }
-
-    [LocalizedDisplayName("UserProjectModel.CanReOpen")]
+	[LocalizedDisplayName("UserProjectModel.CanReOpen")]
 	public bool CanReOpen { get; set; }
 
 	[LocalizedDisplayName("UserProjectModel.CanComment")]
@@ -42,22 +45,20 @@ public class UserProjectModel : BasePageModel
 	[LocalizedDisplayName("UserProjectModel.CanEditOthersTask")]
 	public bool CanEditOthersTask { get; set; }
 
+	[LocalizedDisplayName("UserProjectModel.CanAddWiki")]
+	public bool CanAddWiki { get; set; }
+
+	[LocalizedDisplayName("UserProjectModel.CanDeleteTask")]
+	public bool CanDeleteTask { get; set; }
+
+	[LocalizedDisplayName("UserProjectModel.CanChangeProject")]
+	public bool CanChangeProject { get; set; }
+
+	[LocalizedDisplayName("UserProjectModel.CanReviewMergeRequests")]
+	public bool CanReviewMergeRequests { get; set; }
+
+	[LocalizedDisplayName("UserProjectModel.CanMergeMergeRequests")]
+	public bool CanMergeMergeRequests { get; set; }
+
 	public IList<SelectListItem> AvailableUsers { get; set; }
-}
-
-public class UserProjectGridModel : BasePageModel
-{
-	public string UserName { get; set; }
-
-	public bool CanReport { get; set; }
-
-	public bool CanEdit { get; set; }
-
-	public bool CanClose { get; set; }
-
-    public bool CanDelete { get; set; }
-
-    public bool CanReOpen { get; set; }
-
-	public bool CanComment { get; set; }
 }

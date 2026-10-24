@@ -1,4 +1,4 @@
-﻿namespace Taskist.Core.Caching;
+namespace Taskist.Core.Caching;
 
 public interface ILocker
 {

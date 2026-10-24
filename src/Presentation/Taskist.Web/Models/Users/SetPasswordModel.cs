@@ -14,12 +14,12 @@ public class SetPasswordModel
     [Display(Name = "Email")]
     public string Email { get; set; }
 
-    [DataType(DataType.Password)]
+    [DataType(System.ComponentModel.DataAnnotations.DataType.Password)]
     [Display(Name = "Password")]
     [Required(ErrorMessage = "Enter the password")]
     public string Password { get; set; }
 
-    [DataType(DataType.Password)]
+    [DataType(System.ComponentModel.DataAnnotations.DataType.Password)]
     [Display(Name = "Confirm Password")]
     [Required(ErrorMessage = "Retype the password")]
     [Compare("Password", ErrorMessage = "Entered password dosen't match")]

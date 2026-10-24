@@ -1,0 +1,62 @@
+.app-beta-chip {
+    display: inline-block;
+    padding: 1px 7px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    border-radius: 10px;
+    background: #f9b115;
+    color: #3a2f00;
+    vertical-align: middle;
+}
+
+.beta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    max-width: 100%;
+    padding: 3px 12px;
+    font-size: 0.78rem;
+    line-height: 1;
+    color: #6b5200;
+    background: #fff6e0;
+    border: 1px solid #f3e0a8;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.beta-pill > i {
+    color: #c98a00;
+    font-size: 0.8rem;
+}
+
+.beta-pill__report {
+    color: #6b5200;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.beta-pill__report:hover {
+    color: #4a3800;
+}
+
+.beta-pill__chip {
+    display: none;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    font-size: 0.62rem;
+}
+
+@media (max-width: 767.98px) {
+    .beta-pill__text {
+        display: none;
+    }
+
+    .beta-pill__chip {
+        display: inline;
+    }
+
+    .beta-pill {
+        padding: 3px 9px;
+    }
+}

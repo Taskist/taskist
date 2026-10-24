@@ -1,17 +1,18 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 using Taskist.Core.Domain.Masters;
 
-namespace Taskist.Core.Domain.WorkItems;
-
-public class BacklogCustomFieldValue : BaseEntity
+namespace Taskist.Core.Domain.WorkItems
 {
-    public int BacklogId { get; set; }
+    public class BacklogCustomFieldValue : BaseEntity, IAuditableEntity
+    {
+        public int BacklogId { get; set; }
 
-    public int CustomFieldId { get; set; }
+        public int CustomFieldId { get; set; }
 
-    public string? Value { get; set; }
+        public string? Value { get; set; }
 
-    public virtual Backlog Backlog { get; set; }
+        public virtual Backlog Backlog { get; set; }
 
-    public virtual CustomField CustomField { get; set; }
+        public virtual CustomField CustomField { get; set; }
+    }
 }

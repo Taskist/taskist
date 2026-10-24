@@ -1,8 +1,8 @@
-using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Users;
+using FluentValidation;
 
 namespace Taskist.Web.Helpers.Validators.Masters;
 
@@ -12,8 +12,8 @@ public class ProjectMemberValidator : AbstractValidator<UserProjectModel>
         IProjectService projectService)
     {
         RuleFor(r => r.UserId)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("ProjectMemberModel.User.RequiredMsg"))
-            .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("ProjectMemberModel.User.RequiredMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("ProjectMemberModel.User.RequiredMsg"))
+            .GreaterThan(0).WithMessage(localizationService.GetResource("ProjectMemberModel.User.RequiredMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -24,6 +24,6 @@ public class ProjectMemberValidator : AbstractValidator<UserProjectModel>
                 var entity = await projectService.GetMemberByIdAndProjectAsync(x.UserId, x.ProjectId);
                 return entity == null;
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("ProjectMemberModel.User.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("ProjectMemberModel.User.UniqueMsg"));
     }
 }

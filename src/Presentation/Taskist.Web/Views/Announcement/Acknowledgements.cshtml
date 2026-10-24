@@ -1,0 +1,34 @@
+@model AnnouncementAckAuditModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<div class="mb-2 fw-semibold">@Model.Title</div>
+<div class="text-muted small mb-3">@Model.Rows.Count @Localize("Announcement.AckCount").Text</div>
+
+@if (!Model.Rows.Any())
+{
+    <div class="text-muted text-center py-4">@Localize("Announcement.NoAcks").Text</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-sm align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>@Localize("Announcement.AckUser").Text</th>
+                    <th>@Localize("Announcement.AckOn").Text</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model.Rows)
+                {
+                    <tr>
+                        <td>@r.User</td>
+                        <td>@r.AcknowledgedOn.ToString("dd-MMM-yyyy HH:mm")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

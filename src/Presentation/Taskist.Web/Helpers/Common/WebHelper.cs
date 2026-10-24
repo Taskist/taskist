@@ -1,12 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
-using Taskist.Core.Common;
+using Taskist.Core.Enums;
+using System.Text.RegularExpressions;
 
 namespace Taskist.Web.Helpers.Common;
 
 public static class WebHelper
 {
     public static string UploadedFile(IFormFile formFile, string rootPath,
-        FileUploadLocationEnum location = FileUploadLocationEnum.General)
+        FileUploadLocation location = FileUploadLocation.General)
     {
         string uniqueFileName = null;
 
@@ -27,12 +27,22 @@ public static class WebHelper
     }
 
     public static void DeleteFile(string rootPath, string fileName,
-        FileUploadLocationEnum location = FileUploadLocationEnum.General)
+            FileUploadLocation location = FileUploadLocation.General)
     {
         string uploadsFolder = Path.Combine(rootPath, "images", location.ToString());
         string filePath = Path.Combine(uploadsFolder, fileName);
 
         if (File.Exists(filePath))
             File.Delete(fileName);
+    }
+
+    public static string StripHtmlTags(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return string.Empty;
+
+        string noHtml = Regex.Replace(input, "<.*?>", string.Empty);
+
+        return System.Net.WebUtility.HtmlDecode(noHtml);
     }
 }

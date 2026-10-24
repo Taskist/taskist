@@ -1,4 +1,4 @@
-﻿@model StatusModel
+@model StatusModel
 @{
     var isDisabled = Model.Id > 0 && Model.SystemDefined;
 }
@@ -26,8 +26,15 @@
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="GroupId" />
-            <select asp-for="GroupId" asp-items="Html.GetEnumSelectList<StatusGroupEnum>()" disabled="@isDisabled" class="form-control"></select>
+            <select asp-for="GroupId" asp-items="Html.GetEnumSelectList<StatusGroup>()" disabled="@isDisabled" class="form-control"></select>
             <span asp-validation-for="GroupId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ProjectId" />
+            <select asp-for="ProjectId" asp-items="Model.AvailableProjects" disabled="@isDisabled" class="form-control select2"></select>
+            <span asp-validation-for="ProjectId" class="text-danger"></span>
         </div>
     </div>
 </div>
@@ -35,14 +42,14 @@
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="TextColor" />
-            <input asp-for="TextColor" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="20" />
+            <input asp-for="TextColor" type="color" class="form-control form-control-color" autocomplete="off" disabled="@isDisabled" maxlength="20" />
             <span asp-validation-for="TextColor" class="text-danger"></span>
         </div>
     </div>
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="BackgroundColor" />
-            <input asp-for="BackgroundColor" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="20" />
+            <input asp-for="BackgroundColor" type="color" class="form-control form-control-color" autocomplete="off" disabled="@isDisabled" maxlength="20" />
             <span asp-validation-for="BackgroundColor" class="text-danger"></span>
         </div>
     </div>
@@ -53,6 +60,50 @@
             <wc-label asp-for="IconClass" />
             <input asp-for="IconClass" class="form-control form-control-maxlength" autocomplete="off" disabled="@isDisabled" maxlength="50" />
             <span asp-validation-for="IconClass" class="text-danger"></span>
+            <a href="https://fontawesome.com/v5/search?ic=free" target="_blank">View Icons</a>
+        </div>
+    </div>
+</div>
+<div class="closing-rules mb-3">
+    <div class="closing-rules__head">
+        <div class="closing-rules__title"><i class="fas fa-list-check me-2"></i>@Localize("StatusPage.ClosingRules.Title")</div>
+        <div class="closing-rules__sub">@Localize("StatusPage.ClosingRules.Intro")</div>
+    </div>
+    <table class="closing-rules__grid">
+        <thead>
+            <tr>
+                <th></th>
+                <th><i class="fas fa-bug me-1"></i>@Localize("StatusPage.ClosingRules.Bug")</th>
+                <th><i class="fas fa-code-pull-request me-1"></i>@Localize("StatusPage.ClosingRules.Cr")</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th><i class="fas fa-magnifying-glass-chart me-2"></i>@Localize("BacklogPage.RootCauseFix.RootCause")</th>
+                <td><input class="form-check-input" type="checkbox" asp-for="RequiredRootCauseForBug" disabled="@isDisabled" title="@Localize("StatusModel.RequiredRootCauseForBug").Text"></td>
+                <td><input class="form-check-input" type="checkbox" asp-for="RequiredRootCauseForCr" disabled="@isDisabled" title="@Localize("StatusModel.RequiredRootCauseForCr").Text"></td>
+            </tr>
+            <tr>
+                <th><i class="fas fa-screwdriver-wrench me-2"></i>@Localize("BacklogPage.RootCauseFix.Resolution")</th>
+                <td><input class="form-check-input" type="checkbox" asp-for="RequiredResolutionForBug" disabled="@isDisabled" title="@Localize("StatusModel.RequiredResolutionForBug").Text"></td>
+                <td><input class="form-check-input" type="checkbox" asp-for="RequiredResolutionForCr" disabled="@isDisabled" title="@Localize("StatusModel.RequiredResolutionForCr").Text"></td>
+            </tr>
+            <tr>
+                <th><i class="fas fa-code-merge me-2"></i>@Localize("BacklogPage.ClosingChecklist.Mr")</th>
+                <td><input class="form-check-input" type="checkbox" asp-for="RequiredMrNumberForBug" disabled="@isDisabled" title="@Localize("StatusModel.RequiredMrNumberForBug").Text"></td>
+                <td><input class="form-check-input" type="checkbox" asp-for="RequiredMrNumberForCr" disabled="@isDisabled" title="@Localize("StatusModel.RequiredMrNumberForCr").Text"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="closing-rules__foot"><i class="fas fa-circle-info me-1"></i>@Localize("StatusPage.ClosingRules.MrNote")</div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3">
+            <label class="form-check form-check-inline">
+                <input class="form-check-input" type="checkbox" asp-for="ExternalUse" disabled="@isDisabled">
+                <wc-label asp-for="ExternalUse" />
+            </label>
         </div>
     </div>
 </div>

@@ -1,4 +1,4 @@
-﻿@model EmailTemplateResetModel
+@model PageModel
 @{
     Layout = "~/Views/Shared/_LayoutPartial.cshtml";
 }
@@ -7,7 +7,7 @@
 {
     <form asp-action="Reset" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
         <div class="row">
-            @foreach (var template in Enum.GetValues(typeof(EmailTemplateTypeEnum)))
+            @foreach (var template in Enum.GetValues(typeof(EmailTemplateType)))
         {
             <div class="col-md-6">
                     <div class="form-check mt-3">

@@ -1,0 +1,10 @@
+@model string
+@{
+	ViewData["Title"] = Localize("ProjectAccessDenied.Title");
+}
+<wp-empty-state icon="fas fa-folder-closed" size="page" tone="danger" heading="@Localize("ProjectAccessDenied.Title").Text"
+	action-text="@Localize("EmptyState.GoDashboard").Text" action-icon="fas fa-house" action-url="@Url.Content("~/")"
+	secondary-text="@Localize("EmptyState.GoBack").Text" secondary-class="js-history-back">
+	<p class="wp-empty__text">@Html.Raw(Model)</p>
+	<p class="wp-empty__text mt-2">@Localize("EmptyState.ProjectAccessDenied.Text").Text</p>
+</wp-empty-state>

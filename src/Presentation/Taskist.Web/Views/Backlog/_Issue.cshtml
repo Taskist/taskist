@@ -1,0 +1,71 @@
+@model TaskIssueViewModel
+@{
+	var issue = Model.Issue;
+}
+
+@if (!issue.Links.Any() && !issue.PublishTargets.Any())
+{
+	<div class="text-muted small">@Localize("Backlog.Issue.NotEnabled")</div>
+}
+else
+{
+	@foreach (var link in issue.Links)
+	{
+		<div class="task-issue-link @(link.SyncEnabled ? "" : "task-issue-link--off")">
+			<div class="d-flex align-items-center gap-2">
+				<span class="task-code-state task-code-state--@(link.RemoteState == "closed" ? "closed" : "open")">@(link.RemoteState == "closed" ? Localize("Backlog.Issue.Closed").Text : Localize("Backlog.Issue.Open").Text)</span>
+				@if (!string.IsNullOrEmpty(link.Url))
+				{
+					<a href="@link.Url" target="_blank" rel="noopener noreferrer" class="task-code-mr-title">#@link.Number</a>
+				}
+				else
+				{
+					<span class="task-code-mr-title">#@link.Number</span>
+				}
+				<span class="task-code-repo-badge">@link.ProviderName · @link.RepositoryName</span>
+				@if (link.PublicRepository)
+				{
+					<span class="badge bg-warning text-dark" title="@Localize("Backlog.Issue.PublicHint").Text"><i class="fas fa-globe me-1"></i>@Localize("Backlog.Issue.Public")</span>
+				}
+			</div>
+			<div class="task-code-meta">
+				@if (!link.SyncEnabled)
+				{
+					<span>@Localize("Backlog.Issue.SyncStopped")</span>
+				}
+				else if (link.LastSyncedOn != null)
+				{
+					<span>@Localize("Backlog.Issue.LastSynced") <span class="task-code-time" data-time="@DateTime.SpecifyKind(link.LastSyncedOn.Value, DateTimeKind.Utc).ToString("o")"></span></span>
+				}
+				@if (link.CommentsSynced && link.SyncEnabled)
+				{
+					<span>· @Localize("Backlog.Issue.CommentsHint")</span>
+				}
+			</div>
+			@if (!string.IsNullOrEmpty(link.LastError))
+			{
+				<div class="text-danger small mt-1"><i class="fas fa-triangle-exclamation me-1"></i>@link.LastError</div>
+			}
+			@if (issue.CanManage && link.SyncEnabled)
+			{
+				<div class="d-flex gap-2 mt-2">
+					<button type="button" class="btn btn-sm btn-outline-primary task-issue-sync"><i class="fas fa-rotate me-1"></i>@Localize("Backlog.Issue.SyncNow")</button>
+					<button type="button" class="btn btn-sm btn-outline-danger task-issue-unlink" data-link-id="@link.Id"><i class="fas fa-link-slash me-1"></i>@Localize("Backlog.Issue.StopSync")</button>
+				</div>
+			}
+		</div>
+	}
+
+	@if (issue.CanManage && issue.PublishTargets.Any())
+	{
+		<div class="task-issue-publish mt-2">
+			@foreach (var target in issue.PublishTargets)
+			{
+				<button type="button" class="btn btn-sm btn-outline-secondary task-issue-publish-btn me-1 mb-1"
+						data-repository-id="@target.RepositoryId" data-public="@(target.PublicRepository ? "1" : "0")" data-name="@target.Name">
+					<i class="fas fa-upload me-1"></i>@string.Format(Localize("Backlog.Issue.Publish").Text, target.Name)
+				</button>
+			}
+		</div>
+	}
+}

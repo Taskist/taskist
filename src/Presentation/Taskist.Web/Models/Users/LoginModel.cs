@@ -4,7 +4,7 @@ namespace Taskist.Web.Models.Users;
 
 public class LoginModel
 {
-    [Display(Name = "Username")]
+    [Display(Name = "Email")]
     public string Email { get; set; }
 
     [Display(Name = "Password")]

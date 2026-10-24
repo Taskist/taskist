@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
 using Taskist.Core.Common;
+using Taskist.Core.Domain.Masters;
 using Taskist.Web.Helpers.Attributes;
-using Taskist.Web.Helpers.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Taskist.Web.Controllers.Common;
 
 [Authorize]
+[ValidateUserId]
 [AutoValidateAntiforgeryToken]
 [SaveIpAddress]
 [SaveLastActivity]
@@ -14,44 +16,72 @@ namespace Taskist.Web.Controllers.Common;
 [ValidateIpAddress]
 public class BaseController : Controller
 {
-    #region Actions
+	#region Actions
 
-    protected IActionResult AccessDenied()
-    {
-        return RedirectToAction("AccessDenied", "Common");
-    }
+	protected IActionResult AccessDenied()
+	{
+		return RedirectToAction("AccessDenied", "Common");
+	}
 
-    protected IActionResult AccessDeniedPartial()
-    {
-        return RedirectToAction("AccessDeniedPartial", "Common");
-    }
+	protected IActionResult AccessDeniedPartial()
+	{
+		return RedirectToAction("AccessDeniedPartial", "Common");
+	}
 
-    protected IActionResult AccessDeniedDataRead()
-    {
-        return Json(new
-        {
-            error = "Access denied!"
-        });
-    }
+	protected IActionResult ProjectAccessDenied(string message)
+	{
+		return RedirectToAction("ProjectAccessDenied", "Common", new { message });
+	}
 
-    protected IActionResult NoData()
-    {
-        return RedirectToAction("NoData", "Common");
-    }
+	protected IActionResult AccessDeniedDataRead()
+	{
+		return Json(new
+		{
+			error = "Access denied!"
+		});
+	}
 
-    protected IActionResult NoDataPartial()
-    {
-        return RedirectToAction("NoDataPartial", "Common");
-    }
+	protected IActionResult NoData()
+	{
+		return RedirectToAction("NoData", "Common");
+	}
 
-    #endregion Actions
+	protected IActionResult NoDataPartial()
+	{
+		return RedirectToAction("NoDataPartial", "Common");
+	}
 
-    #region Helpers
+	protected IActionResult DocumentFile(Document document)
+	{
+		Response.Headers["X-Content-Type-Options"] = "nosniff";
 
-    public async Task<int> GetProjectIdFromSession()
-    {
-        return await HttpContext.Session.GetAsync<int>(Constant.ActiveProjectSession);
-    }
+		var imageType = UploadPolicy.ImageContentType(document.Extension);
+		if (imageType != null)
+			return File(document.FileData, imageType);
 
-    #endregion
+		var name = string.IsNullOrWhiteSpace(document.FileName) ? "attachment" : document.FileName;
+		return File(document.FileData, "application/octet-stream", name + document.Extension);
+	}
+
+	protected IActionResult ImageFile(Document document)
+	{
+		var imageType = UploadPolicy.ImageContentType(document.Extension);
+		if (imageType == null || document.FileData == null || document.FileData.Length == 0)
+			return NotFound();
+
+		Response.Headers["X-Content-Type-Options"] = "nosniff";
+		return File(document.FileData, imageType);
+	}
+
+	#endregion Actions
+
+	#region Properties
+
+	protected int UserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+	protected string? UserEmail => User.FindFirstValue(ClaimTypes.Email);
+
+	protected string? UserName => User.FindFirstValue(ClaimTypes.Name);
+
+	#endregion
 }

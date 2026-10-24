@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Taskist.Core.Domain.Users;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Taskist.Core.Domain.Users;
 
 namespace Taskist.Data.Configuration.Users;
 
@@ -17,7 +17,7 @@ public class UserRoleMapConfig : EntityTypeConfiguration<UserRoleMap>
         });
 
         builder.HasOne(f => f.User)
-            .WithMany(p => p.UserRoleMaps)
+            .WithMany(p => p.UserUserRoleMaps)
             .HasForeignKey(p => p.UserId)
             .IsRequired();
 

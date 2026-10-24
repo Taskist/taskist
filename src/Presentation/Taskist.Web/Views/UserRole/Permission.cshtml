@@ -1,35 +1,79 @@
-﻿@model UserRolePermissionGridModel
+@model UserRolePermissionGridModel
+@functions {
+	static string Humanize(string s) =>
+		string.IsNullOrWhiteSpace(s) ? "Other" : System.Text.RegularExpressions.Regex.Replace(s, "(\\B[A-Z])", " $1");
+}
 @{
 	Layout = "~/Views/Shared/_LayoutPartial.cshtml";
-	var canModify = true;
-	if (Model.SystemRole && !Model.IsAdmin)
-	{
-		canModify = false;
-	}
+	var canModify = !(Model.SystemRole && !Model.IsAdmin);
+
+	var order = new[] { "Dashboard", "WorkItems", "Reports", "Master", "Configuration", "Integration", "Security", "Docs" };
+	var groups = Model.UserRolePermission
+		.GroupBy(p => string.IsNullOrWhiteSpace(p.RoleGroup) ? "Other" : p.RoleGroup)
+		.OrderBy(g => { var i = Array.IndexOf(order, g.Key); return i < 0 ? int.MaxValue : i; })
+		.ThenBy(g => g.Key)
+		.ToList();
 }
+
 @if (!canModify)
 {
 	<div class="alert alert-warning">@Localize("UserRoleModal.SystemRoleMsg")</div>
 }
+
 <form asp-action="SavePermission" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
 	<input type="hidden" asp-for="RoleId" />
-	<div class="row">
-		@foreach (var permission in Model.UserRolePermission)
+
+	<div class="perm-toolbar">
+		<div class="perm-search">
+			<i class="fas fa-magnifying-glass perm-search__icon"></i>
+			<input type="text" id="permSearch" class="form-control" autocomplete="off" placeholder="Search permissions…" />
+		</div>
+		<div class="perm-toolbar__actions">
+			<button type="button" class="btn btn-sm btn-light" id="permExpandAll" title="Expand all"><i class="fas fa-angles-down"></i></button>
+			<button type="button" class="btn btn-sm btn-light" id="permCollapseAll" title="Collapse all"><i class="fas fa-angles-up"></i></button>
+			@if (canModify)
+			{
+				<button type="button" class="btn btn-sm btn-outline-primary" id="permSelectAll">Select all</button>
+				<button type="button" class="btn btn-sm btn-outline-secondary" id="permClearAll">Clear all</button>
+			}
+		</div>
+	</div>
+
+	<div id="permGroups" class="perm-groups">
+		@foreach (var group in groups)
 		{
-			var isChecked = Model.UserRolePermissionMap.Any(x => x.PermissionId == permission.Id && x.UserRoleId == Model.RoleId);
-			<div class="col-md-6">
-				<div class="form-group">
-					<label class="ckbox">
-						<input type="checkbox" id="per_@permission.Id" name="per_@permission.Id"
-						@Html.Raw(isChecked ? "checked" : null)
-						@Html.Raw(!canModify ? "disabled" : null) />
-						<span>@permission.Name</span>
+			var gid = "permg_" + new string(group.Key.Where(char.IsLetterOrDigit).ToArray());
+			<div class="perm-group" data-group="@gid">
+				<div class="perm-group__head">
+					<label class="ckbox perm-group__all-wrap" title="Select all in group">
+						<input type="checkbox" class="perm-group-all" @Html.Raw(!canModify ? "disabled" : null) /><span></span>
 					</label>
+					<a class="perm-group__toggle" data-bs-toggle="collapse" href="#@gid" role="button" aria-expanded="true" aria-controls="@gid">
+						<span class="perm-group__title"><i class="fas fa-chevron-down perm-chevron"></i>@Humanize(group.Key)</span>
+						<span class="badge perm-group__badge"></span>
+					</a>
+				</div>
+				<div id="@gid" class="collapse show perm-group__body">
+					<div class="row">
+						@foreach (var permission in group.OrderBy(p => p.Name))
+						{
+							var isChecked = Model.UserRolePermissionMap.Any(x => x.PermissionId == permission.Id && x.UserRoleId == Model.RoleId);
+							<div class="col-md-6 perm-item" data-name="@permission.Name.ToLower()">
+								<label class="ckbox">
+									<input type="checkbox" class="perm-item-check" id="per_@permission.Id" name="per_@permission.Id"
+										   @Html.Raw(isChecked ? "checked" : null)
+										   @Html.Raw(!canModify ? "disabled" : null) />
+									<span>@permission.Name</span>
+								</label>
+							</div>
+						}
+					</div>
 				</div>
 			</div>
 		}
 	</div>
-	<div class="mt-4">
+
+	<div class="perm-footer">
 		@if (canModify)
 		{
 			<button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button>

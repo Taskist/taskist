@@ -1,16 +1,19 @@
-﻿namespace Taskist.Web.Models.Masters;
-
-public class CustomFieldsViewModel
+namespace Taskist.Web.Models.Masters
 {
-    public CustomFieldsViewModel()
+    public class CustomFieldsViewModel
     {
-        CustomFields = [];
-        Values = [];
+        public CustomFieldsViewModel()
+        {
+            CustomFields = [];
+            Values = [];
+        }
+
+        public int Index { get; set; }
+
+        public int BacklogId { get; set; }
+
+        public List<CustomFieldRenderModel> CustomFields { get; set; }
+
+        public List<CustomFieldValueModel> Values { get; set; }
     }
-
-    public int BacklogId { get; set; }
-
-    public List<CustomFieldRenderModel> CustomFields { get; set; }
-
-    public List<CustomFieldValueModel> Values { get; set; }
 }

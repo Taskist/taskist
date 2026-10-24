@@ -1,4 +1,4 @@
-﻿@model ProjectModel
+@model ProjectModel
 @{
     ViewData["Title"] = Localize("ProjectPage.Title");
 }
@@ -10,3 +10,7 @@
         </form>
     </div>
 </div>
+
+@section PageScripts {
+    <script src="~/js/pages/masters/project-form.js" asp-append-version="true"></script>
+}

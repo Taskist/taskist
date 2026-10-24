@@ -1,9 +1,9 @@
-﻿using Taskist.Web.Helpers.Attributes;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserRolePermissionModel : BasePageModel
+public class UserRolePermissionModel : BaseModel
 {
     [LocalizedDisplayName("UserRolePermissionModel.Name")]
     public string Name { get; set; }

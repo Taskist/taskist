@@ -1,11 +1,13 @@
-using Taskist.Data.Repository;
-using Taskist.Service.Common;
-using Taskist.Service.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 using Taskist.Core.Caching;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Localization;
-using Taskist.Data.Extensions;
+using Taskist.Core.Extensions;
+using Taskist.Data.Repository;
+using Taskist.Service.Common;
+using Taskist.Service.Logging;
 
 namespace Taskist.Service.Localization;
 
@@ -36,12 +38,12 @@ public class LocalizationService : ILocalizationService
 	#region Methods
 
 	public async Task<IPagedList<LocaleResource>> GetPagedListAsync(int languageId, string search = "", int pageIndex = 0, int pageSize = int.MaxValue,
-		string sortColumn = "", string sortDirection = "")
+			string sortColumn = "", string sortDirection = "")
 	{
 		return await _localeResourceRepository.GetAllPagedAsync(query =>
 		{
 			query = query.Where(x => x.LanguageId == languageId);
-			query = query.OrderBySafe(sortColumn, sortDirection);
+			query = query.ApplySafeSort(sortColumn, sortDirection);
 
 			if (!string.IsNullOrWhiteSpace(search))
 				query = query.Where(
@@ -72,7 +74,7 @@ public class LocalizationService : ILocalizationService
 	}
 
 	public async Task<string> GetResourceAsync(int languageId, string resourceKey, bool logIfNotFound = false,
-		string defaultValue = "", bool returnEmptyIfNotFound = false)
+			string defaultValue = "", bool returnEmptyIfNotFound = false)
 	{
 		var result = string.Empty;
 		resourceKey ??= string.Empty;
@@ -119,7 +121,52 @@ public class LocalizationService : ILocalizationService
 		if (language != null)
 			return await GetResourceAsync(language.Id, resourceKey);
 
-		return string.Empty;
+		// No user language: fall back to a language-agnostic lookup (mirrors the sync GetResource)
+		// so messages resolve instead of coming back empty.
+		var normalizedKey = resourceKey.Trim().ToLowerInvariant();
+		var value = await _localeResourceRepository.Table
+			.Where(l => l.ResourceKey == normalizedKey)
+			.Select(l => l.ResourceValue)
+			.FirstOrDefaultAsync();
+
+		return !string.IsNullOrEmpty(value) ? value : resourceKey;
+	}
+
+	public string GetResource(string resourceKey)
+	{
+		if (string.IsNullOrWhiteSpace(resourceKey))
+			return null;
+
+		return GetResource(_workContext.GetCurrentUserLanguageId() ?? 0, resourceKey);
+	}
+
+	public string GetResource(int languageId, string resourceKey, string defaultValue = "")
+	{
+		resourceKey = (resourceKey ?? string.Empty).Trim().ToLowerInvariant();
+
+		string lsr;
+		if (languageId > 0)
+		{
+			var key = string.Format(ServiceConstant.LocaleStringResourcesByNameCacheKey, languageId, resourceKey);
+			lsr = _cacheManager.Get(key, () =>
+				(from l in _localeResourceRepository.Table
+				 where l.ResourceKey == resourceKey && l.LanguageId == languageId
+				 select l.ResourceValue).FirstOrDefault());
+		}
+		else
+		{
+
+			var key = string.Format(ServiceConstant.LocaleStringResourcesByNameCacheKey, 0, resourceKey);
+			lsr = _cacheManager.Get(key, () =>
+				(from l in _localeResourceRepository.Table
+				 where l.ResourceKey == resourceKey
+				 select l.ResourceValue).FirstOrDefault());
+		}
+
+		if (!string.IsNullOrEmpty(lsr))
+			return lsr;
+
+		return !string.IsNullOrEmpty(defaultValue) ? defaultValue : resourceKey;
 	}
 
 	public async Task<LocaleResource> GetResourceByKeyAsync(int languageId, string resourceKey)

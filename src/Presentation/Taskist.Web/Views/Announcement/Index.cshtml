@@ -1,0 +1,78 @@
+@{
+    ViewData["Title"] = Localize("AnnouncementPage.Title");
+}
+
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "AnnouncementGrid",
+    Title = Localize("AnnouncementPage.Title").Text,
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("DataRead"),
+    HeaderActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.AddNew").Text,
+            Url = Url.Action("Create"),
+            Text = Localize("Button.AddNew").Text,
+            Icon = "fas fa-plus",
+            HyperLinkType = HyperLinkType.BUTTON_TEXT_ICON,
+            NavigationType = NavigationType.STANDARD,
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.Edit").Text,
+            Url = Url.Action("Edit"),
+            Text = Localize("Button.Edit").Text,
+            Icon = "far fa-edit",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_ICON,
+            NavigationType = NavigationType.STANDARD,
+            ButtonColor = ButtonColor.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("AnnouncementGrid.Acknowledgements").Text,
+            Url = Url.Action("Acknowledgements"),
+            Text = Localize("AnnouncementGrid.Acknowledgements").Text,
+            Icon = "fas fa-user-check text-secondary",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-md-6",
+            ButtonColor = ButtonColor.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("Button.Delete").Text,
+            Url = Url.Action("Delete"),
+            Text =  Localize("Button.Delete").Text,
+            AuxText =  Localize("Button.Cancel").Text,
+            Icon = "fas fa-trash",
+            ReferenceParameter = "Id",
+            DeleteConfirmBox = true,
+            DeleteConfirmBoxMsg = Localize("Confirmation.Delete").Text,
+            HyperLinkType = HyperLinkType.HYPERLINK_ICON,
+            NavigationType = NavigationType.OFFCANVAS,
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("AnnouncementGrid.Title").Text, DataColumn = "Title" },
+        new ColumnModel { Title = Localize("AnnouncementGrid.Type").Text, DataColumn = "TypeName" },
+        new ColumnModel { Title = Localize("AnnouncementGrid.Severity").Text, DataColumn = "SeverityName" },
+        new ColumnModel { Title = Localize("AnnouncementGrid.Audience").Text, DataColumn = "AudienceName" },
+        new ColumnModel { Title = Localize("AnnouncementGrid.ValidFrom").Text, DataColumn = "ValidFrom", IsDate = true },
+        new ColumnModel { Title = Localize("AnnouncementGrid.ValidTo").Text, DataColumn = "ValidTo", IsDate = true },
+        new ColumnModel { Title = Localize("AnnouncementGrid.Active").Text, DataColumn = "Active", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+        }}
+    }
+})

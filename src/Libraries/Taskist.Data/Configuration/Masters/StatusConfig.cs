@@ -1,6 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Taskist.Core.Domain.Masters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Taskist.Data.Configuration.Masters;
 
@@ -27,6 +27,12 @@ public class StatusConfig : EntityTypeConfiguration<Status>
 
         builder.Property(p => p.IconClass)
             .HasMaxLength(50);
+
+        builder.HasOne(f => f.Project)
+            .WithMany()
+            .HasForeignKey(p => p.ProjectId)
+            .OnDelete(DeleteBehavior.NoAction)
+            .IsRequired(false);
 
         base.Configure(builder);
     }

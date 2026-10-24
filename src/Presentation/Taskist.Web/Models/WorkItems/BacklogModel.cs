@@ -1,151 +1,161 @@
-﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.ComponentModel.DataAnnotations;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Masters;
 
 namespace Taskist.Web.Models.WorkItems;
 
-public class BacklogModel : BasePageModel
+public class BacklogModel : BaseModel
 {
-    public BacklogModel()
-    {
-        AvailableTaskTypes = [];
-        AvailableReporters = [new SelectListItem { Text = "None", Value = "-1" }];
-        AvailableSeverities = [new SelectListItem { Text = "Select", Value = "" }];
-        AvailableProjects = [new SelectListItem { Text = "Select", Value = "" }];
-        AvailableModules = [new SelectListItem { Text = "Select", Value = "" }];
-        AvailableSubModules = [new SelectListItem { Text = "Select", Value = "" }];
-        AvailableSprints = [new SelectListItem { Text = "No Sprint", Value = "-1" }];
-        AvailableAssignees = [new SelectListItem { Text = "Unassigned", Value = "-1" }];
-        AvailableStatus = [];
-        CustomFieldValue = new CustomFieldValueModel();
-    }
+	public BacklogModel()
+	{
+		StatusLogs = [];
+		AvailableProjects = [new SelectListItem { Text = "None", Value = "-1" }];
+		AvailableTaskTypes = [];
+		AvailableReporters = [new SelectListItem { Text = "Select", Value = "" }];
+		AvailableSeverities = [new SelectListItem { Text = "Select", Value = "" }];
+		AvailableModules = [new SelectListItem { Text = "Select", Value = "" }];
+		AvailableSubModules = [new SelectListItem { Text = "Select", Value = "" }];
+		AvailableReleases = [new SelectListItem { Text = "No Release", Value = "-1" }];
+		AvailableAssignees = [new SelectListItem { Text = "Unassigned", Value = "-1" }];
+		AvailableCreators = [new SelectListItem { Text = "Unassigned", Value = "-1" }];
+		AvailableTesters = [new SelectListItem { Text = "Unassigned", Value = "-1" }];
+		AvailableStatus = [];
+		AvailableStatusGroup = [];
+		AvailableTags = [];
+		SelectedTags = [];
+		CustomFieldValue = new CustomFieldValueModel();
+	}
 
-    public Guid Code { get; set; }
+	public Guid Code { get; set; }
 
-    /// <summary>Meta shown in the Edit header (creator, age, status journey).</summary>
-    public string CreatedByName { get; set; }
+	[LocalizedDisplayName("Backlog.Title")]
+	public string Title { get; set; }
 
-    public DateTime CreatedOn { get; set; }
+	[LocalizedDisplayName("Backlog.Description")]
+	public string? Description { get; set; }
 
-    public IList<BacklogStatusJourneyModel> StatusJourney { get; set; } = new List<BacklogStatusJourneyModel>();
+	[LocalizedDisplayName("Backlog.RootCauseAnalysis")]
+	public string? RootCauseAnalysis { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Title")]
-    public string Title { get; set; }
+	public bool IsBug { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Description")]
-    public string? Description { get; set; }
+	public string? BugTaskTypeIds { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Parent")]
-    public int? ParentId { get; set; }
+	public string? CrTaskTypeIds { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.TaskType")]
-    public int TaskTypeId { get; set; }
+	public bool ShowRootCauseTab { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Reporter")]
-    public int? ReporterId { get; set; }
+	public string? ClosingRulesJson { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Severity")]
-    public int SeverityId { get; set; }
+	public string? EnvironmentJson { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.DueDate")]
-    [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd-MMM-yyyy}")]
-    public DateOnly? DueDate { get; set; }
+	[LocalizedDisplayName("Backlog.ExternalNotes")]
+	public string? ExternalNotes { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Project")]
-    public int ProjectId { get; set; }
+	[LocalizedDisplayName("Backlog.Parent")]
+	public int? ParentId { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Module")]
-    public int? ModuleId { get; set; }
+	public string? ParentTitle { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.SubModule")]
-    public int? SubModuleId { get; set; }
+	[LocalizedDisplayName("Backlog.TaskType")]
+	public int TaskTypeId { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Sprint")]
-    public int? SprintId { get; set; }
+	[LocalizedDisplayName("Backlog.Reporter")]
+	public int? ReporterId { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Assignee")]
-    public int? AssigneeId { get; set; } = null;
+	[LocalizedDisplayName("Backlog.Severity")]
+	public int SeverityId { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.Status")]
-    public int StatusId { get; set; }
+	[LocalizedDisplayName("Backlog.DueDate")]
+	[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd-MMM-yyyy}")]
+	public DateOnly? DueDate { get; set; }
 
-    public int ReOpenCount { get; set; }
+	[LocalizedDisplayName("Backlog.PlannedStartDate")]
+	[DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd-MMM-yyyy}")]
+	public DateOnly? PlannedStartDate { get; set; }
 
-    public int SubTaskCount { get; set; }
+	[LocalizedDisplayName("Backlog.Project")]
+	public int ProjectId { get; set; }
 
-    public string Token { get; set; }
+	[LocalizedDisplayName("Backlog.Module")]
+	public int? ModuleId { get; set; }
 
-    public bool CanEdit { get; set; }
+	[LocalizedDisplayName("Backlog.SubModule")]
+	public int? SubModuleId { get; set; }
 
-    public bool CanDelete { get; set; }
+	[LocalizedDisplayName("Backlog.Release")]
+	public int? ReleaseId { get; set; }
 
-    [LocalizedDisplayName("BacklogTask.CreatedBy")]
-    public int CreatedById { get; set; }
+	[LocalizedDisplayName("Backlog.Assignee")]
+	public int? AssigneeId { get; set; } = null;
 
-    public CustomFieldValueModel CustomFieldValue { get; set; }
+	[LocalizedDisplayName("Backlog.Tester")]
+	public int? TesterId { get; set; } = null;
 
-    public IList<SelectListItem> AvailableTaskTypes { get; set; }
+	[LocalizedDisplayName("Backlog.Status")]
+	public int StatusId { get; set; }
 
-    public IList<SelectListItem> AvailableReporters { get; set; }
+	[LocalizedDisplayName("Backlog.StatusGroup")]
+	public int StatusGroupId { get; set; }
 
-    public IList<SelectListItem> AvailableSeverities { get; set; }
+	[LocalizedDisplayName("ClosingCommentModel.ResolutionDetails")]
+	public string? ResolutionDetails { get; set; }
 
-    public IList<SelectListItem> AvailableProjects { get; set; }
+	public int? MergeRequestId { get; set; }
 
-    public IList<SelectListItem> AvailableModules { get; set; }
+	[LocalizedDisplayName("Backlog.Tags")]
+	public string[] SelectedTags { get; set; }
 
-    public IList<SelectListItem> AvailableSubModules { get; set; }
+	public int? SourceWikiDocumentId { get; set; }
 
-    public IList<SelectListItem> AvailableSprints { get; set; }
+	public int ReOpenCount { get; set; }
 
-    public IList<SelectListItem> AvailableAssignees { get; set; }
+	public int SubTaskCount { get; set; }
 
-    public IList<SelectListItem> AvailableStatus { get; set; }
-}
+	public string Token { get; set; }
 
-public class BacklogItemGridModel : BasePageModel
-{
-    public string Title { get; set; }
+	public bool CanEdit { get; set; }
 
-    public DateOnly? DueDate { get; set; }
+	public bool CanEditProject { get; set; }
 
-    public string Project { get; set; }
+	public bool CanDelete { get; set; }
 
-    public string? Module { get; set; }
+	[LocalizedDisplayName("Backlog.CreatedBy")]
+	public int CreatedById { get; set; }
 
-    public string? SubModule { get; set; }
+	public string Owner { get; set; }
 
-    public string? Sprint { get; set; }
+	public IList<StatusLogModel> StatusLogs { get; set; }
 
-    public string? Assignee { get; set; }
+	public IList<StageDurationChipModel> StageDurations { get; set; } = [];
 
-    public int SubTaskCount { get; set; }
+	public CustomFieldValueModel CustomFieldValue { get; set; }
 
-    public string CreatedBy { get; set; }
+	public IList<SelectListItem> AvailableProjects { get; set; }
 
-    public DateTime CreatedOn { get; set; }
+	public IList<SelectListItem> AvailableTaskTypes { get; set; }
 
-    public StatusModel Status { get; set; }
+	public IList<SelectListItem> AvailableReporters { get; set; }
 
-    public SeverityModel Severity { get; set; }
+	public IList<SelectListItem> AvailableSeverities { get; set; }
 
-    public TaskTypeModel TaskType { get; set; }
-}
+	public IList<SelectListItem> AvailableModules { get; set; }
 
-/// <summary>One leg of the task's status journey (a status and how long it was held).</summary>
-public class BacklogStatusJourneyModel
-{
-    public string StatusName { get; set; }
+	public IList<SelectListItem> AvailableSubModules { get; set; }
 
-    public string TextColor { get; set; }
+	public IList<SelectListItem> AvailableReleases { get; set; }
 
-    public string BackgroundColor { get; set; }
+	public IList<SelectListItem> AvailableAssignees { get; set; }
 
-    public string IconClass { get; set; }
+	public IList<SelectListItem> AvailableCreators { get; set; }
 
-    public int Days { get; set; }
+	public IList<SelectListItem> AvailableTesters { get; set; }
 
-    public bool IsCurrent { get; set; }
+	public IList<SelectListItem> AvailableStatus { get; set; }
+
+	public IList<SelectListItem> AvailableStatusGroup { get; set; }
+
+	public IList<SelectListItem> AvailableTags { get; set; }
 }

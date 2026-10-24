@@ -4,57 +4,148 @@
 }
 
 @section PageStyles {
-	<link rel="stylesheet" href="~/css/pages/backlog/backlog.css" asp-append-version="true" />
+	<link href="~/lib/ion.rangeslider/css/ion.rangeslider.min.css" rel="stylesheet" />
+	<link rel="stylesheet" href="~/css/pages/backlog-task.css" asp-append-version="true" />
 }
 
 @section PageScripts {
+	<script src="~/lib/ion.rangeslider/js/ion.rangeslider.min.js"></script>
 	<script src="~/js/pages/backlog/backlog-form.js" asp-append-version="true"></script>
-	<script src="~/js/pages/backlog/backlog-form-status.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-rootcause.js" asp-append-version="true"></script>
 	<script src="~/js/pages/backlog/backlog-edit.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-history.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-comments.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-activity.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-branch.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-code.js" asp-append-version="true"></script>
+<script src="~/js/pages/backlog/backlog-issue.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-env.js" asp-append-version="true"></script>
 }
+
+<div id="backlog-edit-config" class="d-none"
+	 data-id="@Model.Id"
+	 data-save-url="@Url.Action("SaveChanges")"
+	 data-save-all-url="@Url.Action("SaveAll")"
+	 data-save-tags-url="@Url.Action("SaveTags")"
+	 data-delete-url="@Url.Action("Delete")"
+	 data-closing-check-url="@Url.Action("GetClosingCommentStatus")"
+	 data-closing-url="@Url.Action("ClosingComment")"
+	 data-closing-title="@Localize("ClosingComment.Title").Text"
+	 data-index-url="@Url.Action("Index")"
+	 data-title="@($"{Localize("BacklogPage.Title").Text} #{Model.Id}")"
+	 data-title-label="@Localize("BacklogPage.Title").Text"
+	 data-owner="@Model.Owner"
+	 data-history-label="@Localize("BacklogPage.Button.History").Text"
+	 data-comments-label="@Localize("BacklogPage.Button.Comments").Text"
+	 data-back-label="@Localize("Button.Back").Text"></div>
 
 @if (!Model.CanEdit)
 {
 	<div class="alert alert-danger">You are not authorized to edit this task, please contact IT Support.</div>
 }
 
-@* task meta header: id, creator, age *@
-<div class="task-meta-header">
-	<div class="task-meta-id">#@Model.Id</div>
-	<div class="task-meta-info">
-		<img class="task-meta-avatar" src="@Url.Action("GetAvatar", "Profile", new { userId = Model.CreatedById })" alt="@Model.CreatedByName" />
-		<span class="task-meta-by">@Model.CreatedByName</span>
-		<span class="task-meta-sep">&middot;</span>
-		<span class="task-meta-age" data-time="@Model.CreatedOn.ToString("o")" title="@Model.CreatedOn.ToString("dd-MMM-yyyy HH:mm")"></span>
-	</div>
-	<button type="button" class="task-meta-copy" title="Copy link to this task" onclick="copyTaskLink()">
-		<i class="fas fa-link"></i>
-	</button>
-</div>
-
-@* status journey ribbon *@
-@if (Model.StatusJourney.Any())
+@if (Model.StatusLogs.Count > 0)
 {
-	<div class="status-journey">
-		@foreach (var leg in Model.StatusJourney)
+	double DurMinutes(StatusLogModel s) =>
+		(s.StartDate.HasValue && s.EndDate.HasValue)
+			? Math.Max(0, (s.EndDate.Value - s.StartDate.Value).TotalMinutes)
+			: 0;
+
+	var firstStart = Model.StatusLogs.First().StartDate;
+	var lastEnd = Model.StatusLogs.Last().EndDate;
+	var ageDays = (firstStart.HasValue && lastEnd.HasValue) ? (lastEnd.Value - firstStart.Value).Days : 0;
+	var transitions = Model.StatusLogs.Count - 1;
+
+	string DurText(StatusLogModel s)
+	{
+		var mins = DurMinutes(s);
+		if (mins >= 1440) return s.DaysHeld + "d";
+		if (mins >= 60) return Math.Round(mins / 60) + "h";
+		return Math.Max(0, (int)mins) + "m";
+	}
+
+	string RelStart(StatusLogModel s)
+	{
+		if (!s.StartDate.HasValue) return "";
+		var span = DateTime.Now - s.StartDate.Value;
+		if (span.TotalDays >= 1) { var d = (int)span.TotalDays; return $"{d} day{(d == 1 ? "" : "s")} ago"; }
+		if (span.TotalHours >= 1) { var h = (int)span.TotalHours; return $"{h} hour{(h == 1 ? "" : "s")} ago"; }
+		var m = Math.Max(1, (int)span.TotalMinutes); return $"{m} min ago";
+	}
+	<div class="status-strip">
+	<div class="status-track" role="list">
+		@for (var i = 0; i < Model.StatusLogs.Count; i++)
 		{
-			<div class="journey-leg @(leg.IsCurrent ? "journey-current" : "")">
-				<span class="journey-pill" style="color:@leg.TextColor;background:@leg.BackgroundColor;">
-					<i class="@leg.IconClass me-1"></i>@leg.StatusName
+			var item = Model.StatusLogs[i];
+			var isCurrent = i == Model.StatusLogs.Count - 1;
+			<div class="status-node @(isCurrent ? "is-current" : "")" role="listitem"
+				 data-bs-toggle="tooltip" data-bs-custom-class="status-card-tooltip" data-bs-html="true"
+				 data-bs-title="<div class='stc'>
+					<div class='stc__head' style='background:@item.Status.BackgroundColor;color:@item.Status.TextColor;'><i class='@item.Status.IconClass me-1'></i>Step @(i + 1) of @Model.StatusLogs.Count</div>
+					<div class='stc__body'>
+						<div class='stc__row'><span class='stc__lbl'>From</span><span class='stc__val'>@item.StartDate.ToDateString("dd-MMM-yyyy hh:mm tt")</span></div>
+						<div class='stc__row'><span class='stc__lbl'>To</span><span class='stc__val'>@(isCurrent ? "now" : item.EndDate.ToDateString("dd-MMM-yyyy hh:mm tt"))</span></div>
+						<div class='stc__dur'><i class='far fa-clock me-1'></i>@DurText(item) in status &bull; started @RelStart(item)</div>
+					</div>
+				</div>">
+				<span class="status-node__dot" style="background:@item.Status.BackgroundColor;color:@item.Status.TextColor;"><i class="@item.Status.IconClass"></i></span>
+				<span class="status-node__text">
+					<span class="status-node__name">@item.Status.Name</span>
+					<span class="status-node__dur">@DurText(item)</span>
 				</span>
-				<span class="journey-days">@(leg.Days == 0 ? "<1d" : $"{leg.Days}d")</span>
 			</div>
 		}
+		<span class="status-track__age" title="Total age &bull; @transitions transition@(transitions == 1 ? "" : "s")">
+			<i class="far fa-clock me-1"></i>@ageDays d
+		</span>
+	</div>
+	@if (Model.StageDurations.Count > 0)
+	{
+		<span class="stage-chips" role="list">
+			@foreach (var chip in Model.StageDurations)
+			{
+				<span class="stage-chip" role="listitem"
+					  title="@chip.FromStatus &rarr; @chip.ToStatus&#10;@chip.From.ToDateString("dd-MMM-yyyy hh:mm tt") &rarr; @chip.To.ToDateString("dd-MMM-yyyy hh:mm tt")">
+					<i class="fas fa-gauge-high stage-chip__icon"></i><span class="stage-chip__name">@chip.Name</span><span class="stage-chip__val">@chip.DurationText</span>
+				</span>
+			}
+		</span>
+	}
 	</div>
 }
-
-<form asp-action="Edit" enctype="multipart/form-data" id="EditForm">
-	@Html.AntiForgeryToken()
+<form asp-action="Edit" enctype="multipart/form-data" id="EditForm" class="no-auto-ladda">
 	<div class="row">
 		<div class="col-md-8">
 			<div class="card">
 				<div class="card-body p-3">
 					@await Html.PartialAsync("_Form", Model)
+				</div>
+			</div>
+			<div class="card mt-3 task-activity-card" id="taskActivityCard"
+				 data-comments-url="@Url.Action("Comments", new { Id = Model.Id })"
+				 data-history-url="@Url.Action("History", new { Id = Model.Id })">
+				<div class="card-header pb-0">
+					<ul class="nav nav-tabs card-header-tabs" role="tablist">
+						<li class="nav-item" role="presentation">
+							<button class="nav-link active" id="activity-comments-tab" data-bs-toggle="tab" data-bs-target="#activityComments" data-activity="comments" type="button" role="tab" aria-controls="activityComments" aria-selected="true">
+								<i class="fas fa-comments me-1"></i>@Localize("BacklogPage.Button.Comments")
+								<span class="badge rounded-pill activity-count d-none"></span>
+							</button>
+						</li>
+						<li class="nav-item" role="presentation">
+							<button class="nav-link" id="activity-history-tab" data-bs-toggle="tab" data-bs-target="#activityHistory" data-activity="history" type="button" role="tab" aria-controls="activityHistory" aria-selected="false">
+								<i class="fas fa-history me-1"></i>@Localize("BacklogPage.Button.History")
+							</button>
+						</li>
+					</ul>
+				</div>
+				<div class="tab-content">
+					<div class="tab-pane fade show active activity-pane" id="activityComments" role="tabpanel" aria-labelledby="activity-comments-tab">
+						<span class="text-muted small"><i class="fas fa-spinner fa-spin me-1"></i>@Localize("Backlog.Code.Loading")</span>
+					</div>
+					<div class="tab-pane fade activity-pane" id="activityHistory" role="tabpanel" aria-labelledby="activity-history-tab">
+						<span class="text-muted small"><i class="fas fa-spinner fa-spin me-1"></i>@Localize("Backlog.Code.Loading")</span>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -64,20 +155,77 @@
 					@await Html.PartialAsync("_FormStatus", Model)
 				</div>
 			</div>
+			<div class="card mt-3 task-code-card" id="taskCodeCard" data-url="@Url.Action("Code", new { id = Model.Id })"
+				 data-task-id="@Model.Id"
+				 data-edit-url="@Url.Action("Edit")"
+				 data-context-url="@Url.Action("BranchContext")"
+				 data-create-url="@Url.Action("CreateBranch")"
+				 data-link-url="@Url.Action("LinkBranch")"
+				 data-unlink-url="@Url.Action("UnlinkBranch")"
+				 data-mr-context-url="@Url.Action("MergeRequestContext")"
+				 data-mr-create-url="@Url.Action("CreateMergeRequest")"
+				 data-label-mr-title="@Localize("Backlog.Mr.Create").Text"
+				 data-label-mr-field-title="@Localize("Backlog.Mr.Title").Text"
+				 data-label-mr-from="@Localize("Backlog.Mr.From").Text"
+				 data-label-mr-into="@Localize("Backlog.Mr.Into").Text"
+				 data-label-mr-description="@Localize("Backlog.Mr.Description").Text"
+				 data-label-mr-reviewer="@Localize("Backlog.Mr.Reviewer").Text"
+				 data-label-mr-no-reviewer="@Localize("Backlog.Mr.NoReviewer").Text"
+				 data-label-mr-draft="@Localize("Backlog.Mr.Draft").Text"
+				 data-label-mr-remove="@Localize("Backlog.Mr.RemoveSource").Text"
+				 data-label-mr-moves="@Localize("Backlog.Mr.WillMove").Text"
+				 data-label-mr-existing="@Localize("Backlog.Mr.Existing").Text"
+				 data-label-mr-create="@Localize("Backlog.Mr.CreateButton").Text"
+				 data-label-mr-title-required="@Localize("Backlog.Mr.TitleRequired").Text"
+				 data-label-mr-status-moved="@Localize("Backlog.Mr.StatusMoved").Text"
+				 data-search-url="@Url.Action("SearchBranches")"
+				 data-label-create-title="@Localize("Backlog.Branch.CreateTitle").Text"
+				 data-label-create="@Localize("Backlog.Branch.Create").Text"
+				 data-label-name="@Localize("Backlog.Branch.Name").Text"
+				 data-label-base="@Localize("Backlog.Branch.Base").Text"
+				 data-label-link-info="@Localize("Backlog.Branch.LinkInfo").Text"
+				 data-label-name-required="@Localize("Backlog.Branch.NameRequired").Text"
+				 data-label-disabled="@Localize("Backlog.Branch.Disabled").Text"
+				 data-connect-url="@Url.Action("Index", "Profile", null, null, null, "git")"
+				 data-connect-label="@Localize("Backlog.Branch.ConnectButton").Text"
+				 data-label-connect-why="@Localize("Backlog.Branch.ConnectWhy").Text"
+				 data-label-existing-some="@Localize("Backlog.Branch.ExistingSome").Text"
+				 data-label-existing-all="@Localize("Backlog.Branch.ExistingAll").Text"
+				 data-label-include-existing="@Localize("Backlog.Branch.IncludeExisting").Text"
+				 data-label-link-title="@Localize("Backlog.Branch.LinkTitle").Text"
+				 data-label-search-placeholder="@Localize("Backlog.Branch.SearchPlaceholder").Text"
+				 data-label-no-results="@Localize("Backlog.Branch.NoResults").Text"
+				 data-label-unlink-confirm="@Localize("Backlog.Branch.UnlinkConfirm").Text">
+				<div class="card-header d-flex align-items-center py-2">
+					<span class="fw-semibold"><i class="fas fa-code-branch me-2"></i>@Localize("Backlog.Code.Title")</span>
+					<button type="button" class="btn btn-sm btn-link ms-auto p-0 task-code-refresh" title="@Localize("Backlog.Code.Refresh")"><i class="fas fa-rotate-right"></i></button>
+				</div>
+				<div class="card-body p-3 task-code-body">
+					<span class="text-muted small"><i class="fas fa-spinner fa-spin me-1"></i>@Localize("Backlog.Code.Loading")</span>
+				</div>
+			</div>
+			<div class="card mt-3 task-issue-card" id="taskIssueCard" data-url="@Url.Action("Issue", new { id = Model.Id })"
+				 data-publish-url="@Url.Action("PublishIssue")" data-sync-url="@Url.Action("SyncIssue")" data-unlink-url="@Url.Action("UnlinkIssue")"
+				 data-task-id="@Model.Id" data-label-publish-confirm="@Localize("Backlog.Issue.PublishConfirm").Text" data-label-public-warning="@Localize("Backlog.Issue.PublicWarning").Text"
+				 data-label-unlink-confirm="@Localize("Backlog.Issue.UnlinkConfirm").Text">
+				<div class="card-header d-flex align-items-center py-2">
+					<span class="fw-semibold"><i class="fas fa-circle-dot me-2"></i>@Localize("Backlog.Issue.Title")</span>
+				</div>
+				<div class="card-body p-3 task-issue-body">
+					<span class="text-muted small"><i class="fas fa-spinner fa-spin me-1"></i>@Localize("Backlog.Code.Loading")</span>
+				</div>
+			</div>
 		</div>
 	</div>
-
-	@* floating action pill (bottom-right) *@
+	<div class="backlog-fab-spacer" aria-hidden="true"></div>
 	<div class="backlog-fab">
-		@if (Model.CanEdit)
-		{
-			<button type="submit" class="btn btn-sm btn-primary" id="btnSaveBacklog">
-				<i class="fas fa-save me-1"></i>@Localize("Button.Save")
-			</button>
-		}
+		<span class="backlog-fab-hint" title="@(Localize("Button.Save").Text) (Ctrl+S)"><kbd>Ctrl</kbd>+<kbd>S</kbd></span>
+		<button type="button" id="btnSaveBacklog" class="btn btn-sm btn-primary" disabled title="@(Localize("Button.Save").Text) (Ctrl+S)">
+			<i class="fas fa-save me-1"></i>@Localize("Button.Save")
+		</button>
 		@if (Model.CanDelete)
 		{
-			<button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(@Model.Id)">
+			<button type="button" id="btnDeleteBacklog" class="btn btn-sm btn-outline-danger">
 				<i class="fas fa-trash me-1"></i>@Localize("Button.Delete")
 			</button>
 		}
@@ -86,17 +234,3 @@
 		</a>
 	</div>
 </form>
-
-@* server values for backlog-edit.js *@
-<div id="backlog-edit-config" class="d-none"
-	 data-backlog-id="@Model.Id"
-	 data-index-url="@Url.Action("Index")"
-	 data-delete-url="@Url.Action("DeleteBacklog", "Backlog")"
-	 data-history-url="@Url.Action("History", new { Id = Model.Id })"
-	 data-comments-url="@Url.Action("Comments", new { Id = Model.Id })"
-	 data-labels='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(new {
-		pageTitle = Localize("BacklogPage.Title").Text,
-		back = Localize("Button.Back").Text,
-		historyLabel = Localize("BacklogPage.Button.History").Text,
-		commentsLabel = Localize("BacklogPage.Button.Comments").Text
-	}))'></div>

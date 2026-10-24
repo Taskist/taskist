@@ -1,4 +1,5 @@
-﻿using LinqToDB;
+using LinqToDB;
+using LinqToDB.Async;
 using Taskist.Core.Common;
 
 namespace Taskist.Data.Extensions;
@@ -17,12 +18,12 @@ public static class AsyncIQueryableExtensions
 
         pageSize = Math.Max(pageSize, 1);
 
-        var count = await AsyncExtensions.CountAsync(source);
+        var count = await source.CountAsync();
 
         var data = new List<T>();
 
         if (!getOnlyTotalCount)
-            data.AddRange(await AsyncExtensions.ToListAsync(source.Skip(pageIndex).Take(pageSize)));
+            data.AddRange(await source.Skip(pageIndex).Take(pageSize).ToListAsync());
 
         return new PagedList<T>(data, pageIndex, pageSize, count);
     }

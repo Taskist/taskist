@@ -1,80 +1,175 @@
-﻿@model BacklogModel
+@model BacklogModel
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="CreatedById" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="CreatedById" asp-items="Model.AvailableAssignees" multiple="multiple"></select>
-            <span asp-validation-for="CreatedById" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="ModuleId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="ModuleId" asp-items="Model.AvailableModules" multiple="multiple"></select>
-            <span asp-validation-for="ModuleId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="SubModuleId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="SubModuleId" asp-items="Model.AvailableSubModules" multiple="multiple"></select>
-            <span asp-validation-for="SubModuleId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="TaskTypeId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="TaskTypeId" asp-items="Model.AvailableTaskTypes" multiple="multiple"></select>
-            <span asp-validation-for="TaskTypeId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="SeverityId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="SeverityId" asp-items="Model.AvailableSeverities" multiple="multiple"></select>
-            <span asp-validation-for="SeverityId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="ReporterId" />
-            <select class="form-control kendo-select" asp-for="ReporterId" asp-items="Model.AvailableReporters" multiple="multiple"></select>
-            <span asp-validation-for="ReporterId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="AssigneeId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="AssigneeId" asp-items="Model.AvailableAssignees" multiple="multiple"></select>
-            <span asp-validation-for="AssigneeId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="StatusId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="StatusId" asp-items="Model.AvailableStatus" multiple="multiple"></select>
-            <span asp-validation-for="StatusId" class="text-danger"></span>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="mb-3">
-            <wc-label asp-for="SprintId" />
-            <select class="form-control kendo-select kendo-select-filter" asp-for="SprintId" asp-items="Model.AvailableSprints" multiple="multiple"></select>
-            <span asp-validation-for="SprintId" class="text-danger"></span>
-        </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-md-12">
-        <div class="text-end">
-            <button type="button" class="btn btn-primary" id="btnSearch">@Localize("Button.Search")</button>
-            <button type="button" class="btn btn-secondary" id="btnReset">@Localize("Button.Reset")</button>
-        </div>
-    </div>
+<div class="filter-scroll backlog-filter-root" data-presets-url="@Url.Action("GetFilterPresets")" data-save-presets-url="@Url.Action("SaveFilterPresets")"
+     data-any-text="@Localize("BacklogFilter.Any").Text">
+<div class="filter-presets">
+	<div class="filter-presets-row">
+		<i class="fas fa-bookmark filter-presets-icon" title="Saved Filters"></i>
+		<select id="filterPreset" class="form-select form-select-sm"><option value="">— Select a saved filter —</option></select>
+		<button type="button" class="btn btn-sm btn-outline-danger" id="btnDeletePreset" title="Delete selected"><i class="fas fa-trash"></i></button>
+		<button type="button" class="btn btn-sm btn-outline-primary" id="btnTogglePresetSave" title="Save current filter"><i class="fas fa-floppy-disk me-1"></i>@Localize("BacklogFilter.SaveAs")</button>
+	</div>
+	<div class="filter-presets-save d-none">
+		<div class="input-group input-group-sm">
+			<input type="text" id="presetName" class="form-control" placeholder="Preset name" autocomplete="off" />
+			<button type="button" class="btn btn-primary" id="btnSavePreset">Save</button>
+		</div>
+	</div>
 </div>
 
-@* AJAX-injected partial: init call into the globally-loaded module *@
-<script>
-    if (window.BacklogFilter) BacklogFilter.init();
-</script>
+<div class="filter-sections-toolbar">
+	<a href="#" class="filter-sections-toggle-all" data-expand-text="@Localize("BacklogFilter.ExpandAll").Text" data-collapse-text="@Localize("BacklogFilter.CollapseAll").Text">@Localize("BacklogFilter.ExpandAll")</a>
+</div>
+
+<div class="filter-section filter-section--main" data-section="main">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="mb-2">
+				<wc-label asp-for="ProjectId" />
+				<select class="form-control backlog-filter-select" asp-for="ProjectId" asp-items="Model.AvailableProjects" multiple="multiple"></select>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="mb-2">
+				<wc-label asp-for="StatusId" />
+				<select class="form-control backlog-filter-select" asp-for="StatusId" asp-items="Model.AvailableStatus" multiple="multiple"></select>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="mb-2">
+				<wc-label asp-for="StatusGroupId" />
+				<select class="form-control backlog-filter-select" asp-for="StatusGroupId" asp-items="Model.AvailableStatusGroup" multiple="multiple"></select>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="mb-2">
+				<wc-label asp-for="TaskTypeId" />
+				<select class="form-control backlog-filter-select" asp-for="TaskTypeId" asp-items="Model.AvailableTaskTypes" multiple="multiple"></select>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="mb-2">
+				<wc-label asp-for="SeverityId" />
+				<select class="form-control backlog-filter-select" asp-for="SeverityId" asp-items="Model.AvailableSeverities" multiple="multiple"></select>
+			</div>
+		</div>
+		<div class="col-md-6">
+			<div class="mb-2">
+				<wc-label asp-for="ReleaseId" />
+				<select class="form-control backlog-filter-select" asp-for="ReleaseId" asp-items="Model.AvailableReleases" multiple="multiple"></select>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="filter-section" data-section="people">
+	<button type="button" class="filter-section-head" aria-expanded="false">
+		<span class="filter-section-title"><i class="fas fa-users me-2"></i>@Localize("BacklogFilter.Section.People")</span>
+		<span class="filter-section-count"></span>
+		<i class="fas fa-chevron-down filter-section-chevron"></i>
+	</button>
+	<div class="filter-section-body">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="mb-2">
+					<div class="d-flex justify-content-between align-items-baseline">
+						<wc-label asp-for="AssigneeId" />
+						<a href="#" id="lnkShowInactive" class="small" data-url="@Url.Action("GetInactiveFilterUsers")"
+						   data-show-text="@Localize("BacklogFilter.ShowInactive").Text" data-hide-text="@Localize("BacklogFilter.HideInactive").Text"><i class="fas fa-user-clock me-1"></i><span class="inactive-label">@Localize("BacklogFilter.ShowInactive")</span></a>
+					</div>
+					<select class="form-control backlog-filter-select" asp-for="AssigneeId" asp-items="Model.AvailableAssignees" multiple="multiple"></select>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="mb-2">
+					<wc-label asp-for="TesterId" />
+					<select class="form-control backlog-filter-select" asp-for="TesterId" asp-items="Model.AvailableTesters" multiple="multiple"></select>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="mb-2">
+					<wc-label asp-for="CreatedById" />
+					<select class="form-control backlog-filter-select" asp-for="CreatedById" asp-items="Model.AvailableCreators" multiple="multiple"></select>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="mb-2">
+					<wc-label asp-for="ReporterId" />
+					<select class="form-control backlog-filter-select" asp-for="ReporterId" asp-items="Model.AvailableReporters" multiple="multiple"></select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="filter-section" data-section="module">
+	<button type="button" class="filter-section-head" aria-expanded="false">
+		<span class="filter-section-title"><i class="fas fa-cubes me-2"></i>@Localize("BacklogFilter.Section.Module")</span>
+		<span class="filter-section-count"></span>
+		<i class="fas fa-chevron-down filter-section-chevron"></i>
+	</button>
+	<div class="filter-section-body">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="mb-2">
+					<wc-label asp-for="ModuleId" />
+					<select class="form-control backlog-filter-select" asp-for="ModuleId" asp-items="Model.AvailableModules" multiple="multiple"></select>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="mb-2">
+					<wc-label asp-for="SubModuleId" />
+					<select class="form-control backlog-filter-select" asp-for="SubModuleId" asp-items="Model.AvailableSubModules" multiple="multiple"></select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="filter-section" data-section="dates">
+	<button type="button" class="filter-section-head" aria-expanded="false">
+		<span class="filter-section-title"><i class="far fa-calendar me-2"></i>@Localize("BacklogFilter.Section.Dates")</span>
+		<span class="filter-section-count"></span>
+		<i class="fas fa-chevron-down filter-section-chevron"></i>
+	</button>
+	<div class="filter-section-body">
+		<div class="row">
+			<div class="col-md-6">
+				<div class="mb-2">
+					<wc-label asp-for="DueDate" />
+					<div class="input-group">
+						<select class="form-select due-date-type" id="DueDateType">
+							<option value="1">Due Until</option>
+							<option value="2">Due On</option>
+							<option value="3">Due After</option>
+						</select>
+						<input asp-for="DueDate" class="form-control datepicker datepicker-z" type="text" />
+					</div>
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="mb-2">
+					<label class="form-label" for="StatusDaysMin">@Localize("BacklogFilter.StatusDaysMin")</label>
+					<input type="number" id="StatusDaysMin" class="form-control age-filter" min="1" step="1" placeholder="e.g. 7" />
+				</div>
+			</div>
+			<div class="col-md-6">
+				<div class="mb-2">
+					<label class="form-label" for="OpenDaysMin">@Localize("BacklogFilter.OpenDaysMin")</label>
+					<input type="number" id="OpenDaysMin" class="form-control age-filter" min="1" step="1" placeholder="e.g. 30" />
+				</div>
+			</div>
+			<div class="col-md-6 d-flex align-items-end">
+				<div class="mb-2">
+					<button type="button" class="btn btn-sm btn-outline-warning" id="btnStale"><i class="fas fa-hourglass-half me-1"></i>@Localize("BacklogFilter.Stale")</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+<div class="filter-actions">
+	<button type="button" class="btn btn-light btn-sm" data-bs-dismiss="offcanvas">Close</button>
+	<button type="button" class="btn btn-secondary btn-sm" id="btnReset">@Localize("Button.Reset")</button>
+	<button type="button" class="btn btn-primary btn-sm" id="btnSearch">@Localize("Button.Search")</button>
+</div>

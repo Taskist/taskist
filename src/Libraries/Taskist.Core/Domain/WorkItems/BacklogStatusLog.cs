@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.Users;
 

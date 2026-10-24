@@ -1,54 +1,55 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using MapsterMapper;
+using System.Text.RegularExpressions;
 using Taskist.Core.Common;
-using Taskist.Core.Domain.Masters;
-using Taskist.Service.Security;
-using Taskist.Service.Masters;
+using Taskist.Core.Domain.Settings;
+using Taskist.Core.Enums;
+using Taskist.Core.Extensions;
 using Taskist.Service.Localization;
-using Taskist.Service.Logging;
+using Taskist.Service.Masters;
+using Taskist.Service.Messages;
+using Taskist.Service.Security;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Masters;
 
 namespace Taskist.Web.Controllers.Masters;
 
+[CheckPermission(nameof(PermissionProvider.ManageEmailTemplate))]
 public class EmailTemplateController : BaseController
 {
     #region Fields
 
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly IEmailAccountService _emailAccountService;
-    private readonly IPermissionService _permissionService;
     protected readonly ILocalizationService _localizationService;
-    private readonly IUserActivityService _userActivityService;
     private readonly IWebHostEnvironment _webHostEnvironment;
-    protected readonly IWorkContext _workContext;
-    private readonly IMapper _mapper;
+    private readonly IAppLinkBuilder _linkBuilder;
+    private readonly GeneralSettings _generalSettings;
+    private readonly MastersMapper _mapper;
 
     #endregion
 
     #region Ctor
 
     public EmailTemplateController(IEmailTemplateService emailTemplateService,
-        IEmailAccountService emailAccountService,
-        IPermissionService permissionService,
-        ILocalizationService localizationService,
-        IUserActivityService userActivityService,
-        IWebHostEnvironment webHostEnvironment,
-        IWorkContext workContext,
-        IMapper mapper)
+            IEmailAccountService emailAccountService,
+            ILocalizationService localizationService,
+            IWebHostEnvironment webHostEnvironment,
+            IAppLinkBuilder linkBuilder,
+            GeneralSettings generalSettings,
+            MastersMapper mapper)
     {
         _emailTemplateService = emailTemplateService;
         _emailAccountService = emailAccountService;
-        _permissionService = permissionService;
         _localizationService = localizationService;
-        _userActivityService = userActivityService;
         _webHostEnvironment = webHostEnvironment;
-        _workContext = workContext;
+        _linkBuilder = linkBuilder;
+        _generalSettings = generalSettings;
         _mapper = mapper;
     }
 
@@ -56,57 +57,108 @@ public class EmailTemplateController : BaseController
 
     #region Action
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Index()
     {
         return View();
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _emailTemplateService.GetByIdAsync(id);
         if (entity == null)
             return RedirectToAction("Index");
 
-        var model = _mapper.Map<EmailTemplateModel>(entity);
+        var model = _mapper.ToModel(entity);
         await InitModel(model);
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
+    public IActionResult Preview(string name, string emailBody)
+    {
+        return RenderPreview(name, emailBody ?? string.Empty);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Preview(int id)
+    {
+        var entity = await _emailTemplateService.GetByIdAsync(id);
+        if (entity == null)
+            return Content(string.Empty, "text/html");
+
+        return RenderPreview(entity.Name, entity.EmailBody ?? string.Empty);
+    }
+
+    private IActionResult RenderPreview(string name, string emailBody)
+    {
+        var sampleBody = ApplySampleTokens(name, emailBody);
+        var html = EmailLayoutBuilder.Wrap(sampleBody, _linkBuilder.Build("images/brand/logo.png"), _generalSettings.CompanyName);
+
+        return Content(html, "text/html");
+    }
+
+    private string ApplySampleTokens(string name, string body)
+    {
+        var appUrl = _linkBuilder.Build(string.Empty);
+
+        body = body
+            .Replace("%displayname%", "Alex Morgan")
+            .Replace("%display_name%", "Alex Morgan")
+            .Replace("%url%", _linkBuilder.Build("setpassword"))
+            .Replace("%button%", appUrl)
+            .Replace("%body%", "<p>This is a sample notification message.</p><p><a href=\"" + appUrl + "\">Open in Taskist</a></p>")
+            .Replace("%year%", DateTime.Today.Year.ToString())
+            .Replace("%company%", _generalSettings.CompanyNameOrDefault());
+
+        var tokens = new Dictionary<string, string>
+        {
+            { "url", _linkBuilder.Build("backlog/edit/1024") },
+            { "task_id", "1024" },
+            { "display_name", "Alex Morgan" },
+            { "task_type", "Bug" },
+            { "title", "Login page returns 500 on submit" },
+            { "project_name", "Acme Portal" },
+            { "module_name", "Accounts" },
+            { "sub_module_name", "Login" },
+            { "created_by", "Priya Nair" },
+            { "updated_by", "Priya Nair" },
+            { "severity_name", "High" },
+            { "new_status", "In-Progress" },
+            { "due_date", DateTime.Today.AddDays(5).ToString("dd-MMM-yyyy") }
+        };
+
+        return Regex.Replace(body, @"\{(\w+)\}", m => tokens.TryGetValue(m.Groups[1].Value, out var v) ? v : m.Value);
+    }
+
+    [HttpPost]
     public async Task<IActionResult> Edit(EmailTemplateModel model)
     {
         if (ModelState.IsValid)
         {
             var entity = await _emailTemplateService.GetByIdAsync(model.Id);
-            entity = _mapper.Map(model, entity);
+            _mapper.Update(model, entity);
 
             await _emailTemplateService.UpdateAsync(entity);
 
-            await _userActivityService.InsertAsync("EmailTemplate", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Name), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Reset()
     {
-        var model = new EmailTemplateResetModel
+        var model = new PageModel
         {
             Valid = true
         };
@@ -123,7 +175,6 @@ public class EmailTemplateController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> Reset(IFormCollection formCollection)
     {
         var defaultEmailAccount = await _emailAccountService.GetFirstActiveAsync();
@@ -131,11 +182,11 @@ public class EmailTemplateController : BaseController
         if (defaultEmailAccount == null)
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.ValidationError,
+                Status = HttpStatusCode.ValidationError,
                 Message = await _localizationService.GetResourceAsync("EmailTemplateModel.DefaultAccount.NotExistMsg")
             });
 
-        foreach (var val in Enum.GetValues(typeof(EmailTemplateTypeEnum)))
+        foreach (var val in Enum.GetValues(typeof(EmailTemplateType)))
         {
             if (!formCollection.Keys.Any(x => x == val.ToString()))
                 continue;
@@ -151,7 +202,6 @@ public class EmailTemplateController : BaseController
                 template = sr.ReadToEnd();
             }
 
-            //Continue if template is empty
             if (string.IsNullOrEmpty(template))
                 continue;
 
@@ -161,7 +211,6 @@ public class EmailTemplateController : BaseController
                 entity.EmailBody = template;
                 await _emailTemplateService.UpdateAsync(entity);
 
-                await _userActivityService.InsertAsync("EmailTemplate", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.Name), entity);
             }
             else
             {
@@ -174,17 +223,16 @@ public class EmailTemplateController : BaseController
                     EmailAccountId = defaultEmailAccount.Id
                 };
 
-                var newEntity = _mapper.Map<EmailTemplate>(templateModel);
+                var newEntity = _mapper.ToEntity(templateModel);
 
                 await _emailTemplateService.InsertAsync(newEntity);
 
-                await _userActivityService.InsertAsync("EmailTemplate", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), newEntity.Name), newEntity);
             }
         }
 
         return Json(new JsonResponseModel
         {
-            Status = HttpStatusCodeEnum.Success,
+            Status = HttpStatusCode.Success,
             Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
         });
     }
@@ -194,7 +242,6 @@ public class EmailTemplateController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_EMAIL_TEMPLATE)]
     public async Task<IActionResult> DataRead(DataTableRequest request)
     {
         var data = await _emailTemplateService.GetPagedListAsync(request.SearchValue, request.Start,

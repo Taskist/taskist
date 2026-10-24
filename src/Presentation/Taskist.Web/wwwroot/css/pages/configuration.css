@@ -1,0 +1,28 @@
+/* ===== Configuration tabs as pills ===== */
+.config-tabs { gap: .4rem; row-gap: .4rem; }
+.config-tabs .nav-link {
+    color: #4b5b73;
+    background: #f2f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: .35rem .9rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.config-tabs .nav-link:hover { background: #e7edf5; color: #2a3b52; }
+.config-tabs .nav-link.active {
+    color: #fff;
+    background: #1cc7c9;
+    border-color: #1cc7c9;
+}
+
+/* Mobile: too many tabs to stack — keep one row and scroll sideways. */
+@media (max-width: 767.98px) {
+    .config-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: .25rem;
+    }
+    .config-tabs .nav-item { flex: 0 0 auto; }
+}

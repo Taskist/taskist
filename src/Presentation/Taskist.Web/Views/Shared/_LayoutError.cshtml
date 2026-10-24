@@ -1,6 +1,11 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@inject Taskist.Web.Helpers.Appearance.IAppearanceService appearanceService
+@{
+    var appearance = await appearanceService.ResolveAsync();
+}
+<!DOCTYPE html>
+<html lang="en" data-coreui-theme="@appearance.RenderedTheme" data-app-theme-mode="@appearance.Mode" data-app-accent="@appearance.Accent">
 <head>
+    <script src="~/js/appearance-boot.js" asp-append-version="true"></script>
     <meta charset="utf-8" />
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
@@ -15,6 +20,7 @@
     </div>
     <!-- Core JS -->
     <script src="~/js/theme/tabler.min.js"></script>
+    <script src="~/js/empty-state.js" asp-append-version="true"></script>
 </body>
 
 </html>

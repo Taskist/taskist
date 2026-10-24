@@ -1,40 +1,42 @@
 using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
-using Taskist.Service.Security;
+using Taskist.Core.Domain.Masters;
+using Taskist.Service.Localization;
 using Taskist.Service.Masters;
+using Taskist.Service.Security;
+using Taskist.Service.Users;
 using Taskist.Service.WorkItems;
-using Taskist.Web.Helpers.Attributes;
 
 namespace Taskist.Web.Controllers.Common;
 
-/// <summary>
-/// Backs the top-bar global search. Returns a flat list of results grouped
-/// client-side by the "group" field: matching tasks + navigable menu pages.
-/// </summary>
 public class SearchController : BaseController
 {
     #region Fields
 
-    private const int GroupLimit = 6;
-
-    private readonly IWorkContext _workContext;
-    private readonly IMenuService _menuService;
-    private readonly IBacklogItemService _backlogService;
-    private readonly IPermissionService _permissionService;
+    protected readonly IBacklogService _backlogService;
+    protected readonly IUserService _userService;
+    protected readonly IPermissionService _permissionService;
+    protected readonly IMenuService _menuService;
+    protected readonly ILocalizationService _localizationService;
+    protected readonly IWorkContext _workContext;
 
     #endregion
 
     #region Ctor
 
-    public SearchController(IWorkContext workContext,
+    public SearchController(IBacklogService backlogService,
+        IUserService userService,
+        IPermissionService permissionService,
         IMenuService menuService,
-        IBacklogItemService backlogService,
-        IPermissionService permissionService)
+        ILocalizationService localizationService,
+        IWorkContext workContext)
     {
-        _workContext = workContext;
-        _menuService = menuService;
         _backlogService = backlogService;
+        _userService = userService;
         _permissionService = permissionService;
+        _menuService = menuService;
+        _localizationService = localizationService;
+        _workContext = workContext;
     }
 
     #endregion
@@ -42,63 +44,81 @@ public class SearchController : BaseController
     #region Actions
 
     [HttpGet]
-    [CheckPermission(PermissionProvider.General.MANAGE_DASHBOARD)]
     public async Task<IActionResult> Query(string q)
     {
         var results = new List<object>();
 
-        q = q?.Trim();
-        if (string.IsNullOrWhiteSpace(q) || q.Length < 2)
+        if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
             return Json(results);
 
+        q = q.Trim();
+
         var user = await _workContext.GetCurrentUserAsync();
-
-        // ---- Navigate: match accessible leaf menus by localized name ----
-        var menus = await _menuService.GetAllAsync(user);
-        var pages = menus
-            .Where(m => !string.IsNullOrEmpty(m.ControllerName)
-                        && !string.IsNullOrEmpty(m.ActionName)
-                        && !string.IsNullOrEmpty(m.Name)
-                        && m.Name.Contains(q, StringComparison.OrdinalIgnoreCase))
-            .OrderBy(m => m.Name)
-            .Take(GroupLimit);
-
-        foreach (var m in pages)
+        if (user != null)
         {
-            results.Add(new
+            var menus = await _menuService.GetAllAsync(user);
+
+            var resources = await _localizationService.GetAllMenuResourceAsync(user.LanguageId);
+            var labelByKey = new Dictionary<string, string>();
+            foreach (var r in resources)
+                labelByKey[r.ResourceKey.ToLowerInvariant()] = r.ResourceValue;
+
+            string Localized(Menu m)
             {
-                group = "Navigate",
-                label = m.Name,
-                sublabel = (string)null,
-                url = Url.Action(m.ActionName, m.ControllerName),
-                icon = string.IsNullOrEmpty(m.Icon) ? "fas fa-diamond-turn-right" : m.Icon
-            });
+                var key = $"{m.SystemName}.menu".ToLowerInvariant();
+                return labelByKey.TryGetValue(key, out var v) && !string.IsNullOrWhiteSpace(v) ? v : m.Name;
+            }
+
+            var localizedByCode = menus.ToDictionary(m => m.Code, Localized);
+
+            var pages = menus
+                .Where(m => !string.IsNullOrEmpty(m.ControllerName) && !string.IsNullOrEmpty(m.ActionName))
+                .Where(m => (m.Name ?? string.Empty).Contains(q, StringComparison.OrdinalIgnoreCase)
+                    || Localized(m).Contains(q, StringComparison.OrdinalIgnoreCase))
+                .Take(6);
+
+            foreach (var m in pages)
+                results.Add(new
+                {
+                    group = "Navigate",
+                    label = Localized(m),
+                    sublabel = m.ParentCode.HasValue && localizedByCode.TryGetValue(m.ParentCode.Value, out var parent) ? parent : string.Empty,
+                    url = Url.Action(m.ActionName, m.ControllerName),
+                    icon = string.IsNullOrEmpty(m.Icon) ? "fas fa-diamond-turn-right" : m.Icon
+                });
         }
 
-        // ---- Tasks: match accessible backlog items by #id or title ----
-        if (await _permissionService.AuthorizeAsync(PermissionProvider.WorkItem.MANAGE_BACKLOGLOG, user))
+        if (await _permissionService.AuthorizeAsync(PermissionProvider.ManageBacklog))
         {
-            var tasks = await _backlogService.GetAccessibleTasksAsync(user.Id);
-            var idMatch = int.TryParse(q.TrimStart('#'), out var wantedId);
+            var accessibleIds = (await _userService.GetAllAccessibleProjects(UserId)).Select(p => p.Id).ToHashSet();
+            var tasks = (await _backlogService.SearchByTitleAsync(q))
+                .Where(t => accessibleIds.Contains(t.ProjectId))
+                .Take(6);
 
-            var matched = tasks
-                .Where(t => (idMatch && t.Id == wantedId)
-                            || (!string.IsNullOrEmpty(t.Title) && t.Title.Contains(q, StringComparison.OrdinalIgnoreCase)))
-                .OrderByDescending(t => idMatch && t.Id == wantedId) // exact id first
-                .ThenByDescending(t => t.Id)
-                .Take(GroupLimit);
-
-            foreach (var t in matched)
-            {
+            foreach (var t in tasks)
                 results.Add(new
                 {
                     group = "Tasks",
                     label = $"#{t.Id} {t.Title}",
-                    sublabel = t.Project?.Name,
-                    url = $"{Url.Action("Edit", "Backlog")}/{t.Id}",
+                    sublabel = t.Project?.Name ?? string.Empty,
+                    url = Url.Action("Edit", "Backlog", new { id = t.Id }),
                     icon = "fas fa-list-check"
                 });
-            }
+        }
+
+        if (await _permissionService.AuthorizeAsync(PermissionProvider.ManageUser))
+        {
+            var people = await _userService.GetPagedListAsync(q, 0, 6);
+
+            foreach (var e in people)
+                results.Add(new
+                {
+                    group = "People",
+                    label = e.Name,
+                    sublabel = e.Email ?? string.Empty,
+                    url = Url.Action("Edit", "User", new { id = e.Id }),
+                    icon = "fas fa-user"
+                });
         }
 
         return Json(results);

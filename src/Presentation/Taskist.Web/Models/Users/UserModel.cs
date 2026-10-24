@@ -1,18 +1,21 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Taskist.Core.Common;
+using System.ComponentModel.DataAnnotations;
+using Taskist.Core.Enums;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Users;
 
-public class UserModel : BasePageModel
+public class UserModel : BaseModel
 {
     public UserModel()
     {
         SelectedRoleIds = [];
-        Status = (int)UserStatusEnum.Active;
+        Status = (int)UserStatus.Active;
         EmailWelcomeKit = true;
     }
+
+    [LocalizedDisplayName("UserModel.UserNumber")]
+    public string UserNumber { get; set; }
 
     [LocalizedDisplayName("UserModel.FirstName")]
     public string FirstName { get; set; }
@@ -20,15 +23,39 @@ public class UserModel : BasePageModel
     [LocalizedDisplayName("UserModel.LastName")]
     public string LastName { get; set; }
 
+    [LocalizedDisplayName("UserModel.FriendlyName")]
+    public string? FriendlyName { get; set; }
+
+    [LocalizedDisplayName("UserModel.MobileNumber")]
+    public string MobileNumber { get; set; }
+
     [LocalizedDisplayName("UserModel.Email")]
-    [DataType(DataType.EmailAddress)]
+    [DataType(System.ComponentModel.DataAnnotations.DataType.EmailAddress)]
     public string Email { get; set; }
+
+    public bool Locked { get; set; }
 
     [LocalizedDisplayName("UserModel.Gender")]
     public int GenderId { get; set; }
 
+    [LocalizedDisplayName("UserModel.MaritalStatus")]
+    public MaritalStatus MaritalStatus { get; set; }
+
+    [LocalizedDisplayName("UserModel.DateOfBirth")]
+    [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd-MMM-yyyy}")]
+    public DateOnly? DateOfBirth { get; set; }
+
+    [LocalizedDisplayName("UserModel.DateOfJoin")]
+    [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd-MMM-yyyy}")]
+    public DateOnly? DateOfJoin { get; set; }
+
     [LocalizedDisplayName("UserModel.Language")]
     public int LanguageId { get; set; }
+
+    [LocalizedDisplayName("UserModel.GitUserName")]
+    public string? GitUserName { get; set; }
+
+    public bool GitLabConfigured { get; set; }
 
     [LocalizedDisplayName("UserModel.Role")]
     public List<int> SelectedRoleIds { get; set; }
@@ -39,5 +66,5 @@ public class UserModel : BasePageModel
     public string Name { get; set; }
 
     [LocalizedDisplayName("UserModel.EmailWelcomeKit")]
-    public bool EmailWelcomeKit { get; set; } = true;
+    public bool EmailWelcomeKit { get; set; }
 }

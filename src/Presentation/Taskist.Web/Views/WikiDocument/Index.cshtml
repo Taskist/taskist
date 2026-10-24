@@ -1,0 +1,108 @@
+@model WikiDocumentModel
+@{
+    ViewData["Title"] = Localize("WikiPage.Title");
+}
+
+@section PageStyles {
+    <link href="~/lib/jstree/themes/default/style.min.css" rel="stylesheet" />
+    <link href="~/css/pages/wiki.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div id="wiki-config" class="d-none"
+     data-project-id="@Model.SelectedProjectId"
+     data-can-add="@Model.CanAddWiki.ToString().ToLower()"
+     data-has-project="@Model.HasProject.ToString().ToLower()"
+     data-get-parent="@Url.Action("GetParent", "WikiCategory")"
+     data-get-children="@Url.Action("GetChildren", "WikiCategory")"
+     data-add-category="@Url.Action("AddCategory", "WikiCategory")"
+     data-rename-category="@Url.Action("RenameCategory", "WikiCategory")"
+     data-move-category="@Url.Action("MoveCategory", "WikiCategory")"
+     data-delete-category="@Url.Action("DeleteCategory", "WikiCategory")"
+     data-add-wiki="@Url.Action("AddWiki", "WikiDocument")"
+     data-rename-wiki="@Url.Action("RenameWiki", "WikiDocument")"
+     data-move-wiki="@Url.Action("MoveWiki", "WikiDocument")"
+     data-delete-wiki="@Url.Action("DeleteWiki", "WikiDocument")"
+     data-get-content="@Url.Action("GetContent", "WikiDocument")"
+     data-save-wiki="@Url.Action("SaveWiki", "WikiDocument")"
+     data-get-tags="@Url.Action("GetTags", "WikiDocument")"
+     data-save-tags="@Url.Action("SaveTags", "WikiDocument")"
+     data-get-modules="@Url.Action("GetModules", "WikiDocument")"
+     data-get-submodules="@Url.Action("GetSubModules", "SubModule")"
+     data-upload-image="@Url.Action("UploadImage", "WikiDocument")"
+     data-get-versions="@Url.Action("GetVersions", "WikiDocument")"
+     data-restore-version="@Url.Action("RestoreVersion", "WikiDocument")"
+     data-export-word="@Url.Action("ExportWord", "WikiDocument")"
+     data-get-linked-tasks="@Url.Action("GetLinkedTasks", "WikiDocument")"
+     data-create-from-wiki="@Url.Action("CreateFromWiki", "Backlog")"
+     data-project-context="@Url.Action("GetProjectContext", "WikiDocument")"
+     data-index-url="@Url.Action("Index", "WikiDocument")"></div>
+@Html.AntiForgeryToken()
+
+<div class="container-fluid mt-3">
+    <div class="card">
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-3 col-12 mb-2 mb-md-0">
+                    <select id="wikiProject" class="form-control select2">
+                        <option value="0">All Projects</option>
+                        @foreach (var p in Model.AvailableProjects)
+                        {
+                            <option value="@p.Value" selected="@p.Selected">@p.Text</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-9 col-12 d-flex align-items-center gap-2">
+                    <button class="btn btn-primary btn-sm d-md-none" type="button" data-coreui-toggle="collapse" data-coreui-target="#wikiTreeCollapse">
+                        <i class="fas fa-sitemap me-1"></i>Pages
+                    </button>
+                    <div class="flex-grow-1"></div>
+                    <div class="input-group" style="max-width:300px;">
+                        <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        <input type="text" id="wikiSearch" class="form-control" placeholder="Search pages..." autocomplete="off" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3 col-12 mb-3 mb-md-0 wiki-tree-pane">
+                    <div class="collapse d-md-block" id="wikiTreeCollapse">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold small text-uppercase text-muted">Pages</span>
+                            <span class="wiki-tree-actions">
+                                <a href="javascript:void(0)" id="btnNewFolder" title="New top-level folder" class="text-decoration-none me-2"><i class="fas fa-folder-plus text-primary"></i></a>
+                                <a href="javascript:void(0)" id="btnExpandToggle" title="Expand all" class="text-decoration-none text-muted"><i class="fas fa-angles-down"></i></a>
+                            </span>
+                        </div>
+                        <div id="wikiTree"></div>
+                    </div>
+                </div>
+                <div class="col-md-9 col-12 wiki-content-pane">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <div class="d-flex align-items-center flex-wrap gap-2">
+                            <span class="badge bg-secondary" id="wikiBreadcrumb"><i class="fas fa-pen-nib"></i> Home</span>
+                            <span id="wikiMeta" class="text-muted small d-none"></span>
+                        </div>
+                        <div class="wiki-page-actions d-none" id="wikiPageActions">
+                            <button type="button" class="btn btn-sm btn-primary" id="btnSavePage"><i class="fas fa-save me-1"></i>Save</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnTagPage"><i class="fas fa-tags me-1"></i>Tag</button>
+                            <button type="button" class="btn btn-sm btn-outline-info" id="btnHistory"><i class="fas fa-history me-1"></i>History</button>
+                            <button type="button" class="btn btn-sm btn-outline-success" id="btnCreateTask"><i class="fas fa-list-check me-1"></i>Create Task</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnExportWord"><i class="far fa-file-word me-1"></i>Word</button>
+                        </div>
+                    </div>
+                    <div id="wikiTagBar" class="d-none mb-2"></div>
+                    <div id="wikiLinkedTasks" class="d-none mb-2"></div>
+                    <div id="wikiPlaceholder">
+                        <wp-empty-state icon="fas fa-book-open" size="compact" heading="@Localize("EmptyState.Wiki.Title").Text" text="@Localize("EmptyState.Wiki.Text").Text"></wp-empty-state>
+                    </div>
+                    <div id="wikiEditorContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts {
+    <script src="~/lib/jstree/jstree.min.js"></script>
+    <script src="~/js/pages/wiki/wiki.js" asp-append-version="true"></script>
+}

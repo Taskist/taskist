@@ -1,0 +1,33 @@
+.ea-group {
+    border: 1px solid #e3eaf2;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+}
+
+.ea-group__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #e7e9fb;
+    padding: 0.4rem 0.6rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #3a3f8f;
+    border-bottom: 1px solid #d4d8f3;
+    border-left: 3px solid #6f78e6;
+}
+
+.ea-group__count {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #6b7a90;
+    background: #fff;
+    border: 1px solid #d8e0ea;
+    border-radius: 999px;
+    padding: 0 0.45rem;
+}
+
+.ea-group__body {
+    padding: 0.55rem 0.6rem;
+}

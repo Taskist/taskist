@@ -1,4 +1,4 @@
-﻿@model ProjectModel
+@model ProjectModel
 <div class="card">
     <div class="card-header">
         <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs" role="tablist">
@@ -10,6 +10,16 @@
             <li class="nav-item" role="presentation">
                 <a href="#tabMember" class="nav-link" data-bs-toggle="tab" aria-selected="true" role="tab">
                     <i class="fas fa-users me-2"></i>@Localize("ProjectPage.MemberTabTitle").Text
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#tabRepository" class="nav-link" data-bs-toggle="tab" aria-selected="true" role="tab">
+                    <i class="fas fa-code-branch me-2"></i>@Localize("ProjectPage.RepositoryTabTitle").Text
+                </a>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a href="#tabNotification" class="nav-link" data-bs-toggle="tab" aria-selected="true" role="tab">
+                    <i class="fas fa-bell me-2"></i>@Localize("ProjectPage.NotificationTabTitle").Text
                 </a>
             </li>
             <li class="nav-item" role="presentation">
@@ -39,23 +49,73 @@
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-4">
                         <div class="mb-3">
                             <wc-label asp-for="ClientId" />
                             <select asp-for="ClientId" asp-items="Model.AvailableClients" class="form-control select2"></select>
                             <span asp-validation-for="ClientId" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-12">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <wc-label asp-for="ProjectManagerId" />
+                            <select asp-for="ProjectManagerId" asp-items="Model.AvailableProjectManagers" class="form-control select2"></select>
+                            <span asp-validation-for="ProjectManagerId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <wc-label asp-for="TeamLeadId" />
+                            <select asp-for="TeamLeadId" asp-items="Model.AvailableTeamLeads" class="form-control select2"></select>
+                            <span asp-validation-for="TeamLeadId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <wc-label asp-for="CodeReviewerId" />
+                            <select asp-for="CodeReviewerId" asp-items="Model.AvailableCodeReviewers" class="form-control select2"></select>
+                            <span asp-validation-for="CodeReviewerId" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
                         <div class="mb-3">
                             <wc-label asp-for="StartDate" />
                             <input asp-for="StartDate" type="text" class="form-control datepicker-from" autocomplete="off" />
                             <span asp-validation-for="StartDate" class="text-danger"></span>
                         </div>
+                    </div>
+                    <div class="col-md-2">
                         <div class="mb-3">
                             <wc-label asp-for="EndDate" />
                             <input asp-for="EndDate" type="text" class="form-control datepicker-to" autocomplete="off" />
                             <span asp-validation-for="EndDate" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <input type="hidden" asp-for="GitProjectReference" />
+                </div>
+                <div class="row project-release-version" data-preview-url="@Url.Action("ReleaseVersionPreview", new { id = Model.Id })"
+                     data-full-text="@Localize("ProjectModel.ReleaseVersionPreview.Full").Text"
+                     data-patch-text="@Localize("ProjectModel.ReleaseVersionPreview.Patch").Text">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <wc-label asp-for="ReleaseVersionFormat" />
+                            <input asp-for="ReleaseVersionFormat" class="form-control project-release-format" autocomplete="off" maxlength="50"
+                                   placeholder="@Model.DefaultReleaseVersionFormat" />
+                            <span asp-validation-for="ReleaseVersionFormat" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="mb-3">
+                            <wc-label asp-for="ReleaseFullIncrement" />
+                            <select asp-for="ReleaseFullIncrement" asp-items="Html.GetEnumSelectList<ReleaseVersionPart>()" class="form-control select2 project-release-increment">
+                                <option value="">@Localize("ProjectModel.ReleaseFullIncrement.Default").Text</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="form-text mt-2 project-release-preview"></div>
                         </div>
                     </div>
                 </div>
@@ -70,16 +130,16 @@
                     </div>
                 </div>
                 <div class="card-footer text-end pt-3 pb-2">
-                    <button type="submit" class="btn btn-primary">
+                    <button type="submit" class="btn btn-sm btn-primary">
                         <i class="fas fa-save me-1"></i>@Localize("Button.Save")
                     </button>
                     @if (Model.Id <= 0)
                     {
-                        <button type="submit" name="save-continue" class="btn btn-primary">
+                        <button type="submit" name="save-continue" class="btn btn-sm btn-primary">
                             <i class="fas fa-save me-1"></i>@Localize("Button.SaveAndContinue")
                         </button>
                     }
-                    <a asp-action="Index" class="btn btn-secondary">
+                    <a asp-action="Index" class="btn btn-sm btn-secondary">
                         <i class="fas fa-ban me-1"></i>@Localize("Button.Back")
                     </a>
                 </div>
@@ -91,9 +151,27 @@
                 }
                 else
                 {
-                    <div class="alert alert-info">
-                        @Localize("ProjectPage.SaveToAddMemberMsg").Text
-                    </div>
+                    <wp-empty-state icon="fas fa-floppy-disk" size="compact" tone="info" heading="@Localize("EmptyState.SaveFirst.Title").Text" text="@Localize("ProjectPage.SaveToAddMemberMsg").Text"></wp-empty-state>
+                }
+            </div>
+            <div class="tab-pane" id="tabRepository" role="tabpanel">
+                @if (Model.Id > 0)
+                {
+                    @await Html.PartialAsync("Repositories", Model)
+                }
+                else
+                {
+                    <wp-empty-state icon="fas fa-floppy-disk" size="compact" tone="info" heading="@Localize("EmptyState.SaveFirst.Title").Text" text="@Localize("ProjectPage.SaveToAddRepositoryMsg").Text"></wp-empty-state>
+                }
+            </div>
+            <div class="tab-pane" id="tabNotification" role="tabpanel">
+                @if (Model.Id > 0)
+                {
+                    @await Html.PartialAsync("Notifications", Model)
+                }
+                else
+                {
+                    <wp-empty-state icon="fas fa-floppy-disk" size="compact" tone="info" heading="@Localize("EmptyState.SaveFirst.Title").Text" text="@Localize("ProjectPage.SaveToAddNotificationMsg").Text"></wp-empty-state>
                 }
             </div>
             <div class="tab-pane" id="tabCustomField" role="tabpanel">
@@ -103,9 +181,7 @@
                 }
                 else
                 {
-                    <div class="alert alert-info">
-                        @Localize("ProjectPage.SaveToAddCustomFieldMsg").Text
-                    </div>
+                    <wp-empty-state icon="fas fa-floppy-disk" size="compact" tone="info" heading="@Localize("EmptyState.SaveFirst.Title").Text" text="@Localize("ProjectPage.SaveToAddCustomFieldMsg").Text"></wp-empty-state>
                 }
             </div>
         </div>

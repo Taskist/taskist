@@ -1,10 +1,51 @@
 {
+    "version": "0.2.0",
     "configurations": [
         {
-            "name": "C#: Taskist.Web [Default Configuration]",
-            "type": "dotnet",
+            "name": "Taskist.Web (https)",
+            "type": "coreclr",
             "request": "launch",
-            "projectPath": "${workspaceFolder}\\src\\Presentation\\Taskist.Web\\Taskist.Web.csproj"
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Presentation/Taskist.Web/bin/Debug/net10.0/Taskist.Web.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Presentation/Taskist.Web",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "https://localhost:7025;http://localhost:5081",
+                "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/src/Presentation/Taskist.Web/Views"
+            }
+        },
+        {
+            "name": "Taskist.Web (http)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Presentation/Taskist.Web/bin/Debug/net10.0/Taskist.Web.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Presentation/Taskist.Web",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ASPNETCORE_URLS": "http://localhost:5081",
+                "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES": "Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation"
+            }
+        },
+        {
+            "name": ".NET Attach to Process",
+            "type": "coreclr",
+            "request": "attach"
         }
     ]
 }

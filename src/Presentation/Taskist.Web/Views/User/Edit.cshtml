@@ -1,4 +1,4 @@
-﻿@model UserRegistrationModel
+@model UserRegistrationModel
 @{
     ViewData["Title"] = Localize("UserPage.Title");
 }
@@ -14,3 +14,7 @@
         </div>
     </form>
 </div>
+
+@section PageScripts {
+    <script src="~/js/pages/masters/remote-select.js" asp-append-version="true"></script>
+}

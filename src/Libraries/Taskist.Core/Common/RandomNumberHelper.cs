@@ -1,4 +1,4 @@
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 
 namespace Taskist.Core.Common;
 
@@ -61,16 +61,12 @@ public class RandomNumberHelper : RandomNumberGenerator
         _rng.GetNonZeroBytes(data);
     }
 
-    /// <summary>
-    /// Dispose secure random
-    /// </summary>
     public new void Dispose()
     {
         Dispose(true);
         GC.SuppressFinalize(this);
     }
 
-    // Protected implementation of Dispose pattern.
     protected override void Dispose(bool disposing)
     {
         if (_disposed)

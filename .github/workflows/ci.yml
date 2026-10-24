@@ -4,33 +4,29 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main, develop]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
-  DOTNET_VERSION: "8.0.x"
   DOTNET_NOLOGO: true
-  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
 
 jobs:
   build:
-    name: Build & Test
+    name: Build and test
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Cache NuGet packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
-          restore-keys: ${{ runner.os }}-nuget-
+          dotnet-version: 10.0.x
 
       - name: Restore
         run: dotnet restore src/Taskist.sln
@@ -39,170 +35,71 @@ jobs:
         run: dotnet build src/Taskist.sln --configuration Release --no-restore
 
       - name: Test
-        run: >
-          dotnet test src/Taskist.sln
-          --configuration Release
-          --no-build
-          --verbosity normal
-          --logger "trx;LogFileName=test-results.trx"
-          --results-directory ./test-results
+        run: dotnet test src/Taskist.sln --configuration Release --no-build --logger "trx;LogFileName=results.trx"
+
+      - name: Check the generated dark theme is up to date
+        run: |
+          python3 tools/theme/generate-dark-css.py
+          git diff --exit-code -- src/Presentation/Taskist.Web/wwwroot/css/theme-dark.generated.css || { echo "::error::theme-dark.generated.css is stale. Run 'python tools/theme/generate-dark-css.py' and commit the result."; exit 1; }
+
+      - name: Check for missing migrations
+        run: |
+          dotnet tool install --global dotnet-ef --version 10.*
+          dotnet ef migrations has-pending-model-changes \
+            --project src/Libraries/Taskist.Data \
+            --startup-project src/Libraries/Taskist.Data \
+            --configuration Release \
+            --no-build
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: ./test-results
-          retention-days: 7
-
-  migrations:
-    name: Verify Migrations
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Install dotnet-ef
-        run: dotnet tool install --global dotnet-ef --version 8.*
-
-      - name: Restore
-        run: dotnet restore src/Taskist.sln
-
-      # catches entity changes committed without a matching migration
-      - name: Check for model changes without a migration
-        run: |
-          dotnet ef migrations has-pending-model-changes \
-            --project src/Libraries/Taskist.Data/Taskist.Data.csproj \
-            --startup-project src/Presentation/Taskist.Web/Taskist.Web.csproj \
-          && echo "No pending model changes."
-        env:
-          TASKIST_ConnectionStrings__AppContext: "Server=localhost;Database=TaskistCi;User Id=sa;Password=NotUsedAtDesignTime1!;TrustServerCertificate=True;"
-          TASKIST_Security__EncryptionKey: "ci-design-time-key-at-least-32-characters"
-
-  migrate-and-run:
-    name: Migrate & Smoke Test
-    runs-on: ubuntu-latest
-
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          ACCEPT_EULA: "Y"
-          MSSQL_SA_PASSWORD: "CiStr0ng!Password"
-          MSSQL_PID: Developer
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'CiStr0ng!Password' -C -Q 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 12
-          --health-start-period 30s
-
-    env:
-      TASKIST_ConnectionStrings__AppContext: "Server=localhost,1433;Database=Taskist;User Id=sa;Password=CiStr0ng!Password;TrustServerCertificate=True;"
-      TASKIST_Security__EncryptionKey: "ci-smoke-test-key-at-least-32-characters"
-      TASKIST_Security__RequireHttpsCookies: "false"
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Install dotnet-ef
-        run: dotnet tool install --global dotnet-ef --version 8.*
-
-      - name: Create database
-        run: >
-          /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P 'CiStr0ng!Password' -C -b
-          -Q "IF DB_ID('Taskist') IS NULL CREATE DATABASE [Taskist];"
-
-      # proves the migrations apply cleanly to an empty database
-      - name: Apply migrations
-        run: >
-          dotnet ef database update
-          --project src/Libraries/Taskist.Data/Taskist.Data.csproj
-          --startup-project src/Presentation/Taskist.Web/Taskist.Web.csproj
-
-      - name: Apply seed scripts
-        run: |
-          for script in "sql script/mssql/1_defaults.sql" "sql script/mssql/2_locale_resource.sql"; do
-            echo "Applying $script"
-            /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P 'CiStr0ng!Password' -C -b -d Taskist -i "$script"
-          done
-
-      - name: Publish
-        run: dotnet publish src/Presentation/Taskist.Web/Taskist.Web.csproj -c Release -o ./publish
-
-      # confirms the app boots and serves the sign-in page against a real database
-      - name: Smoke test
-        run: |
-          cd publish
-          ASPNETCORE_ENVIRONMENT=Production ASPNETCORE_HTTP_PORTS=5080 \
-            dotnet Taskist.Web.dll > ../app.log 2>&1 &
-          APP_PID=$!
-
-          for attempt in $(seq 1 30); do
-            if curl -fsS http://localhost:5080/login > /dev/null 2>&1; then
-              echo "Application responded on attempt $attempt."
-              kill $APP_PID
-              exit 0
-            fi
-            if ! kill -0 $APP_PID 2>/dev/null; then
-              echo "Application exited early."
-              cat ../app.log
-              exit 1
-            fi
-            sleep 2
-          done
-
-          echo "Application did not respond in time."
-          cat ../app.log
-          kill $APP_PID 2>/dev/null || true
-          exit 1
-
-      - name: Upload application log
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-log
-          path: app.log
-          retention-days: 7
+          path: "**/TestResults/*.trx"
+          if-no-files-found: ignore
 
   docker:
-    name: Docker Build
+    name: Docker stack smoke test
     runs-on: ubuntu-latest
-
+    needs: build
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Create .env
+        run: |
+          cp .env.example .env
+          sed -i "s/^MSSQL_SA_PASSWORD=.*/MSSQL_SA_PASSWORD=Ci_$(openssl rand -hex 12)Aa1!/" .env
 
-      - name: Build application image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          tags: taskist:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Build and start
+        run: docker compose up -d --build
 
-      - name: Build migration image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./Dockerfile.migrate
-          push: false
-          tags: taskist-migrate:ci
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+      - name: Wait for the web container to become healthy
+        run: |
+          for attempt in $(seq 1 120); do
+            migrate="$(docker compose ps -a --format '{{.State}} {{.ExitCode}}' migrate)"
+            case "$migrate" in
+              exited\ 0|"") ;;
+              exited*) echo "migrate failed: $migrate"; exit 1 ;;
+            esac
+            web="$(docker compose ps -q web)"
+            if [ -n "$web" ] && [ "$(docker inspect -f '{{.State.Health.Status}}' "$web")" = "healthy" ]; then
+              echo "web is healthy"; exit 0
+            fi
+            sleep 5
+          done
+          echo "timed out waiting for web"; exit 1
+
+      - name: Sign-in page responds
+        run: curl -fsS http://localhost:8080/login -o /dev/null
+
+      - name: Seeding is repeatable
+        run: docker compose run --rm migrate
+
+      - name: Logs
+        if: failure()
+        run: docker compose logs
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

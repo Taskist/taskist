@@ -1,206 +1,1132 @@
-﻿@model BacklogPageModel
+@model BacklogGridModel
+@inject GeneralSettings GeneralSettings
 @{
 	ViewData["Title"] = Localize("BacklogPage.Title");
+
+	var pageLength = GeneralSettings.ItemsPerPage > 0 ? GeneralSettings.ItemsPerPage : 10;
+	var lengthOptions = new List<int> { 10, 25, 50, 100 };
+	if (!lengthOptions.Contains(pageLength))
+		lengthOptions.Add(pageLength);
+	lengthOptions = lengthOptions.Distinct().OrderBy(x => x).ToList();
 }
 
 @section PageStyles {
-	<link rel="stylesheet" href="https://cdn.datatables.net/rowgroup/1.4.0/css/rowGroup.dataTables.min.css">
+	<link rel="stylesheet" href="~/css/pages/backlog.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/pages/backlog-task.css" asp-append-version="true" />
 }
 
 @section PageScripts {
-	<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/dataTables.rowGroup.js"></script>
-	<script src="https://cdn.datatables.net/rowgroup/1.5.1/js/rowGroup.bootstrap5.js"></script>
-	<script src="~/js/pages/backlog/backlog-index.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-filter-select.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-filter.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-filter-inactive.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-grid-age.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-filter-sections.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-grid-refresh.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-selection-bar.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-branch.js" asp-append-version="true"></script>
+	<script src="~/js/pages/backlog/backlog-comments.js" asp-append-version="true"></script>
+	<script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+	<script src="~/js/report-column-editor.js" asp-append-version="true"></script>
 }
 
-<div class="card mb-2">
-	<div class="card-header" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#filterContent" aria-expanded="false" aria-controls="filterContent" id="filterTitle">
-		<div class="d-flex justify-content-between align-items-center">
-			<h6 class="mb-1 mt-1"><i class="fas fa-filter me-1"></i>Filter</h6>
-			<i class="fas fa-plus" id="filterIcon"></i>
-		</div>
+<div id="filter-chips" class="d-flex flex-wrap gap-2 mb-2"></div>
+
+<div class="offcanvas offcanvas-end backlog-filter-offcanvas" tabindex="-1" id="backlogFilterOffcanvas" aria-labelledby="backlogFilterOffcanvasLabel">
+	<div class="offcanvas-header filter-panel-header">
+		<h5 class="offcanvas-title mb-0" id="backlogFilterOffcanvasLabel"><i class="fas fa-filter me-2"></i>Filters</h5>
+		<button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 	</div>
-	<div id="filterContent" class="collapse">
-		<div class="card-body">
-			<div id="filter-container"></div>
-		</div>
+	<div class="offcanvas-body">
+		<div id="filter-container"></div>
 	</div>
 </div>
 
 <div class="card">
 	<div class="card-header d-flex justify-content-between align-items-center">
-		@if (Model.AvailableProjects.Any())
-		{
-			<div class="d-flex align-items-center gap-2">
-				<label for="activeProjectSwitcher" class="mb-0 text-body-secondary small fw-semibold text-nowrap">
-					<i class="fas fa-briefcase me-1"></i>Project
-				</label>
-				<select id="activeProjectSwitcher" class="form-select form-select-sm" style="min-width: 200px;"
-						asp-items="@(new SelectList(Model.AvailableProjects, "Value", "Text", Model.ActiveProjectId.ToString()))">
-				</select>
-			</div>
-		}
-		<div class="d-flex gap-2 ms-auto">
-			<button id="btnExcelExport" type="button" class="btn btn-success btn-sm text-white">
-				<i class="fa-solid fa-file-excel me-1"></i>Download
+		<div class="d-flex gap-2 ms-auto" id="gridToolbar">
+			<button class="btn btn-secondary btn-sm" type="button" id="btnGridRefresh"
+					data-label="@Localize("BacklogGrid.Refresh").Text"
+					data-updated-label="@Localize("BacklogGrid.RefreshUpdated").Text"
+					title="@Localize("BacklogGrid.Refresh")">
+				<i class="fas fa-rotate-right"></i>
+			</button>
+			<button class="btn btn-primary btn-sm active" type="button" id="groupByParentBtn" title="@Localize("BacklogGrid.GroupByParent")" aria-pressed="true"
+					data-label-grouped="@Localize("BacklogGrid.Grouped")" data-label-flat="@Localize("BacklogGrid.Flat")">
+				<i class="fas fa-sitemap"></i><span class="visually-hidden gbp-label">@Localize("BacklogGrid.Grouped")</span>
 			</button>
 			<div class="dropdown">
-				<button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="groupingToggleBtn" data-bs-toggle="dropdown">
-					Group By
+				<button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="columnToggleBtn" data-bs-toggle="dropdown" title="Columns">
+					<i class="fas fa-table-columns"></i><span class="col-count-label ms-1 d-none d-lg-inline">Showing 11/11 Columns</span>
 				</button>
-				<ul class="dropdown-menu dropdown-menu-sm" id="groupingToggleMenu">
+				<ul class="dropdown-menu dropdown-menu-sm visible-columns" id="columnToggleMenu">
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="TaskType.Name" data-columnname="TaskType" /> @Localize("BacklogGrid.TaskType")
+							<input type="checkbox" data-column="3" data-columnname="TaskType" checked /> @Localize("BacklogGrid.TaskType")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="Severity.Name" data-columnname="Severity" /> @Localize("BacklogGrid.Severity")
+							<input type="checkbox" data-column="4" data-columnname="Severity" checked /> @Localize("BacklogGrid.Severity")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="Status.Name" data-columnname="Status" /> @Localize("BacklogGrid.Status")
+							<input type="checkbox" data-column="5" data-columnname="Status" checked /> @Localize("BacklogGrid.Status")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="Project" data-columnname="Project" /> @Localize("BacklogGrid.Project")
+							<input type="checkbox" data-column="6" data-columnname="Age" data-default-visible="true" checked /> @Localize("BacklogGrid.Age")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="Module" data-columnname="Module" /> @Localize("BacklogGrid.Module")
+							<input type="checkbox" data-column="7" data-columnname="Project" checked /> @Localize("BacklogGrid.Project")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="SubModule" data-columnname="SubModule" /> @Localize("BacklogGrid.SubModule")
+							<input type="checkbox" data-column="8" data-columnname="Module" checked /> @Localize("BacklogGrid.Module")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="Assignee" data-columnname="Assignee" /> @Localize("BacklogGrid.Assignee")
+							<input type="checkbox" data-column="9" data-columnname="SubModule" checked /> @Localize("BacklogGrid.SubModule")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="DueDate" data-columnname="DueDate" /> @Localize("BacklogGrid.DueDate")
+							<input type="checkbox" data-column="10" data-columnname="Assignee" checked /> @Localize("BacklogGrid.Assignee")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="CreatedBy" data-columnname="CreatedBy" /> @Localize("BacklogGrid.CreatedBy")
+							<input type="checkbox" data-column="11" data-columnname="Tester" checked /> @Localize("BacklogGrid.Tester")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" value="CreatedOn" data-columnname="CreatedOn" /> @Localize("BacklogGrid.CreatedOn")
-						</label>
-					</li>
-					<li><hr class="dropdown-divider"></li>
-					<li><button class="dropdown-item text-danger" id="resetGroupBy">Reset Grouping</button></li>
-				</ul>
-			</div>
-			<div class="dropdown">
-				<button class="btn btn-secondary dropdown-toggle btn-sm" type="button" id="columnToggleBtn" data-bs-toggle="dropdown">
-					Showing 10/10 Columns
-				</button>
-				<ul class="dropdown-menu dropdown-menu-sm" id="columnToggleMenu">
-					<li>
-						<label class="dropdown-item">
-							<input type="checkbox" data-column="2" data-columnname="TaskType" checked /> @Localize("BacklogGrid.TaskType")
+							<input type="checkbox" data-column="12" data-columnname="Release" checked /> @Localize("BacklogGrid.Release")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" data-column="3" data-columnname="Severity" checked /> @Localize("BacklogGrid.Severity")
+							<input type="checkbox" data-column="13" data-columnname="DueDate" checked /> @Localize("BacklogGrid.DueDate")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" data-column="4" data-columnname="Status" checked /> @Localize("BacklogGrid.Status")
+							<input type="checkbox" data-column="14" data-columnname="CreatedBy" checked /> @Localize("BacklogGrid.CreatedBy")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" data-column="5" data-columnname="Project" checked /> @Localize("BacklogGrid.Project")
+							<input type="checkbox" data-column="15" data-columnname="CreatedOn" checked /> @Localize("BacklogGrid.CreatedOn")
 						</label>
 					</li>
 					<li>
 						<label class="dropdown-item">
-							<input type="checkbox" data-column="6" data-columnname="Module" checked /> @Localize("BacklogGrid.Module")
-						</label>
-					</li>
-					<li>
-						<label class="dropdown-item">
-							<input type="checkbox" data-column="7" data-columnname="SubModule" checked /> @Localize("BacklogGrid.SubModule")
-						</label>
-					</li>
-					<li>
-						<label class="dropdown-item">
-							<input type="checkbox" data-column="8" data-columnname="Assignee" checked /> @Localize("BacklogGrid.Assignee")
-						</label>
-					</li>
-					<li>
-						<label class="dropdown-item">
-							<input type="checkbox" data-column="9" data-columnname="DueDate" checked /> @Localize("BacklogGrid.DueDate")
-						</label>
-					</li>
-					<li>
-						<label class="dropdown-item">
-							<input type="checkbox" data-column="10" data-columnname="CreatedBy" checked /> @Localize("BacklogGrid.CreatedBy")
-						</label>
-					</li>
-					<li>
-						<label class="dropdown-item">
-							<input type="checkbox" data-column="11" data-columnname="CreatedOn" checked /> @Localize("BacklogGrid.CreatedOn")
+							<input type="checkbox" data-column="16" data-columnname="Reporter" checked /> @Localize("BacklogGrid.Reporter")
 						</label>
 					</li>
 					<li><hr class="dropdown-divider"></li>
 					<li><button class="dropdown-item text-danger" id="resetColumn">Show All</button></li>
 				</ul>
 			</div>
+			<div class="btn-group">
+				<button id="btnExcelExport" type="button" class="btn btn-success btn-sm text-white" title="@Localize("BacklogGrid.Button.Download")">
+					<i class="fa-solid fa-file-excel"></i>
+				</button>
+				<button type="button" class="btn btn-success btn-sm text-white dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" title="@Localize("ReportLayout.Button")">
+					<span class="visually-hidden">@Localize("ReportLayout.Button")</span>
+				</button>
+				<ul class="dropdown-menu dropdown-menu-end">
+					<li>
+						<a class="dropdown-item" href="#"
+						   data-report-layout="@ReportExportKey.Backlogs"
+						   data-title="@Localize("ReportLayout.Title").Text"
+						   data-editor-url="@Url.Action("Editor", "ReportLayout")"
+						   data-save-url="@Url.Action("Save", "ReportLayout")"
+						   data-reset-url="@Url.Action("Reset", "ReportLayout")"
+						   data-save-text="@Localize("ReportLayout.SaveMine").Text"
+						   data-reset-text="@Localize("ReportLayout.ResetToDefault").Text"
+						   data-cancel-text="@Localize("Button.Cancel").Text">
+							<i class="fas fa-table-columns me-2"></i>@Localize("ReportLayout.Button")
+						</a>
+					</li>
+				</ul>
+			</div>
+			<button type="button" class="btn btn-sm filter-open-btn" data-bs-toggle="offcanvas" data-bs-target="#backlogFilterOffcanvas" title="Filter">
+				<i class="fas fa-filter"></i><span class="d-none d-lg-inline ms-1">Filter</span> <span id="filter-counter" class="filter-count-badge"></span>
+			</button>
+			<a id="btnAddNew" href="@Url.Action("Create")" class="btn btn-sm btn-primary" title="Add New">
+				<i class="fas fa-plus"></i><span class="d-none d-lg-inline ms-1">Add New</span>
+			</a>
 		</div>
+	</div>
+	<div class="grid-selection-bar d-none" id="gridSelectionBar" role="region" aria-live="polite">
+		<span class="grid-selection-count"><i class="fas fa-square-check me-1"></i><span id="gridSelectionCount">0</span> @Localize("BacklogGrid.Selection.Selected")</span>
+		<div class="grid-selection-actions">
+				<a id="btnBatchUpdate" href="javascript:openBatchUpdate()" class="btn btn-sm grid-selection-btn" title="@Localize("BacklogGrid.Button.BatchUpdate")">
+					<i class="fa-regular fa-pen-to-square"></i><span class="ms-1">@Localize("BacklogGrid.Button.BatchUpdate")</span>
+				</a>
+				@if (Model.CanCreateBranch)
+				{
+					<button type="button" id="btnBulkCreateBranch" class="btn btn-sm grid-selection-btn"
+							data-edit-url="@Url.Action("Edit")"
+							data-context-url="@Url.Action("BranchContext")"
+							data-create-url="@Url.Action("CreateBranch")"
+							data-label-create-title="@Localize("Backlog.Branch.CreateTitle").Text"
+							data-label-create="@Localize("Backlog.Branch.Create").Text"
+							data-label-name="@Localize("Backlog.Branch.Name").Text"
+							data-label-base="@Localize("Backlog.Branch.Base").Text"
+							data-label-link-info="@Localize("Backlog.Branch.LinkInfo").Text"
+							data-label-name-required="@Localize("Backlog.Branch.NameRequired").Text"
+							data-label-disabled="@Localize("Backlog.Branch.Disabled").Text"
+							data-connect-url="@Url.Action("Index", "Profile", new { connect = "gitlab" }, null, null, "git")"
+							data-connect-label="@Localize("Backlog.Branch.ConnectButton").Text"
+							data-label-connect-why="@Localize("Backlog.Branch.ConnectWhy").Text"
+							data-label-existing-some="@Localize("Backlog.Branch.ExistingSome").Text"
+							data-label-existing-all="@Localize("Backlog.Branch.ExistingAll").Text"
+							data-label-include-existing="@Localize("Backlog.Branch.IncludeExisting").Text"
+							title="@Localize("Backlog.Branch.Create").Text">
+						<i class="fas fa-code-branch"></i><span class="ms-1">@Localize("Backlog.Branch.Create")</span>
+					</button>
+				}
+		</div>
+		<button type="button" class="btn btn-sm grid-selection-clear" id="btnClearSelection" title="@Localize("BacklogGrid.Selection.Clear").Text"><i class="fas fa-xmark me-1"></i>@Localize("BacklogGrid.Selection.Clear")</button>
 	</div>
 	<div class="card-body p-3">
 		<table class="table table-bordered table-condensed table-striped nowrap" id="BacklogGrid"></table>
 	</div>
 </div>
 
-@* server values for backlog-index.js (urls + flags + localized labels) *@
-<div id="backlog-index-config" class="d-none"
-	 data-set-project-url="@Url.Action("SetActiveProject", "Common")"
-	 data-filter-url="@Url.Action("Filter", new { filterMode = Model.FilterMode })"
-	 data-filter-base-url="@Url.Action("Filter")"
-	 data-create-url="@Url.Action("Create")"
-	 data-edit-url="@Url.Action("Edit")"
-	 data-read-url="@Url.Action("DataRead")"
-	 data-export-url="@Url.Action("ExportToExcel")"
-	 data-can-report="@Model.CanReport.ToString().ToLower()"
-	 data-can-edit="@Model.CanEdit.ToString().ToLower()"
-	 data-labels='@Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(new {
-		pageTitle = Localize("BacklogPage.Title").Text,
-		searchLabel = Localize("Grid.SearchLabel").Text,
-		searchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
-		lengthMenu = Localize("Grid.LengthChangeLabel").Text,
-		zeroRecords = Localize("Grid.ZeroRecords").Text,
-		info = Localize("Grid.FooterInfo").Text,
-		infoEmpty = Localize("Grid.FooterInfoWhenEmpty").Text,
-		edit = Localize("Button.Edit").Text,
-		colTaskId = Localize("BacklogGrid.TaskId").Text,
-		colTitle = Localize("BacklogGrid.Title").Text,
-		colTaskType = Localize("BacklogGrid.TaskType").Text,
-		colSeverity = Localize("BacklogGrid.Severity").Text,
-		colStatus = Localize("BacklogGrid.Status").Text,
-		colProject = Localize("BacklogGrid.Project").Text,
-		colModule = Localize("BacklogGrid.Module").Text,
-		colSubModule = Localize("BacklogGrid.SubModule").Text,
-		colAssignee = Localize("BacklogGrid.Assignee").Text,
-		colDueDate = Localize("BacklogGrid.DueDate").Text,
-		colCreatedBy = Localize("BacklogGrid.CreatedBy").Text,
-		colCreatedOn = Localize("BacklogGrid.CreatedOn").Text
-	}))'></div>
+<script>
+	let filterLoaded = false;
+	let selectedRows = new Set();
+	let groupByParent = true;
+	let isGroupedView = true;
+	let filterMode = parseInt('@Model.FilterMode');
+	const filterModeValue = '@(Model.FilterLabel ?? Model.FilterValue)';
+	const localStorageFilters = 'backlog-filters-@Model.UserGuid';
+	const localStorageVisibleCols = 'backlog-visiblecols-@Model.UserGuid';
 
+	const presetChipLabels = {
+		1: '@Localize("BacklogFilter.Preset.MyTasks").Text',
+		2: '@Localize("BacklogFilter.Preset.Reopened").Text',
+		3: '@Localize("BacklogFilter.Preset.Resolved").Text',
+		4: '@Localize("BacklogFilter.Preset.Release").Text',
+		6: '@Localize("BacklogFilter.Preset.Overdue").Text'
+	};
 
+	function presetChipText() {
+		// Release (4) is applied by pre-selecting the Release filter, which renders its own chip.
+		if (filterMode === 4) return '';
+		var label = presetChipLabels[filterMode];
+		if (!label) return '';
+		return label;
+	}
+
+	const filterChipDefs = [
+		{ id: 'ProjectId', label: 'Project' },
+		{ id: 'CreatedById', label: 'Created By' },
+		{ id: 'ModuleId', label: 'Module' },
+		{ id: 'SubModuleId', label: 'Sub-Module' },
+		{ id: 'TaskTypeId', label: 'Type' },
+		{ id: 'SeverityId', label: 'Priority' },
+		{ id: 'ReporterId', label: 'Reporter' },
+		{ id: 'AssigneeId', label: 'Developer' },
+		{ id: 'TesterId', label: 'Tester' },
+		{ id: 'StatusId', label: 'Status' },
+		{ id: 'StatusGroupId', label: 'Status Group' },
+		{ id: 'ReleaseId', label: 'Release' }
+	];
+
+	let table = null;
+	let lastGridFilters = null;
+
+	$(document).ready(function () {
+		JSManager.setPageTitle('@Localize("BacklogPage.Title").Text');
+		let canReport = JSON.parse('@Model.CanReport.ToString().ToLower()');
+		let canEdit = JSON.parse('@Model.CanEdit.ToString().ToLower()');
+
+		filterLoaded = true;
+
+		// Load the persisted "group by parent" preference before the grid initializes.
+		var gbpPref = JSManager.ajaxGetWithResponse('@Url.Action("GetGroupByParent")', {});
+		groupByParent = (gbpPref === true || gbpPref === 'true');
+		updateGroupByParentBtn();
+
+		const dto = {
+			filterMode : filterMode,
+			filterValue: '@Model.FilterValue',
+			project: '@Model.FilterProjectId',
+			assignee: '@Model.FilterAssigneeId'
+		};
+
+		const valueFromLocalStorage = localStorage.getItem(localStorageVisibleCols) ?? '';
+		const visibleColsArray = valueFromLocalStorage.split(',');
+		$('#columnToggleMenu input[type="checkbox"]').each(function() {
+			$(this).prop('checked', BacklogAge.isColumnChecked($(this), visibleColsArray));
+		});
+
+		setVisibleColumnCount();
+
+		JSManager.renderPartial('@Url.Action("Filter")', dto, 'filter-container', function () { BacklogFilter.init(); });
+
+		$('#gridToolbar').appendTo('#pageButtons');
+		$('#BacklogGrid').closest('.card').children('.card-header').remove();
+
+		BacklogAge.bindTooltips('#BacklogGrid');
+
+		table = $("#BacklogGrid").DataTable({
+			processing: true,
+			serverSide: true,
+			stateSave: true,
+			stateLoadParams: function (settings, data) {
+				// A preset link (?filter=N) must show exactly its tasks, so drop any search saved from an earlier visit.
+				if (filterMode > 0 && data && data.search) data.search.search = '';
+			},
+			info: true,
+			autoWidth: false,
+			filter: false,
+			lengthChange: true,
+			pageLength: @pageLength,
+			lengthMenu: [@string.Join(", ", lengthOptions)],
+			searching: true,
+			ordering: true,
+			order: [[1, 'desc']],
+			language: {
+				search: '<span>@Localize("Grid.SearchLabel").Text</span> _INPUT_',
+				searchPlaceholder: '@Localize("Grid.SearchPlaceholder").Text',
+				lengthMenu: '_MENU_ @Localize("Grid.LengthChangeLabel").Text',
+				paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
+				zeroRecords: '@Localize("Grid.ZeroRecords").Text',
+				info: '@Localize("Grid.FooterInfo").Text',
+				infoEmpty: '@Localize("Grid.FooterInfoWhenEmpty").Text'
+			},
+			ajax: {
+				url: "@Url.Action("DataRead")",
+				type: "POST",
+				datatype: "json",
+				data: function (dto) {
+					// A manual/auto refresh reuses the filters of the last load, so unsaved
+					// edits in the filter panel are never applied without pressing Search.
+					const filters = (BacklogRefresh.consume() && lastGridFilters) ? lastGridFilters : setFilterParam({});
+					lastGridFilters = filters;
+					$.extend(dto, filters);
+					dto.groupByParent = groupByParent;
+					isGroupedView = groupByParent && !dtoHasActiveFilter(dto);
+					JSManager.addAntiForgeryToken(dto);
+				}
+			},
+			columns: [{
+				data: "Id",
+				title: '<input type="checkbox" id="row-checkbox-select-all" />',
+				sortable: false,
+				render: function(data, type, row) {
+					return `<input type="checkbox" class="row-checkbox" value="${data}" ${selectedRows.has(data) ? "checked" : ""}>`;
+				},
+				orderable: false
+			},{
+				title: '@Localize("BacklogGrid.TaskId")',
+				data: 'Id',
+				name: 'Id',
+				sortable: true,
+				render: function (data, type, row) {
+					let html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}">${row.Id}</a>`
+					return data;
+				}
+			},{
+				title: '@Localize("BacklogGrid.Title")',
+				data: 'Title',
+				sortable: true,
+				render: function (data, type, row) {
+					let html = '';
+					let htmlAttachmentAndComment = '';
+					let reopenCounterClass = '';
+
+					let titleIcons = [];
+					const iconCount = n => n > 1 ? `<span class="dt-title-icon__count">${n}</span>` : '';
+
+					if (row.BranchNames && row.BranchNames.length) {
+						titleIcons.push(`<a href="@Url.Action("Edit")/${row.Id}#taskCodeCard" class="dt-title-icon dt-title-icon--branch" title="@Localize("BacklogGrid.Icon.Branch").Text: ${stEsc(row.BranchNames.join(', '))}"><i class="fas fa-code-branch"></i>${iconCount(row.BranchNames.length)}</a>`);
+					}
+
+					if (row.HasClosingComment) {
+						titleIcons.push(`<a href="javascript:JSManager.openForm('@Url.Action("ViewClosingComment")/${row.Id}','@Localize("BacklogGrid.Icon.ClosingDetails").Text','col-md-6',undefined,false)" class="dt-title-icon dt-title-icon--closing" title="@Localize("BacklogGrid.Icon.ClosingDetails").Text${row.MrId > 0 ? ' · MR !' + row.MrId : ''}"><i class="fas fa-code-merge"></i></a>`);
+					}
+
+					if (row.AttachmentCount > 0) {
+						titleIcons.push(`<a href="javascript:JSManager.openOffCanvas('@Url.Action("Documents")/${row.Id}','Documents')" class="dt-title-icon dt-title-icon--files" title="${row.AttachmentCount} @Localize("BacklogGrid.Icon.Attachments").Text"><i class="fas fa-paperclip"></i>${iconCount(row.AttachmentCount)}</a>`);
+					}
+
+					if (row.CommentCount > 0) {
+						titleIcons.push(`<a href="javascript:JSManager.openOffCanvas('@Url.Action("Comments")/${row.Id}','Comments')" class="dt-title-icon dt-title-icon--comments" title="${row.CommentCount} @Localize("BacklogGrid.Icon.Comments").Text"><i class="far fa-comment-dots"></i>${iconCount(row.CommentCount)}</a>`);
+					}
+
+					htmlAttachmentAndComment = titleIcons.length ? `<span class="dt-title-icons">${titleIcons.join('')}</span>` : '';
+
+					if (parseInt(row.ReOpenCount) > 2) {
+						reopenCounterClass = 'bg-danger';
+					}else if (parseInt(row.ReOpenCount) > 0) {
+						reopenCounterClass = 'bg-warning';
+					}
+
+					if(data.length > 50) {
+						let truncatedText = data.substr(0, 50) + "...";
+						html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}"><span class="dt-truncate"
+								 tabindex="0"
+								 role="button"
+								 data-bs-toggle="popover"
+								 data-bs-trigger="hover focus"
+								 data-bs-content="${data}">
+								${truncatedText}
+							</span></a>${htmlAttachmentAndComment}`;
+					}else {
+						html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit")/${row.Id}">${data}</a>${htmlAttachmentAndComment}`;
+					}
+
+					if(parseInt(row.ReOpenCount) > 0) {
+						html = `<div class="position-relative badge-counter" title="Reopened count">${html}
+						<span class="position-absolute top-0 start-0 translate-middle badge rounded-pill ${reopenCounterClass}">
+						${row.ReOpenCount}
+						<span class="visually-hidden">unread messages</span>
+						</span>
+						</div>`;
+					}
+
+					if (isGroupedView && parseInt(row.SubTaskCount) > 0) {
+						html = `<span class="subtask-toggle" role="button" title="${row.SubTaskCount} sub-task(s)"><i class="fas fa-caret-right"></i></span>` + html;
+					}
+
+					return html;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.TaskType")',
+				data: 'TaskType.Name',
+				name: 'TaskType.Name',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<a href="#" class="tasktype-row-filter" data-tasktype="${row.TaskType.Id}">
+							<span class="badge" style="color:${row.TaskType.TextColor};background-color:${row.TaskType.BackgroundColor};"><i class="${row.TaskType.IconClass} me-1"></i>${row.TaskType.Name}</span>
+							</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Severity")',
+				data: 'Severity.Name',
+				name: 'Severity.Name',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<a href="#" class="severity-row-filter" data-severity="${row.Severity.Id}">
+							<span class="badge" style="color:${row.Severity.TextColor};background-color:${row.Severity.BackgroundColor};"><i class="${row.Severity.IconClass} me-1"></i>${row.Severity.Name}</span>
+							</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Status")',
+				sortable: true,
+				data: 'Status.Name',
+				name: 'Status.Name',
+				render: function (data, type, row) {
+					let statusTitle = `C: ${row.CreatedBy} on ${moment(row.CreatedOn).format('DD-MMM-YYYY HH:MM:SS')}`;
+					if(JSManager.hasValue(row.ModifiedBy)){
+						statusTitle = `M: ${row.ModifiedBy} on ${moment(row.ModifiedOn).format('DD-MMM-YYYY HH:MM:SS')}`;
+					}
+					return `<a href="#" title="${statusTitle}" class="status-row-filter" data-status="${row.Status.Id}">
+							<span class="badge" style="color:${row.Status.TextColor};background-color:${row.Status.BackgroundColor};"><i class="${row.Status.IconClass} me-1"></i>${row.Status.Name}</span>
+							</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Age") <i class="far fa-circle-question backlog-age-help" data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="@Localize("BacklogGrid.AgeHelp").Text"></i>',
+				data: 'AgeDays',
+				name: 'Age',
+				sortable: true,
+				orderSequence: ['desc', 'asc'],
+				render: function (data, type, row) {
+					return BacklogAge.render(row);
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Project")',
+				name: 'Project',
+				data: 'Project',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<a href="#" class="project-row-filter" data-project="${row.ProjectId}">${data}</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Module")',
+				name: 'Module',
+				data: 'Module',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<a href="#" class="module-row-filter" data-module="${row.ModuleId}">${data}</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.SubModule")',
+				name: 'SubModule',
+				data: 'SubModule',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<a href="#" class="submodule-row-filter" data-submodule="${row.SubModuleId}">${data}</a>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Assignee")',
+				name: 'Assignee',
+				data: 'Assignee',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)){
+						return `<a href="#" class="assignee-row-filter" data-assignee="${row.AssigneeId}">${data}</a>`;
+					}
+					else{
+						return '-'
+					}
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Tester")',
+				name: 'Tester',
+				data: 'Tester',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)){
+						return `<a href="#" class="tester-row-filter" data-tester="${row.TesterId}">${data}</a>`;
+					}
+					else{
+						return '-';
+					}
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Release")',
+				name: 'Release',
+				data: 'Release',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)){
+						return `<a href="#" class="release-row-filter" data-release="${row.ReleaseId}">${data}</a>`;
+					}
+					else{
+						return '-';
+					}
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.DueDate")',
+				name: 'DueDate',
+				data: 'DueDate',
+				sortable: true,
+				render: function (data, type, row) {
+					if (!JSManager.hasValue(data))
+						return 'Not set';
+
+					const formatted = moment(data).format('DD-MMM-YYYY');
+
+					if (row.Status.GroupId === 5)
+						return `<i class="far fa-calendar-check text-success me-1"></i>${formatted}`;
+
+					const dayDifference = moment(data).diff(moment(), "days");
+					if (dayDifference < 0)
+						return `<i class="far fa-calendar-times text-danger me-1" title="Overdue by ${Math.abs(dayDifference)} days"></i>${formatted}`;
+					else if (dayDifference === 0)
+						return `<i class="far fa-calendar-check text-success me-1" title="Due today!"></i>${formatted}`;
+					else
+						return `<i class="far fa-calendar-plus text-primary me-1" title="${dayDifference} days remaining"></i>${formatted}`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.CreatedBy")',
+				name: 'CreatedBy',
+				data: 'CreatedBy',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.CreatedOn")',
+				name: 'CreatedOn',
+				data: 'CreatedOn',
+				sortable: true,
+				render: function (data, type, row) {
+					const age = moment(data).fromNow();
+					return `<div title="${age}">${moment(data).format('DD-MMM-YYYY')}</div>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Reporter")',
+				name: 'Reporter.Name',
+				data: 'Reporter',
+				sortable: true,
+				render: function (data, type, row) {
+					return data ? data : '<span class="text-muted">-</span>';
+				}
+			}]
+		});
+
+		table.on('draw', function() {
+			$('#row-checkbox-select-all').prop('checked', false);
+			let selectedCheck = 0;
+			$('#BacklogGrid tbody .row-checkbox').each(function() {
+				var rowId = $(this).val();
+				if (selectedRows.has(rowId)) {
+					$(this).prop('checked', true);
+					selectedCheck++;
+				}
+			});
+
+			if($('#BacklogGrid tbody .row-checkbox').length === selectedCheck){
+				$('#row-checkbox-select-all').prop('checked', true);
+			}
+
+			$('.status-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('status');
+				BacklogFilterSelect.set("StatusId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#StatusId").trigger('change');
+			});
+
+			$('.severity-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('severity');
+				BacklogFilterSelect.set("SeverityId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#SeverityId").trigger('change');
+			});
+
+			$('.tasktype-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('tasktype');
+				BacklogFilterSelect.set("TaskTypeId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#TaskTypeId").trigger('change');
+			});
+
+			$('.module-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('module');
+				BacklogFilterSelect.set("ModuleId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#ModuleId").trigger('change');
+			});
+
+			$('.submodule-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('submodule');
+				BacklogFilterSelect.set("SubModuleId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#SubModuleId").trigger('change');
+			});
+
+			$('.assignee-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('assignee');
+				BacklogInactiveUsers.ensureFor({ AssigneeId: [selected] });
+				BacklogFilterSelect.set("AssigneeId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#AssigneeId").trigger('change');
+			});
+
+			$('.createdby-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('createdby');
+				BacklogFilterSelect.set("CreatedById", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#CreatedById").trigger('change');
+			});
+
+			$('.tester-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('tester');
+				BacklogInactiveUsers.ensureFor({ TesterId: [selected] });
+				BacklogFilterSelect.set("TesterId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#TesterId").trigger('change');
+			});
+
+			$('.release-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('release');
+				BacklogFilterSelect.set("ReleaseId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#ReleaseId").trigger('change');
+			});
+
+			$('.project-row-filter').on('click', function (e){
+				e.preventDefault();
+				let selected = $(this).data('project');
+				BacklogFilterSelect.set("ProjectId", [selected]);
+				$('#btnSearch').trigger('click');
+				$("#ProjectId").trigger('change');
+			});
+		});
+
+		$('#BacklogGrid tbody').on('click', '.subtask-toggle', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var $toggle = $(this);
+			var tr = $toggle.closest('tr');
+			var row = table.row(tr);
+			if (!row || !row.data()) return;
+
+			if (row.child.isShown()) {
+				row.child.hide();
+				tr.removeClass('subtask-open');
+				$toggle.find('i').removeClass('fa-caret-down').addClass('fa-caret-right');
+				return;
+			}
+
+			var rowData = row.data();
+			if (rowData._children) {
+				row.child(rowData._children).show();
+				tr.addClass('subtask-open');
+				$toggle.find('i').removeClass('fa-caret-right').addClass('fa-caret-down');
+				return;
+			}
+
+			$toggle.find('i').removeClass('fa-caret-right').addClass('fa-spinner fa-spin');
+			$.getJSON('@Url.Action("Children")/' + rowData.Id, function (children) {
+				var html = renderSubtaskChildren(children);
+				rowData._children = html;
+				row.child(html).show();
+				tr.addClass('subtask-open');
+				$toggle.find('i').removeClass('fa-spinner fa-spin').addClass('fa-caret-down');
+			}).fail(function () {
+				$toggle.find('i').removeClass('fa-spinner fa-spin').addClass('fa-caret-right');
+				if (window.toastr) toastr.error('Could not load sub-tasks.');
+			});
+		});
+
+		// Recursive drill-down: a nested child that itself has sub-tasks.
+		$('#BacklogGrid tbody').on('click', '.subtask-caret[data-id]', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			var $caret = $(this);
+			var childId = $caret.data('id');
+			var $rowEl = $caret.closest('.subtask-row');
+			var $nested = $rowEl.children('.subtask-nested');
+
+			if ($rowEl.hasClass('open')) {
+				$rowEl.removeClass('open');
+				$nested.slideUp(120);
+				$caret.find('i').removeClass('fa-caret-down').addClass('fa-caret-right');
+				return;
+			}
+
+			if ($nested.attr('data-loaded') === '1') {
+				$rowEl.addClass('open');
+				$nested.slideDown(120);
+				$caret.find('i').removeClass('fa-caret-right').addClass('fa-caret-down');
+				return;
+			}
+
+			$caret.find('i').removeClass('fa-caret-right').addClass('fa-spinner fa-spin');
+			$.getJSON('@Url.Action("Children")/' + childId, function (children) {
+				$nested.html(renderSubtaskChildren(children)).attr('data-loaded', '1');
+				$rowEl.addClass('open');
+				$nested.hide().slideDown(120);
+				$caret.find('i').removeClass('fa-spinner fa-spin').addClass('fa-caret-down');
+			}).fail(function () {
+				$caret.find('i').removeClass('fa-spinner fa-spin').addClass('fa-caret-right');
+				if (window.toastr) toastr.error('Could not load sub-tasks.');
+			});
+		});
+
+		$('#row-checkbox-select-all').on('change', function() {
+			const checked = $(this).is(':checked');
+
+			$('#BacklogGrid tbody .row-checkbox').each(function() {
+				var rowId = $(this).val();
+				$(this).prop('checked', checked);
+
+				if (checked) {
+					selectedRows.add(rowId);
+				} else {
+					selectedRows.delete(rowId);
+				}
+			});
+			toggleBatchUpdateButton();
+		});
+
+		$('#BacklogGrid tbody').on('change', '.row-checkbox', function() {
+			var rowId = $(this).val();
+			if (this.checked) {
+				selectedRows.add(rowId);
+			} else {
+				selectedRows.delete(rowId);
+			}
+			toggleBatchUpdateButton();
+		});
+
+		let columnsDirty = false;
+
+		$('#columnToggleMenu input[type="checkbox"]').on('change', function () {
+			columnsDirty = true;
+			updateColumnVisibility();
+		});
+
+		function updateColumnVisibility() {
+			const $toggles = $('#columnToggleMenu input[type="checkbox"]');
+			$toggles.each(function () {
+				var column = table.column($(this).data('column'));
+				column.visible($(this).prop('checked'));
+			});
+
+			setVisibleColumnCount();
+
+			localStorage.setItem(localStorageVisibleCols, BacklogAge.columnTokens($toggles).join(','));
+		}
+
+		(function loadVisibleColumnsFromServer() {
+			var saved = JSManager.ajaxGetWithResponse('@Url.Action("GetVisibleColumns")', {});
+			if (saved && typeof saved === 'string' && saved.length) {
+				var arr = saved.split(',');
+				$('#columnToggleMenu input[type="checkbox"]').each(function () {
+					$(this).prop('checked', BacklogAge.isColumnChecked($(this), arr));
+				});
+				updateColumnVisibility();
+			}
+		})();
+
+		$('#columnToggleBtn').closest('.dropdown').on('hidden.bs.dropdown', function () {
+			if (!columnsDirty) return;
+			columnsDirty = false;
+			var cols = BacklogAge.columnTokens($('#columnToggleMenu input[type="checkbox"]'));
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("SaveVisibleColumns")',
+				data: JSManager.addAntiForgeryToken({ columns: cols.join(',') }),
+				dataType: 'json'
+			});
+		});
+
+		$('#groupByParentBtn').on('click', function () {
+			groupByParent = !groupByParent;
+			updateGroupByParentBtn();
+			$.ajax({
+				type: 'POST',
+				url: '@Url.Action("SaveGroupByParent")',
+				data: JSManager.addAntiForgeryToken({ enabled: groupByParent }),
+				dataType: 'json'
+			});
+			table.ajax.reload();
+		});
+
+		$("#BacklogGrid").closest('div').addClass("table-responsive");
+
+		$('#BacklogGrid').on('draw.dt', function () {
+			let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+			let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+				return new bootstrap.Popover(popoverTriggerEl)
+			})
+		});
+
+		$('#resetColumn').on('click', function() {
+			$('#columnToggleMenu input[type="checkbox"]').prop('checked', true);
+			updateColumnVisibility();
+		})
+
+		$('#filter-chips').on('click', '.filter-chip-remove', function (e) {
+			e.preventDefault();
+			const target = $(this).data('target');
+			if (target === 'ReleaseId' && filterMode === 4) clearPreset();
+			if (target === '__preset') {
+				clearPreset();
+				saveFilters();
+				if (typeof countSelectedMultiSelects === 'function') countSelectedMultiSelects();
+				renderFilterChips();
+				JSManager.reloadGrid('BacklogGrid');
+				return;
+			}
+			if (target === 'DueDate' || target === 'StatusDaysMin' || target === 'OpenDaysMin') {
+				$('#' + target).val('');
+			} else {
+				if (BacklogFilterSelect.isReady(target)) BacklogFilterSelect.set(target, []);
+			}
+			saveFilters();
+			if (typeof countSelectedMultiSelects === 'function') countSelectedMultiSelects();
+			renderFilterChips();
+			JSManager.reloadGrid('BacklogGrid');
+		});
+
+		$('#btnExcelExport').on('click', function() {
+			let exportUrl = "@Url.Action("ExportToExcel")"
+						+ "?createdby=" + $('#CreatedById').val()
+						+ "&module=" + $('#ModuleId').val()
+						+ "&subModule=" + $('#SubModuleId').val()
+						+ "&taskType=" + $('#TaskTypeId').val()
+						+ "&severity=" + $('#SeverityId').val()
+						+ "&reporter=" + $('#ReporterId').val()
+						+ "&assignee=" + $('#AssigneeId').val()
+						+ "&tester=" + $('#TesterId').val()
+						+ "&status=" + $('#StatusId').val()
+						+ "&statusGroup=" + $('#StatusGroupId').val()
+						+ "&release=" + $('#ReleaseId').val()
+						+ "&project=" + $('#ProjectId').val()
+						+ "&dueDateType=" + $('#DueDateType').val()
+						+ "&dueDate=" + $('#DueDate').val()
+						+ "&statusDays=" + ($('#StatusDaysMin').val() || '')
+						+ "&openDays=" + ($('#OpenDaysMin').val() || '');
+
+			window.location.href = exportUrl;
+		});
+	});
+
+	function openBatchUpdate(){
+		var ids = [...selectedRows].join(",");
+		JSManager.openOffCanvas('@Url.Action("BatchUpdate")?ids=' + ids, '@Localize("BacklogGrid.Button.BatchUpdate")', undefined, resetSelection);
+	}
+
+	function resetSelection(){
+		$('.row-checkbox').prop('checked', false);
+		selectedRows.clear();
+		toggleBatchUpdateButton();
+	}
+
+	function toggleBatchUpdateButton(){
+		const count = selectedRows.size;
+		$("#gridSelectionCount").text(count);
+		$("#gridSelectionBar").toggleClass("d-none", count === 0);
+	}
+
+	function getFilterParam() {
+		 return {
+			 createdby: $('#CreatedById').val(),
+			 module: $('#ModuleId').val().join(','),
+			 subModule: $('#SubModuleId').val(),
+			 taskType: $('#TaskTypeId').val(),
+			 severity: $('#SeverityId').val(),
+			 reporter: $('#ReporterId').val(),
+			 assignee: $('#AssigneeId').val(),
+			 tester: $('#TesterId').val(),
+			 status: $('#StatusId').val(),
+			 statusGroup: $('#StatusGroupId').val(),
+			 release: $('#ReleaseId').val(),
+			 project: $('#ProjectId').val(),
+			 dueDateType: $('#DueDateType').val(),
+			 dueDate: $('#DueDate').val(),
+			 statusDays: $('#StatusDaysMin').val(),
+			 openDays: $('#OpenDaysMin').val()
+		 };
+	}
+
+	function dtoHasActiveFilter(dto) {
+		var arrays = ['createdby','module','subModule','taskType','severity','reporter','assignee','tester',
+			'status','statusGroup','release','project','statusDays','openDays'];
+		for (var i = 0; i < arrays.length; i++) {
+			var v = dto[arrays[i]];
+			if (Array.isArray(v) ? v.length > 0 : (v != null && v !== '')) return true;
+		}
+		if (dto.dueDate) return true;
+		if (parseInt(dto.filterMode) > 0) return true;
+		if (dto.search && dto.search.value && dto.search.value.trim() !== '') return true;
+		return false;
+	}
+
+	function updateGroupByParentBtn() {
+		var btn = $('#groupByParentBtn');
+		btn.attr('aria-pressed', groupByParent ? 'true' : 'false');
+		btn.toggleClass('active btn-primary', groupByParent);
+		btn.toggleClass('btn-secondary', !groupByParent);
+		btn.find('.gbp-label').text(groupByParent ? btn.data('label-grouped') : btn.data('label-flat'));
+		btn.attr('title', groupByParent ? btn.data('label-grouped') : btn.data('label-flat'));
+		btn.find('i').toggleClass('fa-sitemap', groupByParent).toggleClass('fa-list', !groupByParent);
+	}
+
+	function stEsc(s) {
+		return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+	}
+
+	function stInitials(name) {
+		if (!name) return '?';
+		var parts = name.trim().split(/\s+/);
+		return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+	}
+
+	function stAvatarColor(name) {
+		var palette = ['#0ea5e9', '#8b5cf6', '#22c55e', '#f59e0b', '#ef4444', '#14b8a6', '#ec4899', '#6366f1'];
+		var h = 0;
+		for (var i = 0; i < (name || '').length; i++) h = (h * 31 + name.charCodeAt(i)) % palette.length;
+		return palette[h];
+	}
+
+	function stDue(dateStr) {
+		if (!dateStr) return '';
+		var d = moment(dateStr), today = moment().startOf('day');
+		var diff = d.startOf('day').diff(today, 'days');
+		var cls = diff < 0 ? 'subtask-due--over' : (diff === 0 ? 'subtask-due--today' : 'subtask-due--future');
+		return '<span class="subtask-due ' + cls + '"><i class="far fa-clock me-1"></i>' + d.format('DD-MMM') + '</span>';
+	}
+
+	function stRow(c) {
+		var caret = parseInt(c.SubTaskCount) > 0
+			? '<span class="subtask-caret" role="button" data-id="' + c.Id + '" title="' + c.SubTaskCount + ' sub-task(s)"><i class="fas fa-caret-right"></i></span>'
+			: '<span class="subtask-caret subtask-caret--leaf"></span>';
+
+		var typeChip = '<span class="subtask-type-chip" style="background:' + stEsc(c.TaskTypeColor || '#64748b') + '" title="' + stEsc(c.TaskTypeName) + '">' +
+			(c.TaskTypeIcon ? '<i class="' + stEsc(c.TaskTypeIcon) + '"></i>' : stEsc((c.TaskTypeName || '?').substr(0, 2))) + '</span>';
+
+		var pill = c.StatusName
+			? '<span class="subtask-status" style="background:' + stEsc(c.StatusColor || '#94a3b8') + '">' + stEsc(c.StatusName) + '</span>'
+			: '';
+
+		var avatar = c.AssigneeName
+			? '<span class="subtask-avatar" style="background:' + stAvatarColor(c.AssigneeName) + '" title="' + stEsc(c.AssigneeName) + '">' + stEsc(stInitials(c.AssigneeName)) + '</span>'
+			: '';
+
+		return '<div class="subtask-row" data-id="' + c.Id + '">' +
+				'<div class="subtask-main">' +
+					caret + typeChip +
+					'<a class="subtask-title" href="@Url.Action("Edit")/' + c.Id + '" title="' + stEsc(c.Title) + '">' +
+						'<span class="subtask-id">#' + c.Id + '</span> ' + stEsc(c.Title) + '</a>' +
+				'</div>' +
+				'<div class="subtask-meta">' + pill + stDue(c.DueDate) + avatar + '</div>' +
+				'<div class="subtask-nested" data-loaded="0"></div>' +
+			'</div>';
+	}
+
+	function renderSubtaskChildren(children) {
+		if (!children || !children.length) {
+			return '<div class="subtask-panel"><span class="subtask-empty">No sub-tasks.</span></div>';
+		}
+		return '<div class="subtask-panel">' + children.map(stRow).join('') + '</div>';
+	}
+
+	function setFilterParam(dto) {
+		dto.createdby = $('#CreatedById').val();
+		dto.module = $('#ModuleId').val();
+		dto.subModule = $('#SubModuleId').val();
+		dto.taskType = $('#TaskTypeId').val();
+		dto.severity = $('#SeverityId').val();
+		dto.reporter = $('#ReporterId').val();
+		dto.assignee = $('#AssigneeId').val();
+		dto.tester = $('#TesterId').val();
+		dto.status = $('#StatusId').val();
+		dto.statusGroup = $('#StatusGroupId').val();
+		dto.release = $('#ReleaseId').val();
+		dto.project = $('#ProjectId').val();
+		dto.dueDateType = $('#DueDateType').val();
+		dto.dueDate = $('#DueDate').val();
+		dto.statusDays = $('#StatusDaysMin').val() || null;
+		dto.openDays = $('#OpenDaysMin').val() || null;
+		dto.filterMode = filterMode;
+		return dto;
+	}
+
+	function clearPreset() {
+		filterMode = 0;
+		try {
+			const url = new URL(window.location.href);
+			if (url.searchParams.has('filter') || url.searchParams.has('filterValue')) {
+				url.searchParams.delete('filter');
+				url.searchParams.delete('filterValue');
+				window.history.replaceState({}, '', url.pathname + (url.search ? url.search : '') + url.hash);
+			}
+		} catch (e) { }
+	}
+
+	function renderFilterChips() {
+		const $c = $('#filter-chips').empty();
+
+		const presetText = presetChipText();
+		if (presetText) {
+			$c.append(`<span class="filter-chip">
+				<span class="filter-chip-label">${presetText}</span>
+				<button type="button" class="filter-chip-remove" data-target="__preset" title="Remove"><i class="fas fa-times"></i></button></span>`);
+		}
+
+		filterChipDefs.forEach(function (d) {
+			if (!BacklogFilterSelect.isReady(d.id)) return;
+			const items = BacklogFilterSelect.selectedTexts(d.id);
+			if (items.length) {
+				const text = $('<div>').text(items.join(', ')).html();
+				$c.append(`<span class="filter-chip">
+					<span class="filter-chip-label">${d.label}:</span>${text}
+					<button type="button" class="filter-chip-remove" data-target="${d.id}" title="Remove"><i class="fas fa-times"></i></button></span>`);
+			}
+		});
+
+		const due = $('#DueDate').val();
+		if (JSManager.hasValue(due)) {
+			const type = $('#DueDateType option:selected').text();
+			$c.append(`<span class="filter-chip">
+				<span class="filter-chip-label">${type}:</span>${due}
+				<button type="button" class="filter-chip-remove" data-target="DueDate" title="Remove"><i class="fas fa-times"></i></button></span>`);
+		}
+
+		[{ id: 'StatusDaysMin', label: 'In status ≥' }, { id: 'OpenDaysMin', label: 'Open ≥' }].forEach(function (d) {
+			const days = parseInt($('#' + d.id).val(), 10);
+			if (days > 0) {
+				$c.append(`<span class="filter-chip">
+					<span class="filter-chip-label">${d.label}</span> ${days} days
+					<button type="button" class="filter-chip-remove" data-target="${d.id}" title="Remove"><i class="fas fa-times"></i></button></span>`);
+			}
+		});
+	}
+
+	function saveFilters() {
+		localStorage.setItem(localStorageFilters, JSON.stringify(getFilterParam()));
+	}
+
+	function loadFilters() {
+		const filters = JSON.parse(localStorage.getItem(localStorageFilters) || '{}');
+
+		BacklogInactiveUsers.ensureFor({ AssigneeId: filters.assignee, TesterId: filters.tester, CreatedById: filters.createdby });
+
+		if (filters.createdby) BacklogFilterSelect.set("CreatedById", filters.createdby);
+		if (filters.module) BacklogFilterSelect.set("ModuleId", filters.module);
+		if (filters.subModule) BacklogFilterSelect.set("SubModuleId", filters.subModule);
+		if (filters.taskType) BacklogFilterSelect.set("TaskTypeId", filters.taskType);
+		if (filters.severity) BacklogFilterSelect.set("SeverityId", filters.severity);
+		if (filters.reporter) BacklogFilterSelect.set("ReporterId", filters.reporter);
+		if (filters.assignee) BacklogFilterSelect.set("AssigneeId", filters.assignee);
+		if (filters.tester) BacklogFilterSelect.set("TesterId", filters.tester);
+		if (filters.status) BacklogFilterSelect.set("StatusId", filters.status);
+		if (filters.statusGroup) BacklogFilterSelect.set("StatusGroupId", filters.statusGroup);
+		if (filters.release) BacklogFilterSelect.set("ReleaseId", filters.release);
+		if (filters.project) BacklogFilterSelect.set("ProjectId", filters.project);
+		if (filters.dueDateType) $("#DueDateType").val(filters.dueDateType);
+		if (filters.dueDate) $("#DueDate").val(filters.dueDate);
+		if (filters.statusDays) $("#StatusDaysMin").val(filters.statusDays);
+		if (filters.openDays) $("#OpenDaysMin").val(filters.openDays);
+	}
+
+	function deleteFilter(){
+		 localStorage.removeItem(localStorageFilters);
+		 localStorage.setItem(localStorageFilters, '{}');
+		 table.search('').draw();
+	}
+
+	function setDefaultFilters(){
+		const filters = JSON.parse(localStorage.getItem(localStorageFilters) || '{}');
+		if(filterMode === 0 && filters.statusGroup === undefined){
+			if(BacklogFilterSelect.isReady("StatusGroupId")){
+				BacklogFilterSelect.set("StatusGroupId", ['1','2']);
+				$('#btnSearch').trigger('click');
+				$("#StatusGroupId").trigger('change');
+			}
+		}
+	}
+
+	function setVisibleColumnCount(){
+		let selectedCount = $('#columnToggleMenu input[type="checkbox"]:checked').length;
+		const totalColums = $('.visible-columns li>label').length;
+		const colToggleBtn = $('#columnToggleBtn');
+		colToggleBtn.find('.col-count-label').text(`Showing ${selectedCount}/${totalColums} Columns`);
+
+		if(selectedCount != totalColums){
+			colToggleBtn.removeClass('btn-secondary').addClass('btn-warning');
+		}else{
+			colToggleBtn.removeClass('btn-warning').addClass('btn-secondary');
+		}
+	}
+</script>

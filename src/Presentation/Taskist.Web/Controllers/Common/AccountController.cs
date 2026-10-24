@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Taskist.Core.Common;
-using Taskist.Service.Users;
-using Taskist.Service.Security;
-using Taskist.Service.Masters;
+using Taskist.Core.Enums;
 using Taskist.Service.Authentication;
-using Taskist.Web.Helpers.Common;
+using Taskist.Service.Logging;
+using Taskist.Service.Masters;
+using Taskist.Service.Messages;
+using Taskist.Service.Security;
+using Taskist.Service.Users;
 using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Users;
+
+using Taskist.Web.Helpers.Appearance;
 
 namespace Taskist.Web.Controllers.Common;
 
@@ -20,6 +24,9 @@ public class AccountController : Controller
     protected readonly IGenericAttributeService _genericAttributeService;
     protected readonly IAuthenticationService _authenticationService;
     protected readonly IEncryptionService _encryptionService;
+    protected readonly IMessageService _messageService;
+    protected readonly IUserActivityService _activityService;
+    protected readonly IAppearanceService _appearanceService;
 
     #endregion
 
@@ -29,13 +36,19 @@ public class AccountController : Controller
         ISystemService systemService,
         IGenericAttributeService genericAttributeService,
         IAuthenticationService authenticationService,
-        IEncryptionService encryptionService)
+        IEncryptionService encryptionService,
+        IMessageService messageService,
+        IUserActivityService activityService,
+        IAppearanceService appearanceService)
     {
+        _appearanceService = appearanceService;
         _userService = userService;
         _systemService = systemService;
         _genericAttributeService = genericAttributeService;
         _authenticationService = authenticationService;
         _encryptionService = encryptionService;
+        _messageService = messageService;
+        _activityService = activityService;
     }
 
     #endregion
@@ -44,11 +57,10 @@ public class AccountController : Controller
 
     public async Task<IActionResult> Login()
     {
-        return View();
+        return View(new LoginModel());
     }
 
     [HttpPost]
-    [EnableRateLimiting(WebConstant.AuthRateLimitPolicy)]
     public async Task<IActionResult> Login(LoginModel model, string returnUrl)
     {
         if (ModelState.IsValid)
@@ -57,42 +69,43 @@ public class AccountController : Controller
 
             switch (loginResult)
             {
-                case LoginResultEnum.Successful:
+                case LoginResult.Successful:
                     {
                         var user = await _userService.GetByEmailAsync(model.Email);
                         await _authenticationService.SignInAsync(user, model.RememberMe);
+                        await _appearanceService.SyncCookieAsync(user);
 
-                        var lastAccessedProjectId = await _genericAttributeService.GetAttributeAsync<int>(user, Constant.ActiveProjectSession);
-                        if (lastAccessedProjectId <= 0)
-                        {
-                            var accessableProject = await _userService.GetAllAccessibleProjects(user.Id);
-                            if (accessableProject.Any())
-                            {
-                                var firstProject = accessableProject.FirstOrDefault();
-                                if (firstProject != null)
-                                    await _genericAttributeService.SaveAttributeAsync(user, Constant.ActiveProjectSession, firstProject.Id);
-                            }
-                        }
+                        await _activityService.InsertAsync(user, ActivityType.Login, "Signed in");
+
                         await _systemService.ResetCacheAsync();
 
                         if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
                             return RedirectToAction("Index", "Home");
                         return Redirect(returnUrl);
                     }
-                case LoginResultEnum.LockedOut:
-                    ModelState.AddModelError(string.Empty, "Your account is temporarily locked. Please try again later.");
+                case LoginResult.NotExist:
+                    ModelState.AddModelError(string.Empty, "User doesn't exists");
                     break;
-                //every other failure returns one message so the form cannot be
-                //used to discover which email addresses have accounts
-                case LoginResultEnum.NotExist:
-                case LoginResultEnum.NotActive:
-                case LoginResultEnum.Deleted:
-                case LoginResultEnum.NotRegistered:
-                case LoginResultEnum.WrongPassword:
+                case LoginResult.NotActive:
+                    ModelState.AddModelError(string.Empty, "User is not active");
+                    break;
+                case LoginResult.Deleted:
+                    ModelState.AddModelError(string.Empty, "No account with this email found");
+                    break;
+                case LoginResult.NotRegistered:
+                    ModelState.AddModelError(string.Empty, "Account is not registered");
+                    break;
+                case LoginResult.LockedOut:
+                    ModelState.AddModelError(string.Empty, "Your account is locked out");
+                    break;
+                case LoginResult.WrongPassword:
                 default:
                     ModelState.AddModelError(string.Empty, "The credentials provided are incorrect");
                     break;
             }
+
+            await _activityService.InsertAsync(await _userService.GetByEmailAsync(model.Email),
+                ActivityType.LoginFailed, $"Failed sign-in: {loginResult}");
         }
 
         return View(model);
@@ -100,9 +113,39 @@ public class AccountController : Controller
 
     public async Task<IActionResult> Logout()
     {
+        await _activityService.InsertAsync(ActivityType.Logout, "Signed out");
+
         await HttpContext.Session.ClearAsync();
         await _authenticationService.SignOutAsync();
         return RedirectToAction("Index", "Home");
+    }
+
+    #endregion
+
+    #region Forgot Password
+
+    [HttpGet]
+    public IActionResult ForgotPassword()
+    {
+        return View(new ForgotPasswordModel());
+    }
+
+    [HttpPost]
+    [EnableRateLimiting("ForgotPassword")]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
+    {
+        if (!ModelState.IsValid)
+            return View(model);
+
+        var user = await _userService.GetByEmailAsync(model.Email);
+        if (user != null && user.Id > 0 && !user.Deleted && user.Status == (int)UserStatus.Active)
+        {
+            var token = _encryptionService.GenerateToken(user.Code);
+            await _messageService.EmailPasswordResetLinkAsync(user, token);
+        }
+
+        TempData["ForgotPasswordSent"] = true;
+        return RedirectToRoute("ForgotPassword");
     }
 
     #endregion
@@ -143,7 +186,6 @@ public class AccountController : Controller
     }
 
     [HttpPost]
-    [EnableRateLimiting(WebConstant.AuthRateLimitPolicy)]
     public async Task<IActionResult> Activate(SetPasswordModel model)
     {
         if (ModelState.IsValid)

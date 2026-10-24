@@ -1,0 +1,122 @@
+#pdOffCanvas.pd-offcanvas--wide {
+    width: 760px;
+    max-width: 96vw;
+}
+
+.offcanvas-body:has(#permGroups) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.offcanvas-body:has(#permGroups) > form {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.perm-groups {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: .25rem;
+}
+
+.perm-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    align-items: center;
+    justify-content: space-between;
+    padding: .25rem 0 .75rem;
+    background: #fff;
+    border-bottom: 1px solid #e3e8ef;
+    margin-bottom: .75rem;
+}
+
+.perm-search {
+    position: relative;
+    flex: 1 1 240px;
+    min-width: 200px;
+}
+
+.perm-search__icon {
+    position: absolute;
+    left: .65rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9aa5b1;
+    pointer-events: none;
+}
+
+.perm-search .form-control {
+    padding-left: 2rem;
+}
+
+.perm-toolbar__actions {
+    display: flex;
+    gap: .35rem;
+    flex-wrap: wrap;
+}
+
+.perm-group {
+    border: 1px solid #e3e8ef;
+    border-radius: .5rem;
+    margin-bottom: .6rem;
+    overflow: hidden;
+}
+
+.perm-group__head {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem .75rem;
+    background: #f4f7fb;
+}
+
+.perm-group__all-wrap {
+    margin: 0;
+}
+
+.perm-group__toggle {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    color: #2c3e50;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.perm-group__toggle:hover {
+    color: #0d6efd;
+}
+
+.perm-chevron {
+    margin-right: .5rem;
+    transition: transform .2s ease;
+}
+
+.perm-group__toggle.collapsed .perm-chevron {
+    transform: rotate(-90deg);
+}
+
+.perm-group__badge {
+    background: #e3e8ef;
+    color: #44525f;
+    font-weight: 600;
+}
+
+.perm-group__body {
+    padding: .65rem .75rem .25rem;
+}
+
+.perm-footer {
+    flex: 0 0 auto;
+    background: #fff;
+    border-top: 1px solid #e3e8ef;
+    padding-top: .75rem;
+    margin-top: .5rem;
+}

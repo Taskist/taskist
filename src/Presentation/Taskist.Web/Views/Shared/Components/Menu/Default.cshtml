@@ -1,13 +1,16 @@
-﻿@model MenuModel
+@model MenuModel
 @{
     var controllerName = ViewContext.RouteData.Values["controller"].ToString();
+    var actionName = ViewContext.RouteData.Values["action"]?.ToString();
 }
 
 <ul class="sidebar-nav" data-coreui="navigation" data-simplebar="">
     @foreach (var parent in Model.MenuItems.Where(x => x.ParentCode == 0))
     {
         var menuItems = Model.MenuItems.Where(x => x.ParentCode == parent.Code).ToList();
-        var activeParentClass = menuItems.Any(x => x.ControllerName == controllerName) ? "show" : "";
+        var activeParentClass = menuItems.Any(x =>
+            string.Equals(x.ControllerName, controllerName, StringComparison.OrdinalIgnoreCase))
+            ? "show active-parent" : "";
         if (menuItems.Any())
         {
             <li class="nav-group @activeParentClass">
@@ -17,7 +20,14 @@
                 <ul class="nav-group-items compact">
                     @foreach (var menu in menuItems)
                     {
-                        var activeClass = parent.ControllerName == controllerName ? "active" : "";
+                        var controllerMenus = Model.MenuItems.Where(x => x.ControllerName == menu.ControllerName).ToList();
+                        var hasExactAction = controllerMenus.Any(x => string.Equals(x.ActionName, actionName, StringComparison.OrdinalIgnoreCase));
+                        var fallbackItem = controllerMenus.FirstOrDefault(x => string.Equals(x.ActionName, "Index", StringComparison.OrdinalIgnoreCase)) ?? controllerMenus.FirstOrDefault();
+                        var isActive = string.Equals(menu.ControllerName, controllerName, StringComparison.OrdinalIgnoreCase)
+                            && (hasExactAction
+                                ? string.Equals(menu.ActionName, actionName, StringComparison.OrdinalIgnoreCase)
+                                : fallbackItem != null && menu.Code == fallbackItem.Code);
+                        var activeClass = isActive ? "active" : "";
                         <li class="nav-item">
                             <a class="nav-link @activeClass" asp-action="@menu.ActionName" asp-controller="@menu.ControllerName">
                                 <span class="nav-icon"><span class="nav-icon-bullet"></span></span>@menu.Name
@@ -27,11 +37,11 @@
                 </ul>
             </li>
         }
-        else
+        else if (!string.IsNullOrEmpty(parent.ControllerName))
         {
             var activeClass = parent.ControllerName == controllerName ? "active" : "";
             <li class="nav-item">
-                <a class="nav-link" asp-action="@parent.ActionName" asp-controller="@parent.ControllerName">
+                <a class="nav-link @activeClass" asp-action="@parent.ActionName" asp-controller="@parent.ControllerName">
                     <i class="nav-icon @parent.Icon"></i>@parent.Name
                 </a>
             </li>

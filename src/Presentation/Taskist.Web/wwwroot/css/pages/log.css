@@ -1,0 +1,94 @@
+.log-day {
+    font-weight: 600;
+    color: #384b66;
+    margin: 0.75rem 0 0.35rem;
+}
+
+.log-timeline {
+    list-style: none;
+    margin: 0 0 0.5rem;
+    padding: 0;
+}
+
+.log-item {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.35rem 0;
+    align-items: flex-start;
+    border-bottom: 1px solid #f2f5f9;
+}
+
+.log-dot {
+    flex: 0 0 auto;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-size: 0.72rem;
+}
+
+.log-body {
+    flex: 1 1 auto;
+}
+
+.log-meta {
+    font-size: 0.72rem;
+    color: #8a93a2;
+}
+
+.log-diff pre {
+    background: #f6f8fb;
+    border: 1px solid #e3eaf2;
+    border-radius: 4px;
+    padding: 0.4rem;
+    font-size: 0.72rem;
+    white-space: pre-wrap;
+    margin: 0.2rem 0 0.4rem;
+    max-height: 200px;
+    overflow: auto;
+}
+
+/* ===== Audit detail (friendly diff) ===== */
+.audit-detail-head {
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eef1f5;
+    margin-bottom: 8px;
+}
+
+.audit-detail-action {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 10px;
+    background: #eef2f8;
+    color: #51607a;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.audit-diff td, .audit-diff th {
+    font-size: 0.82rem;
+}
+
+.audit-diff-field {
+    font-weight: 600;
+    color: #2b3a4f;
+    white-space: nowrap;
+}
+
+.audit-diff-old { color: #a23b3b; }
+.audit-diff-new { color: #2e7d46; }
+.audit-diff--changed { background: #fffaf0; }
+
+.audit-raw pre {
+    background: #f6f8fb;
+    border: 1px solid #e3eaf2;
+    border-radius: 4px;
+    padding: 0.4rem;
+    font-size: 0.72rem;
+    white-space: pre-wrap;
+    max-height: 160px;
+    overflow: auto;
+    margin: 0.2rem 0 0.4rem;
+}

@@ -11,42 +11,54 @@ public class UserValidator : AbstractValidator<UserModel>
     public UserValidator(ILocalizationService localizationService,
         IUserService userService)
     {
+        RuleFor(r => r.UserNumber)
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.UserNumber.RequiredMsg"))
+            .MaximumLength(20).WithMessage(localizationService.GetResource("UserModel.UserNumber.MaxLengthMsg"));
+
         RuleFor(r => r.FirstName)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.FirstName.RequiredMsg"))
-            .MaximumLength(50).WithMessageAwait(localizationService.GetResourceAsync("UserModel.FirstName.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.FirstName.RequiredMsg"))
+            .MaximumLength(50).WithMessage(localizationService.GetResource("UserModel.FirstName.MaxLengthMsg"));
 
         RuleFor(r => r.LastName)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.LastName.RequiredMsg"))
-            .MaximumLength(50).WithMessageAwait(localizationService.GetResourceAsync("UserModel.LastName.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.LastName.RequiredMsg"))
+            .MaximumLength(50).WithMessage(localizationService.GetResource("UserModel.LastName.MaxLengthMsg"));
 
         RuleFor(r => r.Email)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.RequiredMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.MaxLengthMsg"))
-            .EmailAddress().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.InvalidMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.Email.RequiredMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("UserModel.Email.MaxLengthMsg"))
+            .EmailAddress().WithMessage(localizationService.GetResource("UserModel.Email.InvalidEmailMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
                 {
                     var editedEntity = await userService.GetByEmailAsync(x.Email);
-                    return (editedEntity != null) && (editedEntity.Email == x.Email);
+                    return editedEntity == null || editedEntity.Email == x.Email;
                 }
                 var entity = await userService.GetByEmailAsync(x.Email);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Email.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("UserModel.Email.UniqueMsg"));
+
+        RuleFor(r => r.MobileNumber)
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.MobileNumber.RequiredMsg"))
+            .MaximumLength(20).WithMessage(localizationService.GetResource("UserModel.MobileNumber.InvalidMsg"));
 
         RuleFor(r => r.GenderId)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Gender.RequiredMsg"))
-            .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Gender.RequiredMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.Gender.RequiredMsg"))
+            .GreaterThan(0).WithMessage(localizationService.GetResource("UserModel.Gender.RequiredMsg"));
 
-        RuleFor(r => r.LanguageId)
-           .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Language.RequiredMsg"))
-           .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Language.RequiredMsg"));
+        RuleFor(r => r.DateOfBirth)
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.DateOfBirth.RequiredMsg"))
+            .GreaterThan(DateOnly.MinValue).WithMessage(localizationService.GetResource("UserModel.DateOfBirth.InvalidMsg"));
+
+        RuleFor(r => r.DateOfJoin)
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.DateOfJoin.RequiredMsg"))
+            .GreaterThan(DateOnly.MinValue).WithMessage(localizationService.GetResource("UserModel.DateOfJoin.InvalidMsg"));
 
         RuleFor(r => r.SelectedRoleIds)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Role.RequiredMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.Role.RequiredMsg"));
 
         RuleFor(r => r.Status)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("UserModel.Status.RequiredMsg"))
-            .GreaterThan(0).WithMessageAwait(localizationService.GetResourceAsync("UserModel.Status.RequiredMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("UserModel.Status.RequiredMsg"))
+            .GreaterThan(0).WithMessage(localizationService.GetResource("UserModel.Status.RequiredMsg"));
     }
 }

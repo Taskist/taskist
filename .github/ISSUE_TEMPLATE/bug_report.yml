@@ -1,101 +1,63 @@
-name: 🐛 Bug Report
-description: Something is not working as expected
-title: "[Bug]: "
-labels: ["bug", "needs triage"]
+name: Bug report
+description: Something in Taskist doesn't work as expected
+labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
         Thanks for taking the time to report a bug.
-
-        ⚠️ **Found a security vulnerability?** Please do not file it here. Follow [SECURITY.md](https://github.com/Taskist/taskist/blob/main/SECURITY.md) to report it privately.
+        **Security issues:** please don't file them here — follow [SECURITY.md](https://github.com/Taskist/taskist/blob/main/SECURITY.md) instead.
 
   - type: textarea
-    id: description
+    id: what-happened
     attributes:
       label: What happened?
-      description: A clear description of the problem.
+      description: What did you see, and what did you expect to see instead?
     validations:
       required: true
 
   - type: textarea
-    id: reproduction
+    id: steps
     attributes:
       label: Steps to reproduce
-      description: We can rarely fix what we cannot reproduce.
       placeholder: |
-        1. Sign in as ...
-        2. Go to ...
-        3. Click ...
-        4. See the error
-    validations:
-      required: true
-
-  - type: textarea
-    id: expected
-    attributes:
-      label: What did you expect to happen?
+        1. Open Work Items → Backlog
+        2. …
+        3. See error
     validations:
       required: true
 
   - type: input
     id: version
     attributes:
-      label: Taskist version
-      description: Release tag or commit SHA.
-      placeholder: "v1.0.0 or 3f8a2c1"
+      label: Taskist version or commit
+      description: Shown under the sign-in form (e.g. "v 1.0.1"), or the commit hash you built from.
     validations:
       required: true
 
   - type: dropdown
     id: deployment
     attributes:
-      label: How are you running Taskist?
+      label: How do you run Taskist?
       options:
-        - Docker Compose
-        - IIS / Windows Server
-        - Linux (systemd, nginx, or similar)
-        - Local development (dotnet run)
+        - Docker Compose (this repository)
+        - IIS
+        - Linux / Kestrel behind a reverse proxy
+        - dotnet run (development)
         - Other
     validations:
       required: true
 
-  - type: dropdown
-    id: database
+  - type: input
+    id: environment
     attributes:
-      label: SQL Server version
-      options:
-        - SQL Server 2022
-        - SQL Server 2019
-        - SQL Server 2017
-        - SQL Server Express
-        - LocalDB
-        - Azure SQL
-        - Other
-    validations:
-      required: true
+      label: Environment
+      description: SQL Server version, operating system, browser.
+      placeholder: SQL Server 2022, Windows Server 2022, Edge 130
 
   - type: textarea
     id: logs
     attributes:
-      label: Relevant logs or error output
-      description: Application logs, the `Log` table, or browser console output. This is automatically formatted as code.
-      render: shell
-
-  - type: textarea
-    id: context
-    attributes:
-      label: Anything else?
-      description: Screenshots, browser version, or other context.
-
-  - type: checkboxes
-    id: checks
-    attributes:
-      label: Before submitting
-      options:
-        - label: I searched existing issues and did not find a duplicate
-          required: true
-        - label: I am running a supported version of Taskist
-          required: true
-        - label: This is not a security vulnerability (those go through SECURITY.md)
-          required: true
+      label: Relevant log output
+      description: Application log or browser console errors. Remove any secrets, tokens or personal data first.
+      render: text

@@ -10,7 +10,6 @@
 
 # Runtime state that must not be baked into an image
 **/App_Data/DataProtectionKeys/
-**/wwwroot/uploads/
 **/Logs/
 
 # Source control and tooling

@@ -1,113 +1,111 @@
-/* Top-bar global search autocomplete.
-   Reads the search endpoint from #navSearchInput's data-search-url, groups the
-   JSON results by their "group" field, and supports keyboard navigation.
-   Ctrl/Cmd+K (or "/") focuses the search box. */
-
 (function () {
     "use strict";
 
-    var $input = $("#navSearchInput");
-    if (!$input.length) return;
+    var input = document.getElementById('navSearchInput');
+    if (!input) return;
 
-    var $results = $("#navSearchResults");
-    var $wrap = $("#navSearch");
-    var url = $input.data("search-url");
-    var noResults = $input.data("noresults") || "No results";
+    var box = document.getElementById('navSearchResults');
+    var url = input.dataset.searchUrl;
+    var noResults = input.dataset.noresults || 'No results';
     var timer = null;
+    var current = [];
     var activeIndex = -1;
 
-    function close() {
-        $results.removeClass("show").empty();
+    function itemEls() {
+        return Array.prototype.slice.call(box.querySelectorAll('.header-search__item'));
+    }
+
+    function highlight() {
+        var els = itemEls();
+        els.forEach(function (el, i) { el.classList.toggle('active', i === activeIndex); });
+        if (activeIndex >= 0 && els[activeIndex]) els[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function esc(s) {
+        return (s || '').replace(/[&<>"]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+        });
+    }
+
+    function close() { box.classList.remove('show'); }
+
+    function render(items) {
+        current = items || [];
         activeIndex = -1;
-    }
-
-    function open() {
-        $results.addClass("show");
-    }
-
-    function items() {
-        return $results.find(".header-search__item");
-    }
-
-    function highlight(i) {
-        var $all = items();
-        if (!$all.length) return;
-        activeIndex = (i + $all.length) % $all.length;
-        $all.removeClass("active").eq(activeIndex).addClass("active");
-        // keep the active item in view
-        var el = $all.get(activeIndex);
-        if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
-    }
-
-    function render(data) {
-        $results.empty();
-
-        if (!data || !data.length) {
-            $results.append($('<div class="header-search__empty">').text(noResults));
-            open();
+        if (!current.length) {
+            box.innerHTML = '<div class="header-search__empty">' + esc(noResults) + '</div>';
+            box.classList.add('show');
             return;
         }
-
         var groups = {};
-        var order = [];
-        data.forEach(function (r) {
-            var g = r.group || "";
-            if (!groups[g]) { groups[g] = []; order.push(g); }
-            groups[g].push(r);
-        });
-
-        order.forEach(function (g) {
-            if (g) $results.append($('<div class="header-search__group">').text(g));
+        current.forEach(function (r) { (groups[r.group] = groups[r.group] || []).push(r); });
+        var html = '';
+        Object.keys(groups).forEach(function (g) {
+            html += '<div class="header-search__group">' + esc(g) + '</div>';
             groups[g].forEach(function (r) {
-                var $item = $('<a class="header-search__item">').attr("href", r.url);
-                $item.append($('<i>').addClass(r.icon || "fas fa-circle"));
-                $item.append($('<span class="hs-label">').text(r.label || ""));
-                if (r.sublabel) $item.append($('<span class="hs-sub">').text(r.sublabel));
-                $results.append($item);
+                html += '<a class="header-search__item" href="' + r.url + '">' +
+                    '<i class="' + r.icon + '"></i>' +
+                    '<span class="hs-label">' + esc(r.label) + '</span>' +
+                    (r.sublabel ? '<span class="hs-sub">' + esc(r.sublabel) + '</span>' : '') +
+                    '</a>';
             });
         });
-
-        open();
+        box.innerHTML = html;
+        box.classList.add('show');
     }
 
-    function search(q) {
-        $.getJSON(url, { q: q })
-            .done(render)
-            .fail(close);
+    function run() {
+        var q = input.value.trim();
+        if (q.length < 2) { close(); box.innerHTML = ''; return; }
+        $.getJSON(url, { q: q }).done(render).fail(close);
     }
 
-    $input.on("input", function () {
-        var q = $.trim($(this).val());
+    input.addEventListener('input', function () {
         clearTimeout(timer);
-        if (q.length < 2) { close(); return; }
-        timer = setTimeout(function () { search(q); }, 250);
+        timer = setTimeout(run, 250);
     });
 
-    $input.on("keydown", function (e) {
-        var open = $results.hasClass("show");
-        if (e.key === "ArrowDown") { e.preventDefault(); if (open) highlight(activeIndex + 1); }
-        else if (e.key === "ArrowUp") { e.preventDefault(); if (open) highlight(activeIndex - 1); }
-        else if (e.key === "Enter") {
-            var $active = items().eq(activeIndex);
-            if (activeIndex >= 0 && $active.length) { e.preventDefault(); window.location.href = $active.attr("href"); }
+    input.addEventListener('keydown', function (e) {
+        var els = itemEls();
+        if (e.key === 'ArrowDown') {
+            if (!els.length) return;
+            e.preventDefault();
+            activeIndex = Math.min(activeIndex + 1, els.length - 1);
+            highlight();
+        } else if (e.key === 'ArrowUp') {
+            if (!els.length) return;
+            e.preventDefault();
+            activeIndex = Math.max(activeIndex - 1, 0);
+            highlight();
+        } else if (e.key === 'Enter') {
+            if (!els.length) return;
+            e.preventDefault();
+            var target = activeIndex >= 0 ? els[activeIndex] : els[0];
+            if (target) window.location.href = target.getAttribute('href');
+        } else if (e.key === 'Escape') {
+            close();
         }
-        else if (e.key === "Escape") { close(); $(this).blur(); }
     });
 
-    // close on outside click
-    $(document).on("click", function (e) {
-        if (!$wrap.length || !$wrap[0].contains(e.target)) close();
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('#navSearch')) close();
     });
 
-    // global shortcut: Ctrl/Cmd+K or "/" focuses search (unless already typing)
-    $(document).on("keydown", function (e) {
-        var typing = /^(input|textarea|select)$/i.test((e.target.tagName || "")) || e.target.isContentEditable;
-        if ((e.key === "k" || e.key === "K") && (e.ctrlKey || e.metaKey)) {
+    function isTypingTarget(el) {
+        if (!el) return false;
+        var t = (el.tagName || '').toLowerCase();
+        return t === 'input' || t === 'textarea' || t === 'select' || el.isContentEditable;
+    }
+
+    document.addEventListener('keydown', function (e) {
+        var key = (e.key || '').toLowerCase();
+        if ((e.ctrlKey || e.metaKey) && key === 'k') {
             e.preventDefault();
-            $input.focus().select();
-        } else if (e.key === "/" && !typing) {
+            input.focus();
+            input.select();
+        } else if (key === '/' && !isTypingTarget(e.target)) {
             e.preventDefault();
-            $input.focus();
+            input.focus();
         }
     });
 })();

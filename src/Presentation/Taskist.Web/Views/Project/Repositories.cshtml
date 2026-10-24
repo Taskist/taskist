@@ -1,0 +1,85 @@
+@model ProjectModel
+
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "ProjectRepositoryGrid",
+    Title = $"{Localize("ProjectRepositoryModel.Title").Text} · {Model.Name}",
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("DataReadRepository", new { projectId = Model.Id }),
+    Sorting = false,
+    AddButtonToHeader = true,
+    HeaderActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.AddNew").Text,
+            Url = Url.Action("AddRepository", new { projectId = Model.Id }),
+            Text = Localize("Button.AddNew").Text,
+            Icon = "fas fa-plus",
+            HyperLinkType = HyperLinkType.BUTTON_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-9 col-md-11 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.Edit").Text,
+            Url = Url.Action("EditRepository"),
+            Text = Localize("Button.Edit").Text,
+            Icon = "far fa-edit",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-9 col-md-11 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("ProjectRepository.Webhook").Text,
+            Url = Url.Action("RepositoryWebhook"),
+            Text = Localize("ProjectRepository.Webhook").Text,
+            Icon = "fas fa-satellite-dish",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-8 col-md-10 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("Button.Delete").Text,
+            Url = Url.Action("DeleteRepository"),
+            Text = Localize("Button.Delete").Text,
+            AuxText = Localize("Button.Cancel").Text,
+            Icon = "fas fa-trash",
+            ReferenceParameter = "Id",
+            DeleteConfirmBox = true,
+            DeleteConfirmBoxMsg = Localize("Confirmation.Delete").Text,
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.Name").Text, DataColumn = "Name" },
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.Connection").Text, DataColumn = "Connection" },
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.Primary").Text, DataColumn = "Primary", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-minus", TextColor = "#8a93a2" }
+        }},
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.IssueSync").Text, DataColumn = "IssueSync" },
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.WebhookSecured").Text, DataColumn = "WebhookSecured", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-lock", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-lock-open", TextColor = "#e55353" }
+        }},
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.LastDelivery").Text, DataColumn = "LastDelivery" },
+        new ColumnModel { Title = Localize("ProjectRepositoryGrid.Active").Text, DataColumn = "Active", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+        }}
+    }
+})

@@ -1,0 +1,50 @@
+@model NotificationChannelModel
+@{
+    var saved = Localize("NotificationChannelModel.SecretSaved").Text;
+}
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+@if (!string.IsNullOrEmpty(Model.LastError))
+{
+    <div class="alert alert-danger small py-2"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("NotificationChannelModel.LastError") @Model.LastError</div>
+}
+else if (Model.LastSentOn.HasValue)
+{
+    <div class="alert alert-success small py-2"><i class="fas fa-circle-check me-1"></i>@Localize("NotificationChannelModel.LastSentOn") @Model.LastSentOn.Value.ToLocalTime().ToString("dd-MMM-yyyy HH:mm")</div>
+}
+<div class="mb-3">
+    <wc-label asp-for="Name" />
+    <input asp-for="Name" class="form-control" maxlength="100" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <wc-label asp-for="ChannelType" />
+    <select asp-for="ChannelType" asp-items="Model.AvailableTypes" class="form-control js-channel-type"></select>
+    <div class="form-text">@Localize("NotificationChannelModel.ChannelType.Hint")</div>
+</div>
+<div class="mb-3">
+    <wc-label asp-for="EndpointUrl" />
+    <input asp-for="EndpointUrl" type="password" class="form-control" maxlength="2000" autocomplete="new-password" spellcheck="false" placeholder="@(Model.HasEndpointUrl ? saved : "https://")" />
+    <div class="form-text">@Localize("NotificationChannelModel.EndpointUrl.Hint")</div>
+    <span asp-validation-for="EndpointUrl" class="text-danger"></span>
+</div>
+<div class="mb-3 js-signing-secret">
+    <wc-label asp-for="SigningSecret" />
+    <input asp-for="SigningSecret" type="password" class="form-control" maxlength="500" autocomplete="new-password" placeholder="@(Model.HasSigningSecret ? saved : string.Empty)" />
+    <div class="form-text">@Localize("NotificationChannelModel.SigningSecret.Hint")</div>
+</div>
+<div class="mb-3">
+    <label class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="Active" />
+        <wc-label asp-for="Active" />
+    </label>
+</div>
+@if (Model.Id > 0)
+{
+    <div class="mb-3">
+        <button type="button" class="btn btn-sm btn-outline-primary js-channel-test" data-url="@Url.Action("Test", new { id = Model.Id })">
+            <i class="fas fa-paper-plane me-1"></i>@Localize("NotificationChannelModel.Test")
+        </button>
+        <div class="form-text">@Localize("NotificationChannelModel.Test.Hint")</div>
+    </div>
+}

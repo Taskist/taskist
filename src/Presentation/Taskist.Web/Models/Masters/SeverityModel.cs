@@ -1,9 +1,9 @@
-﻿using Taskist.Web.Helpers.Attributes;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class SeverityModel : BasePageModel
+public class SeverityModel : BaseModel
 {
     [LocalizedDisplayName("SeverityModel.Name")]
     public string Name { get; set; }

@@ -1,6 +1,7 @@
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Core.Domain.Users;
+using Taskist.Core.Enums;
 
 namespace Taskist.Service.Users;
 
@@ -9,7 +10,7 @@ public interface IUserService
     #region Users
 
     Task<IPagedList<User>> GetPagedListAsync(string search = "", int pageIndex = 0, int pageSize = int.MaxValue,
-        string sortColumn = "", string sortDirection = "");
+        string sortColumn = "", string sortDirection = "", int[] statuses = null, int[] roleIds = null, bool? locked = null);
 
     Task<IPagedList<UserRole>> GetPagedListUserRoleAsync(string search = "", int pageIndex = 0, int pageSize = int.MaxValue,
         string sortColumn = "", string sortDirection = "");
@@ -20,17 +21,41 @@ public interface IUserService
 
     Task<IList<User>> GetAllActiveByProjectAsync(int projectId);
 
+    Task<IList<User>> GetAllActiveByProjectAsync(int projectId, string roleName);
+
+    Task<IList<User>> GetAllActiveByRoleAsync(string roleName);
+
+    Task<IList<User>> GetAllInactiveAsync();
+
+    Task<IList<User>> GetAllInactiveByRoleAsync(string roleName);
+
+    Task<IList<User>> GetActiveByRolesAsync(IEnumerable<string> roleNames);
+
     Task<User> GetByIdAsync(int id);
 
     Task<User> GetByCodeAsync(Guid code);
 
     Task<User> GetByEmailAsync(string email);
 
+    Task<User> GetByNameAsync(string name);
+
+    Task<User> GetByGitUserAsync(string gitUsername);
+
+    Task<User> GetByMobileNumberAsync(string mobileNo);
+
+    Task<string> GenerateCode();
+
     Task InsertAsync(User entity);
 
     Task UpdateAsync(User entity);
 
     Task DeleteAsync(User entity);
+
+    Task<IList<User>> GetUserByPermissionAsync(string permissionSystemName);
+
+    Task<IList<int>> GetProjectLeadIdsForUserAsync(int userId);
+
+    Task<Dictionary<int, List<string>>> GetActiveUserProjectNamesAsync();
 
     #endregion
 
@@ -58,6 +83,8 @@ public interface IUserService
 
     Task<IList<UserRolePermissionMap>> GetAllUserRolePermissionMapsAsync();
 
+    Task<IList<UserRoleMap>> GetAllUserRoleMapsAsync();
+
     Task InsertUserRoleAsync(UserRole userRole);
 
     Task InsertUserRoleAsync(List<UserRole> userRoles);
@@ -76,6 +103,8 @@ public interface IUserService
 
     Task<UserPassword> GetCurrentPasswordAsync(int userId);
 
+    Task<bool> ValidateCurrentPasswordAsync(int userId, string password);
+
     Task InsertUserPasswordAsync(UserPassword userPassword);
 
     Task UpdateUserPasswordAsync(UserPassword userPassword);
@@ -84,28 +113,25 @@ public interface IUserService
 
     #region Authentication/Registration
 
-    Task<LoginResultEnum> ValidateAsync(string userName, string password);
+    Task<LoginResult> ValidateAsync(string userName, string password);
+
+    Task<bool> UnlockAsync(int userId);
 
     Task ResetPasswordAsync(int userId, string newPassword);
 
-    Task<RegistrationResultEnum> RegisterAsync(User user,
+    Task<RegistrationResult> RegisterAsync(User user,
+        Address address,
         List<int> roleIds,
         User loggedUser,
         bool emailWelcomeKit);
 
     Task<User> ValidateTokenAsync(string token);
 
-    /// <summary>
-    /// Indicates whether the account is currently barred from signing in.
-    /// Clears an expired lockout as a side effect.
-    /// </summary>
-    Task<bool> IsLockedOutAsync(User user);
-
     #endregion
 
     #region Projects
 
-    Task<IList<Project>> GetAllAccessibleProjects(int userId);
+    Task<IList<Project>> GetAllAccessibleProjects(int userId, bool fetchOnlyCanViewOthersTask = false);
 
     Task<UserProjectMap> GetProjectMapping(int userId, int projectId);
 

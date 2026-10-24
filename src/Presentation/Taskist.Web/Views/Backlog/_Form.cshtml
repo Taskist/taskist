@@ -1,43 +1,148 @@
-﻿@model BacklogModel
-<input type="hidden" asp-for="Id"/>
+@model BacklogModel
+@{
+    var updateCssClassName = "";
+    if (Model.Id > 0 && Model.CanEdit)
+    {
+        updateCssClassName = "ajax-update";
+    }
+}
+
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="SourceWikiDocumentId" />
 <div asp-validation-summary="ModelOnly" class="message-error"></div>
 <div class="row">
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="Title" class="form-wc-label"></wc-label>
-            <input asp-for="Title" class="form-control form-control-maxlength" autocomplete="off" maxlength="500"/>
+            <input asp-for="Title" class="form-control form-control-maxlength @updateCssClassName" autocomplete="off" maxlength="500" />
             <span asp-validation-for="Title" class="text-danger"></span>
+            <div id="similar-tasks" class="similar-tasks d-none"></div>
         </div>
     </div>
 </div>
 <div class="row">
     <div class="col-md-12">
-        <div class="mb-3">
-            <wc-label asp-for="Description" class="form-wc-label"></wc-label>
-            <textarea asp-for="Description"></textarea>
-            <span asp-validation-for="Description" class="text-danger"></span>
+        <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active text-info" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                    <i class="fas fa-sticky-note me-1"></i>@Localize("BacklogPage.DescriptionTabTitle")
+                </button>
+            </li>
+            <li class="nav-item @(Model.ShowRootCauseTab ? "" : "d-none")" role="presentation" id="rca-tab-item">
+                <button class="nav-link rcf-tab" id="rca-tab" data-bs-toggle="tab" data-bs-target="#rca" type="button" role="tab" aria-controls="rca" aria-selected="false">
+                    <i class="fas fa-magnifying-glass-chart me-1"></i>@Localize("BacklogPage.RootCauseFixTabTitle")
+                    <span class="rcf-tab-badge" id="rcfTabBadge"></span>
+                </button>
+            </li>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentJson))
+            {
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-secondary" id="environment-tab" data-bs-toggle="tab" data-bs-target="#environment" type="button" role="tab" aria-controls="environment" aria-selected="false">
+                        <i class="fas fa-desktop me-1"></i>@Localize("BacklogPage.EnvironmentTabTitle")
+                    </button>
+                </li>
+            }
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade active show" id="description" role="tabpanel" aria-labelledby="description-tab">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="mb-3">
+                            <textarea asp-for="Description"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="rca" role="tabpanel" aria-labelledby="rca-tab">
+                <div class="rcf">
+                    <section class="rcf-step rcf-step--cause" data-item="rc">
+                        <div class="rcf-marker"><span data-step="1">1</span></div>
+                        <div class="rcf-card">
+                            <header class="rcf-head">
+                                <div class="rcf-head__text">
+                                    <div class="rcf-title"><i class="fas fa-bug me-2"></i>@Localize("BacklogPage.RootCauseFix.RootCause")</div>
+                                    <div class="rcf-sub">@Localize("BacklogPage.RootCauseFix.RootCauseHint")</div>
+                                </div>
+                                <span class="rcf-req d-none"></span>
+                                <span class="rcf-state"></span>
+                            </header>
+                            <textarea asp-for="RootCauseAnalysis"></textarea>
+                            <span asp-validation-for="RootCauseAnalysis" class="text-danger"></span>
+                        </div>
+                    </section>
+                    <section class="rcf-step rcf-step--fix" data-item="res">
+                        <div class="rcf-marker"><span data-step="2">2</span></div>
+                        <div class="rcf-card">
+                            <header class="rcf-head">
+                                <div class="rcf-head__text">
+                                    <div class="rcf-title"><i class="fas fa-screwdriver-wrench me-2"></i>@Localize("BacklogPage.RootCauseFix.Resolution")</div>
+                                    <div class="rcf-sub">@Localize("BacklogPage.RootCauseFix.ResolutionHint")</div>
+                                </div>
+                                <span class="rcf-req d-none"></span>
+                                <span class="rcf-state"></span>
+                            </header>
+                            <textarea asp-for="ResolutionDetails"></textarea>
+                            <span asp-validation-for="ResolutionDetails" class="text-danger"></span>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentJson))
+            {
+                <div class="tab-pane fade mb-3" id="environment" role="tabpanel" aria-labelledby="environment-tab">
+                    <div id="envPanel" class="env-panel" data-env="@Model.EnvironmentJson"></div>
+                </div>
+            }
         </div>
     </div>
 </div>
-<button type="button" class="form-section-toggle" data-bs-toggle="collapse" data-bs-target="#attachSection" aria-expanded="true">
-    <i class="fas fa-chevron-down chev"></i><i class="fas fa-paperclip"></i> Attachments
-</button>
-<div id="attachSection" class="collapse show">
-    <div id="thumbnail-zone"></div>
-    <div class="row">
-        <div class="col-md-12">
-            <div id="dropzone-container" class="dropzone">
-                <div class="dz-message">
-                    Drag and drop files here or click to upload
-                </div>
+<div id="thumbnail-zone"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div id="dropzone-container" class="dropzone mb-3">
+            <div class="dz-message">
+                <i class="fas fa-cloud-arrow-up me-2"></i>Drag files here or click to upload
             </div>
         </div>
     </div>
 </div>
-@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacementEnum.MainSection })
+<div class="row">
+    <div class="col-lg-6">
+        <div class="mb-3">
+            <wc-label asp-for="ParentId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="ParentId"></select>
+            <span asp-validation-for="ParentId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="mb-3">
+            <wc-label asp-for="SelectedTags" />
+            <select class="form-control backlog-tags" asp-for="SelectedTags" asp-items="Model.AvailableTags" multiple="multiple" disabled="@(Model.Id > 0 && !Model.CanEdit)"></select>
+            <span asp-validation-for="SelectedTags" class="text-danger"></span>
+        </div>
+    </div>
+</div>
 
-@* server values for backlog-form.js (loaded by the parent Create/Edit page) *@
+@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacement.MainSection, projectId = Model.ProjectId })
+
 <div id="backlog-form-config" class="d-none"
-     data-backlog-id="@Model.Id"
+     data-id="@Model.Id"
+     data-parent-id="@Model.ParentId"
+     data-parent-title="@Model.ParentTitle"
+     data-can-edit="@Model.CanEdit.ToString().ToLower()"
+     data-project-id="@Model.ProjectId"
+     data-merge-request-id="@(Model.MergeRequestId ?? 0)"
+     data-parent-tasks-url="@Url.Action("GetParentTasks")"
      data-upload-url="@Url.Action("UploadDocument")"
-     data-documents-url="@Url.Action("Documents")"></div>
+     data-upload-accept="@Taskist.Core.Common.UploadPolicy.AcceptAttribute()"
+     data-upload-max-mb="@Taskist.Core.Common.UploadPolicy.MaxAttachmentMegabytes"
+     data-documents-url="@Url.Action("Documents")"
+     data-merge-request-url="@Url.Action("MergeRequest")"
+     data-modules-url="@Url.Action("GetModules")"
+     data-project-options-url="@Url.Action("ProjectOptions")"
+     data-sub-modules-url="@Url.Action("GetSubModules", "SubModule")"
+     data-reload-url="@Url.Action("ReloadForProject")"
+     data-bug-task-type-ids="@Model.BugTaskTypeIds"
+     data-rca-clear-msg="@Localize("Backlog.RcaClearOnTypeChangeMsg")"
+     data-similar-url="@Url.Action("SimilarTasks")"></div>

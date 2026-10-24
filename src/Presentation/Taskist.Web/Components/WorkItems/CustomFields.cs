@@ -1,60 +1,54 @@
-﻿using MapsterMapper;
 using Microsoft.AspNetCore.Mvc;
-using Taskist.Core.Common;
 using Taskist.Service.Masters;
 using Taskist.Service.WorkItems;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Web.Models.Masters;
 
 namespace Taskist.Web.Components.WorkItems;
 
 public class CustomFields : ViewComponent
 {
-    #region Fields
+	#region Fields
 
-    protected readonly ICustomFieldService _customFieldService;
-    protected readonly IBacklogItemService _backlogService;
-    protected readonly IGenericAttributeService _genericAttributeService;
-    protected readonly IWorkContext _workContext;
-    protected readonly IMapper _mapper;
+	protected readonly ICustomFieldService _customFieldService;
+	protected readonly IBacklogService _backlogService;
+	protected readonly MastersMapper _mastersMapper;
+	protected readonly WorkItemsMapper _workItemsMapper;
 
-    #endregion
+	#endregion
 
-    #region Ctor
+	#region Ctor
 
-    public CustomFields(ICustomFieldService customFieldService,
-        IBacklogItemService backlogService,
-        IGenericAttributeService genericAttributeService,
-        IWorkContext workContext,
-        IMapper mapper)
-    {
-        _customFieldService = customFieldService;
-        _backlogService = backlogService;
-        _genericAttributeService = genericAttributeService;
-        _workContext = workContext;
-        _mapper = mapper;
-    }
+	public CustomFields(ICustomFieldService customFieldService,
+		IBacklogService backlogService,
+		MastersMapper mastersMapper,
+		WorkItemsMapper workItemsMapper)
+	{
+		_customFieldService = customFieldService;
+		_backlogService = backlogService;
+		_mastersMapper = mastersMapper;
+		_workItemsMapper = workItemsMapper;
+	}
 
-    #endregion
+	#endregion
 
-    #region Methods
+	#region Methods
 
-    public async Task<IViewComponentResult> InvokeAsync(int backLogId, int placement)
-    {
-        var loggedUser = await _workContext.GetCurrentUserAsync();
-        var lastAccessedProjectId = await _genericAttributeService.GetAttributeAsync<int>(loggedUser, Constant.ActiveProjectSession);
+	public async Task<IViewComponentResult> InvokeAsync(int backLogId, int placement, int projectId)
+	{
+		var customFields = await _customFieldService.GetAllAsync(projectId);
+		var customFieldValues = await _backlogService.GetAllCustomFieldValuesAsync(backLogId);
 
-        var customFields = await _customFieldService.GetAllAsync(lastAccessedProjectId, placement);
-        var customFieldValues = await _backlogService.GetAllCustomFieldValuesAsync(backLogId);
+		var model = new CustomFieldsViewModel()
+		{
+			Index = placement > 1 ? customFields.Count(x => x.Placement == 1) : 0,
+			BacklogId = backLogId,
+			CustomFields = customFields.Where(x => x.Placement == placement).Select(x => _mastersMapper.ToRenderModel(x)).ToList(),
+			Values = customFieldValues.Select(x => _workItemsMapper.ToModel(x)).ToList()
+		};
 
-        var model = new CustomFieldsViewModel()
-        {
-            BacklogId = backLogId,
-            CustomFields = customFields.Select(x => _mapper.Map<CustomFieldRenderModel>(x)).ToList(),
-            Values = customFieldValues.Select(x => _mapper.Map<CustomFieldValueModel>(x)).ToList()
-        };
+		return View(model);
+	}
 
-        return View(model);
-    }
-
-    #endregion
+	#endregion
 }

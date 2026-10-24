@@ -1,0 +1,26 @@
+@model MergeRequestDetailsDto
+
+@if (Model.MrId <= 0)
+{
+    <div class="text-muted small">@Localize("Backlog.Code.Unreachable")</div>
+}
+else
+{
+    <div><i class="fas fa-code-pull-request me-1"></i>Title: <strong><a href="@Model.Url" class="text-decoration-none" target="_blank" rel="noopener noreferrer">@Model.Title</a></strong></div>
+    <div><i class="fas fa-code-branch me-1"></i>Source Branch: <strong>@Model.SourceBranch</strong></div>
+    <div><i class="fas fa-bullseye me-1"></i>Target Branch: <strong>@Model.TargetBranch</strong></div>
+    <div><i class="fas fa-user me-1"></i>Author: <strong>@(Model.Author?.DisplayName)</strong></div>
+    <div><i class="far fa-calendar me-1"></i>Created On: <strong>@Model.CreatedAt</strong></div>
+    @if (Model.State == "merged")
+    {
+        <div><i class="fas fa-circle-check me-1 text-success"></i>Status: <span class="text-success">Merged</span>@(Model.MergedAt != null ? $" · {Model.MergedAt}" : string.Empty)</div>
+    }
+    else if (Model.State == "closed")
+    {
+        <div><i class="fas fa-circle-xmark me-1 text-danger"></i>Status: <span class="text-danger">Closed</span>@(Model.ClosedAt != null ? $" · {Model.ClosedAt}" : string.Empty)</div>
+    }
+    else
+    {
+        <div><i class="fas fa-circle-dot me-1 text-info"></i>Status: <span class="text-info">Open</span></div>
+    }
+}

@@ -1,0 +1,18 @@
+@model List<TaskCountDto>
+
+<div class="wp-card h-100">
+    <div class="wp-card__head"><i class="fas fa-diagram-project me-2"></i>@Localize("Dashboard.OpenByProject").Text</div>
+    <div class="wp-card__body">
+        @if (!Model.Any())
+        {
+            <wp-empty-state class="wp-empty--widget" icon="fas fa-diagram-project" size="compact" tone="info" heading="@Localize("Dashboard.NoData").Text" text="@Localize("EmptyState.Widget.NoData").Text"></wp-empty-state>
+        }
+        else
+        {
+            <div class="chart-container">
+                <canvas data-chart="pie"></canvas>
+                <script type="application/json" class="chart-payload">@Html.Raw(Json.Serialize(new { labels = Model.Select(m => m.Name), values = Model.Select(m => m.TaskCount) }))</script>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,149 @@
+/* ============================================================================
+   My Profile page — avatar + photo upload.
+   ============================================================================ */
+.profile-photo {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-photo img {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 10px rgba(16, 24, 40, .14);
+    background: #f4f7fb;
+}
+
+.profile-photo__edit {
+    position: absolute;
+    bottom: 4px;
+    right: 4px;
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: var(--wp-teal);
+    color: #fff;
+    border: 2px solid #fff;
+    cursor: pointer;
+    transition: filter .12s ease;
+}
+
+.profile-photo__edit:hover { filter: brightness(1.08); }
+
+/* ===== Photo crop / zoom modal ===== */
+.crop-stage {
+    width: 100%;
+    height: 340px;
+    background: #1f2430;
+    border-radius: 8px;
+    overflow: hidden;
+}
+/* Cropper replaces this img with its own canvas; constrain for layout. */
+.crop-stage > img { max-width: 100%; display: block; }
+
+.crop-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+}
+.crop-controls .crop-zoom { flex: 1 1 auto; }
+
+/* Round the crop preview so users see the final circular avatar shape. */
+#photoCropModal .cropper-view-box,
+#photoCropModal .cropper-face { border-radius: 50%; }
+
+/* ===== Settings-style layout: identity + section list on the left, one section on the right ===== */
+.profile-side {
+    position: sticky;
+    top: 1rem;
+}
+
+.profile-identity .profile-photo img {
+    width: 104px;
+    height: 104px;
+}
+
+.profile-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: .5rem;
+    border-top: 1px solid var(--cui-border-color);
+}
+
+.profile-nav__link {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .55rem .75rem;
+    border-radius: .375rem;
+    color: var(--cui-body-color);
+    text-decoration: none;
+    font-size: .9rem;
+}
+
+.profile-nav__link > i {
+    width: 1.1rem;
+    text-align: center;
+    color: var(--cui-secondary-color);
+}
+
+.profile-nav__link:hover {
+    background: var(--cui-tertiary-bg);
+    color: var(--cui-body-color);
+}
+
+.profile-nav__link.is-active {
+    background: var(--app-accent-subtle, var(--cui-primary-bg-subtle));
+    color: var(--app-accent-text, var(--cui-primary));
+    font-weight: 600;
+}
+
+.profile-nav__link.is-active > i { color: inherit; }
+
+.profile-nav__dirty {
+    display: none;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--wp-amber);
+    margin-left: auto;
+}
+
+.profile-nav__link.has-changes .profile-nav__dirty { display: inline-block; }
+
+.profile-section { display: none; }
+.profile-section.is-active { display: block; }
+
+@media (max-width: 991.98px) {
+    .profile-side { position: static; }
+
+    .profile-identity {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 1rem;
+        align-items: center;
+        text-align: left !important;
+    }
+
+    .profile-identity .profile-photo { grid-row: span 3; }
+    .profile-identity .profile-photo img { width: 72px; height: 72px; }
+    .profile-identity .profile-photo__edit { width: 28px; height: 28px; bottom: 0; right: 0; }
+    .profile-identity h5 { margin-top: 0 !important; }
+    .profile-identity .mt-2 { margin-top: .25rem !important; }
+
+    .profile-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .profile-nav::-webkit-scrollbar { display: none; }
+    .profile-nav__link { flex: 0 0 auto; white-space: nowrap; }
+}

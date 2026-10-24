@@ -1,0 +1,48 @@
+@model NotificationListModel
+@{
+	(string Icon, string Tone) Look(int type) => (NotificationType)type switch
+	{
+		NotificationType.ReviewerAssigned => ("fa-user-check", "blue"),
+		NotificationType.MergeRequestApproved => ("fa-thumbs-up", "green"),
+		NotificationType.ChangesRequested => ("fa-pen-to-square", "amber"),
+		NotificationType.MergeRequestRejected => ("fa-circle-xmark", "red"),
+		NotificationType.MergeRequestComment => ("fa-comment", "teal"),
+		NotificationType.MergeRequestConflict => ("fa-code-compare", "red"),
+		NotificationType.MergeRequestClosed => ("fa-code-pull-request", "grey"),
+		_ => ("fa-bell", "grey")
+	};
+	string Age(DateTime utc)
+	{
+		var span = Model.Now - DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+		if (span.TotalMinutes < 1) return Localize("Header.JustNow").Text;
+		return span.TotalHours < 1 ? $"{(int)span.TotalMinutes}m"
+			: span.TotalDays < 1 ? $"{(int)span.TotalHours}h"
+			: span.TotalDays < 7 ? $"{(int)span.TotalDays}d"
+			: utc.ToLocalTime().ToString("dd MMM");
+	}
+}
+
+@if (!Model.Items.Any())
+{
+	<div class="header-notif__empty">@Localize("Header.NoActivity").Text</div>
+}
+else
+{
+	@foreach (var n in Model.Items)
+	{
+		var look = Look(n.Type);
+		var external = !string.IsNullOrEmpty(n.Url) && Uri.TryCreate(n.Url, UriKind.Absolute, out _);
+		<a class="header-notif__item @(n.IsRead ? "" : "is-unread")" href="@(string.IsNullOrEmpty(n.Url) ? "#" : n.Url)"
+		   data-id="@n.Id" @(external ? "target=_blank" : "") rel="noopener">
+			<span class="wp-menu__chip wp-menu__chip--@look.Tone"><i class="fas @look.Icon"></i></span>
+			<span class="header-notif__text">
+				<span class="header-notif__title">@n.Title</span>
+				@if (!string.IsNullOrEmpty(n.Message))
+				{
+					<span class="header-notif__msg">@n.Message</span>
+				}
+			</span>
+			<span class="header-notif__age">@Age(n.CreatedOnUtc)</span>
+		</a>
+	}
+}

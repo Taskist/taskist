@@ -1,51 +1,40 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using MapsterMapper;
-using Taskist.Core.Common;
-using Taskist.Core.Domain.Localization;
-using Taskist.Service.Security;
+using Microsoft.AspNetCore.Mvc;
+using Taskist.Core.Enums;
 using Taskist.Service.Localization;
-using Taskist.Service.Logging;
+using Taskist.Service.Security;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Helpers.Mapping;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Datatable;
 using Taskist.Web.Models.Localization;
 
 namespace Taskist.Web.Controllers.Localization;
 
+[CheckPermission(nameof(PermissionProvider.ManageLocaleResource))]
 public class LocaleResourceController : BaseController
 {
     #region Fields
 
     protected readonly ILocalizationService _localizationService;
-    protected readonly IPermissionService _permissionService;
-    protected readonly IUserActivityService _userActivityService;
-    protected readonly IWorkContext _workContext;
-    protected readonly IMapper _mapper;
+    protected readonly LocalizationMapper _mapper;
 
     #endregion
 
     #region Ctor
 
     public LocaleResourceController(ILocalizationService localizationService,
-        IPermissionService permissionService,
-        IUserActivityService userActivityService,
-        IWorkContext workContext,
-        IMapper mapper)
+        LocalizationMapper mapper)
     {
         _localizationService = localizationService;
-        _permissionService = permissionService;
         _mapper = mapper;
-        _userActivityService = userActivityService;
-        _workContext = workContext;
     }
 
     #endregion
 
     #region Actions
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Create(int languageId)
     {
         var model = new LocaleResourceModel
@@ -57,66 +46,59 @@ public class LocaleResourceController : BaseController
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Create(LocaleResourceModel model)
     {
         if (ModelState.IsValid)
         {
-            var entity = _mapper.Map<LocaleResource>(model);
+            var entity = _mapper.ToEntity(model);
             await _localizationService.InsertAsync(entity);
-
-            await _userActivityService.InsertAsync("LocaleResource", string.Format(await _localizationService.GetResourceAsync("Log.RecordCreated"), entity.ResourceValue), entity);
 
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.SaveSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
     }
 
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Edit(int id)
     {
         var entity = await _localizationService.GetByIdAsync(id);
         if (entity == null)
             return RedirectToAction("Index");
 
-        var model = _mapper.Map<LocaleResourceModel>(entity);
+        var model = _mapper.ToModel(entity);
 
         return PartialView(model);
     }
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> Edit(LocaleResourceModel model)
     {
         if (ModelState.IsValid)
         {
             var entity = await _localizationService.GetByIdAsync(model.Id);
-            entity = _mapper.Map(model, entity);
+            _mapper.Update(model, entity);
 
             await _localizationService.UpdateAsync(entity);
 
-            await _userActivityService.InsertAsync("LocaleResource", string.Format(await _localizationService.GetResourceAsync("Log.RecordUpdated"), entity.ResourceValue), entity);
-
             return Json(new JsonResponseModel
             {
-                Status = HttpStatusCodeEnum.Success,
+                Status = HttpStatusCode.Success,
                 Message = await _localizationService.GetResourceAsync("Message.UpdateSuccess")
             });
         }
 
         return Json(new JsonResponseModel
         {
-            Status = ModelState.IsValid ? HttpStatusCodeEnum.InternalServerError : HttpStatusCodeEnum.ValidationError,
+            Status = ModelState.IsValid ? HttpStatusCode.InternalServerError : HttpStatusCode.ValidationError,
             Message = await _localizationService.GetResourceAsync("Error.Failed"),
             Errors = ModelState.AllErrors()
         });
@@ -127,7 +109,6 @@ public class LocaleResourceController : BaseController
     #region Data
 
     [HttpPost]
-    [CheckPermission(PermissionProvider.Configuration.MANAGE_LANGUAGE)]
     public async Task<IActionResult> DataRead(DataTableRequest request, int languageId)
     {
         var data = await _localizationService.GetPagedListAsync(languageId, request.SearchValue, request.Start,
@@ -136,7 +117,7 @@ public class LocaleResourceController : BaseController
         return Json(new
         {
             request.Draw,
-            data = data.Select(x => _mapper.Map<LocaleResourceModel>(x)),
+            data = data.Select(x => _mapper.ToModel(x)),
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
         });

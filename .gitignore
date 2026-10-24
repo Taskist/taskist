@@ -408,3 +408,7 @@ src/Presentation/Taskist.Web/appsettings.Development.json
 
 # Docker local environment
 .env
+
+# Claude Code project notes (local only)
+CLAUDE.md
+CLAUDE.local.md

@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Http;
 using Taskist.Core.Domain.Masters;
+using Microsoft.AspNetCore.Http;
 
 namespace Taskist.Service.Masters;
 
@@ -7,12 +7,11 @@ public interface IDocumentService
 {
     Task<Document> GetByIdAsync(int id);
 
-    /// <summary>
-    /// Checks the upload against the permitted extensions and size limit.
-    /// </summary>
-    bool IsAllowed(IFormFile file, out string rejectReason);
+    Task<bool> IsTaskAttachmentAsync(int documentId);
 
     Task<Document> InsertAsync(IFormFile file);
+
+    Task<Document> InsertAsync(byte[] data, string fileName, string contentType);
 
     Task UpdateAsync(int documentId, IFormFile file);
 

@@ -1,0 +1,1253 @@
+/* Shared styles for the task-detail AJAX partials (Documents, Comments, History)
+   and the task form's dropzone. Loaded on Backlog Index, Create and Edit because
+   these partials are opened from all three. */
+
+/* Compact dropzone (task form) */
+#dropzone-container {
+    border: 1px dashed #007bff;
+    color: #6c757d;
+    border-radius: 8px;
+    min-height: 0;
+    padding: 10px 14px;
+    background: #f8fbff;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+#dropzone-container:hover {
+    background: #eef6ff;
+    border-color: #0069d9;
+}
+
+#dropzone-container .dz-message {
+    margin: 0;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+#dropzone-container .dz-message i {
+    color: #007bff;
+}
+
+/* Uploaded file tiles (documents offcanvas and task form) */
+.file-tile {
+    flex: 0 0 auto;
+    width: 110px;
+    text-align: center;
+    position: relative;
+}
+
+.file-tile-link {
+    display: block;
+    text-decoration: none;
+}
+
+.file-thumb {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e3eaf2;
+    background: #f6f8fa;
+}
+
+.file-tile .file-icon {
+    width: 100px;
+    height: 80px;
+    font-size: 2.4rem;
+}
+
+.file-name {
+    margin-top: 6px;
+    font-size: 0.76rem;
+    color: #1b2e4a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.file-meta {
+    font-size: 0.68rem;
+    color: #7b8aa0;
+}
+
+.file-tile-actions {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    display: none;
+    gap: 4px;
+}
+
+.file-tile:hover .file-tile-actions {
+    display: flex;
+}
+
+.file-action {
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e3eaf2;
+    border-radius: 4px;
+    color: #5a6b80;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.file-action:hover {
+    color: #1b2e4a;
+}
+
+.file-action.file-icon-delete:hover {
+    color: #e74c3c;
+    border-color: #f3b6b6;
+}
+
+.files-empty {
+    text-align: center;
+    color: #7b8aa0;
+    padding: 24px 12px;
+}
+
+/* In the task form the dropzone already prompts to upload, so the empty
+   state in the preview zone is redundant. */
+#thumbnail-zone .files-empty {
+    display: none;
+}
+
+.files-empty i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+    opacity: 0.6;
+}
+
+/* Task comments offcanvas (used from the grid and the task form) */
+.offcanvas-body:has(#comments) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+.offcanvas-body:has(#comments) > .comments-root {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#comments.comments-container {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-bottom: 10px;
+}
+
+/* Task activity card (inline comments + history on the task form) */
+.task-activity-card .card-header {
+    padding: 0 16px;
+    background: transparent;
+    border-bottom: 1px solid var(--cui-border-color, #dbdfe6);
+}
+
+.task-activity-card .card-header-tabs {
+    margin: 0;
+    gap: 1.25rem;
+    border-bottom: 0;
+}
+
+.task-activity-card .card-header-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    margin: 0 0 -1px;
+    padding: .7rem .1rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    color: var(--cui-secondary-color, #6b7785);
+    font-weight: 500;
+}
+
+.task-activity-card .card-header-tabs .nav-link:hover {
+    color: var(--cui-body-color, #212631);
+}
+
+.task-activity-card .card-header-tabs .nav-link.active {
+    color: var(--cui-primary, #5856d6);
+    border-bottom-color: var(--cui-primary, #5856d6);
+    background: transparent;
+}
+
+.task-activity-card .activity-count {
+    margin-left: .4rem;
+    background-color: var(--cui-secondary-bg, #e7eaee);
+    color: var(--cui-secondary-color, #6b7785);
+    font-size: .7rem;
+    font-weight: 600;
+}
+
+.task-activity-card .nav-link.active .activity-count {
+    background-color: var(--cui-primary, #5856d6);
+    color: #fff;
+}
+
+.task-activity-card .activity-pane {
+    padding: 12px 16px;
+}
+
+.task-activity-card #comments.comments-container {
+    max-height: 480px;
+}
+
+.task-activity-card .comment-box {
+    padding: 10px 0 0;
+    background: transparent;
+}
+
+.task-activity-card #activityHistory {
+    max-height: 560px;
+    overflow-y: auto;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+}
+
+.comment-avatar {
+    flex: 0 0 34px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #1cc7c9;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+    overflow: hidden;
+}
+
+.comment-body {
+    flex: 1 1 auto;
+    background: #f6f8fa;
+    border: 1px solid #e9eef4;
+    border-radius: 10px;
+    padding: 8px 12px;
+}
+
+.comment-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.comment-author {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1b2e4a;
+}
+
+.comment-time {
+    font-size: 0.72rem;
+    color: #7b8aa0;
+    white-space: nowrap;
+}
+
+.comment-text {
+    font-size: 0.88rem;
+    color: #33455c;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.comments-empty {
+    text-align: center;
+    color: #7b8aa0;
+    padding: 30px 12px;
+}
+
+.comments-empty i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+    opacity: 0.6;
+}
+
+.comment-box {
+    flex: 0 0 auto;
+    background: #fff;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+}
+
+.comment-input-wrap {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.comment-input-wrap textarea {
+    resize: none;
+    max-height: 120px;
+}
+
+.comment-hint {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.72rem;
+}
+
+/* Task history timeline */
+.history-timeline {
+    padding: 6px 4px;
+}
+
+.history-item {
+    position: relative;
+    display: flex;
+    gap: 12px;
+    padding-bottom: 16px;
+}
+
+.history-item::before {
+    content: "";
+    position: absolute;
+    left: 13px;
+    top: 30px;
+    bottom: -2px;
+    width: 2px;
+    background: #e3eaf2;
+}
+
+.history-item:last-child::before {
+    display: none;
+}
+
+.history-dot {
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: #1cc7c9;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.62rem;
+    font-weight: 700;
+    z-index: 1;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #cfeef0;
+    overflow: hidden;
+}
+
+.history-content {
+    flex: 1 1 auto;
+    padding-top: 2px;
+}
+
+.history-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.history-author {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #1b2e4a;
+}
+
+.history-time {
+    font-size: 0.72rem;
+    color: #7b8aa0;
+}
+
+.history-text {
+    font-size: 0.85rem;
+    color: #33455c;
+    margin-top: 2px;
+    word-break: break-word;
+}
+
+.history-text p:last-child {
+    margin-bottom: 0;
+}
+
+.history-collapsed {
+    max-height: 110px;
+    overflow: hidden;
+    position: relative;
+}
+
+.history-collapsed::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 36px;
+    background: linear-gradient(rgba(255, 255, 255, 0), #fff);
+}
+
+.history-more,
+.history-change-toggle {
+    font-size: 0.78rem;
+    text-decoration: none;
+}
+
+.history-change-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+}
+
+.history-change-action {
+    font-size: 0.72rem;
+    padding: 0 6px;
+    border-radius: 8px;
+    background: #eaf1f8;
+    color: #33455c;
+}
+
+.history-change-action--added { background: #e7f6ec; color: #1e7a3c; }
+.history-change-action--cleared { background: #fdecec; color: #b42318; }
+
+.history-change-toggle {
+    margin-left: auto;
+}
+
+.history-change-body {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border: 1px solid #e3e9f1;
+    border-radius: 6px;
+    background: #f8fafc;
+}
+
+.history-change-view {
+    max-height: 320px;
+    overflow: auto;
+}
+
+.history-diff {
+    white-space: pre-wrap;
+}
+
+.history-diff-ins {
+    background: #dcfce7;
+    color: #166534;
+    text-decoration: none;
+}
+
+.history-diff-del {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Avatar image (profile photo or the server-generated initials SVG) */
+.comment-avatar img,
+.history-dot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+}
+
+/* Image lightbox preview */
+.img-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100000000;
+    background: rgba(0, 0, 0, 0.82);
+    align-items: center;
+    justify-content: center;
+}
+
+.img-lightbox-img {
+    max-width: 90vw;
+    max-height: 86vh;
+    border-radius: 6px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+}
+
+.img-lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 24px;
+    color: #fff;
+    font-size: 2rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.img-lightbox-close:hover {
+    opacity: 1;
+}
+
+.img-lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #fff;
+    font-size: 2.2rem;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 10px 16px;
+    user-select: none;
+}
+
+.img-lightbox-nav:hover {
+    opacity: 1;
+}
+
+.img-lightbox-prev {
+    left: 12px;
+}
+
+.img-lightbox-next {
+    right: 12px;
+}
+
+.img-lightbox-caption {
+    position: absolute;
+    bottom: 18px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #e9eef4;
+    font-size: 0.85rem;
+}
+
+/* ===== Backlog history offcanvas ===== */
+.backlog-history .tab-pane {
+    max-height: calc(100vh - 108px);
+    overflow-y: auto;
+}
+
+/* ---- Backlog assignee/tester availability hint ---- */
+.wp-avail { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: .35rem; }
+.wp-avail:empty { margin-top: 0; }
+
+.wp-avail__chip {
+    display: inline-flex;
+    align-items: center;
+    padding: .2rem .5rem;
+    font-size: .74rem;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.wp-avail__ok { background: rgba(46, 184, 92, .10); color: #1f8f53; border-color: rgba(46, 184, 92, .25); }
+.wp-avail__wfh { background: rgba(28, 199, 201, .10); color: #0f7c7e; border-color: rgba(28, 199, 201, .25); }
+.wp-avail__leave { background: rgba(255, 194, 26, .14); color: #b07b00; border-color: rgba(255, 194, 26, .35); }
+.wp-avail__warn { background: rgba(229, 83, 83, .10); color: #b02a37; border-color: rgba(229, 83, 83, .3); }
+
+/* Floating action cluster for the task form (always reachable) */
+.backlog-fab {
+    position: fixed;
+    bottom: 3.25rem;
+    right: 1.5rem;
+    z-index: 1030;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .55rem .7rem;
+    border: 2px solid transparent;
+    border-radius: 2rem;
+    background: linear-gradient(#fff, #fff) padding-box,
+                linear-gradient(90deg, #1cc7c9 0%, #ffc21a 100%) border-box;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+}
+
+.backlog-fab-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    font-size: .7rem;
+    color: #8a97a8;
+    padding: 0 .15rem 0 .25rem;
+    white-space: nowrap;
+}
+
+.backlog-fab-hint kbd {
+    font-size: .66rem;
+    padding: 1px 5px;
+    color: #5b6b7b;
+    background: #f1f4f8;
+    border: 1px solid #dbe2ea;
+    border-radius: 4px;
+    box-shadow: none;
+}
+
+/* Environment panel (auto-captured desktop diagnostics on bug tasks).
+   Flat "spec sheet": sections flow across auto-fill columns with no boxes,
+   so content packs top-to-bottom with no stretched cells or empty gaps. */
+.env-panel {
+    column-width: 240px;
+    column-gap: 28px;
+    padding: 14px 16px;
+    font-size: 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fcfdfe;
+}
+.env-block {
+    break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    margin-bottom: 14px;
+}
+.env-head {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #94a3b8;
+    padding-bottom: 3px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.env-row {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 8px;
+    padding: 1.5px 0;
+    line-height: 1.4;
+}
+.env-key { color: #94a3b8; white-space: nowrap; }
+.env-val { color: #1f2937; font-weight: 600; word-break: break-word; overflow-wrap: anywhere; }
+
+@media (max-width: 480px) {
+    .env-row { grid-template-columns: 84px 1fr; }
+}
+
+/* Status lifecycle: slim connected-node journey track (one line, low height) */
+.status-track {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 4px 2px;
+    margin-bottom: 8px;
+    scrollbar-width: thin;
+}
+.status-node {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    padding: 2px 4px;
+    cursor: default;
+    position: relative;
+}
+/* connector line between nodes */
+.status-node:not(:last-of-type)::after {
+    content: "";
+    width: 20px;
+    height: 2px;
+    margin: 0 6px;
+    background: #d7dee7;
+    flex: 0 0 auto;
+    order: 3;
+}
+.status-node__dot {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex: 0 0 auto;
+    order: 1;
+}
+.status-node__text {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    order: 2;
+    white-space: nowrap;
+}
+.status-node__name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #334155;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.status-node__dur {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #94a3b8;
+    font-variant-numeric: tabular-nums;
+}
+/* past nodes: compact to just the dot; names appear on hover of the track */
+.status-node:not(.is-current):not(:hover) .status-node__name { display: none; }
+.status-node.is-current .status-node__dot {
+    position: relative;
+    box-shadow: 0 0 0 2px #fff;
+}
+/* blinking theme-gradient ring around the current status dot */
+.status-node.is-current .status-node__dot::before {
+    content: "";
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    padding: 3px;
+    background: var(--wp-accent-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+    animation: statusNodePulse 1.6s ease-in-out infinite;
+    pointer-events: none;
+}
+.status-node.is-current .status-node__name { color: #0f172a; font-weight: 700; }
+@keyframes statusNodePulse {
+    0%, 100% { opacity: .35; transform: scale(.94); }
+    50% { opacity: 1; transform: scale(1.06); }
+}
+.status-track__age {
+    flex: 0 0 auto;
+    margin-left: 10px;
+    padding-left: 10px;
+    border-left: 1px solid #e2e8f0;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #475569;
+    white-space: nowrap;
+}
+
+/* Status node tooltip: mini duration card */
+.status-card-tooltip { opacity: 1 !important; }
+.status-card-tooltip .tooltip-inner {
+    max-width: 260px;
+    padding: 0;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(15, 23, 42, 0.18);
+    overflow: hidden;
+    text-align: left;
+}
+.status-card-tooltip .tooltip-arrow::before { border-top-color: #e2e8f0 !important; }
+
+.stc__head {
+    padding: 6px 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .01em;
+}
+.stc__body { padding: 8px 10px; }
+.stc__row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 11.5px;
+    padding: 1px 0;
+}
+.stc__lbl { color: #94a3b8; }
+.stc__val { color: #1f2937; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stc__dur {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed #e2e8f0;
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f766e;
+}
+
+/* Stage-duration chips (below the status track on the task Edit screen) */
+/* Flex strip: track scrolls on the left, metric chips pinned on the right */
+.status-strip {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 8px;
+}
+.status-strip .status-track {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-bottom: 0;
+}
+.stage-chips {
+    flex: 0 0 auto;
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid #dbe3ec;
+}
+/* On small screens the track already scrolls; drop the chips to avoid crowding */
+@media (max-width: 767.98px) {
+    .stage-chips { display: none; }
+}
+.stage-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1px 8px 1px 6px;
+    font-size: 11px;
+    line-height: 1.7;
+    border-radius: 999px;
+    background: #eafaf7;
+    border: 1px solid #b7e6dc;
+    color: #0f766e;
+    cursor: default;
+}
+.stage-chip__icon { font-size: 10px; opacity: .85; }
+.stage-chip__name { font-weight: 600; color: #115e59; }
+.stage-chip__val {
+    font-weight: 700;
+    color: #0f766e;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Task Edit page header: id + divider + soft owner pill */
+#pageTitle .bl-head-label { font-weight: 600; }
+/* Click-to-copy task-id chip */
+#pageTitle .bl-head-id {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 8px;
+    padding: 1px 8px;
+    font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas, monospace;
+    font-size: .82rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: #0f766e;
+    background: #eafaf7;
+    border: 1px solid #b7e6dc;
+    border-radius: 6px;
+    cursor: pointer;
+    vertical-align: 1px;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+#pageTitle .bl-head-id:hover { background: #d5f4ec; border-color: #8fd8c8; }
+#pageTitle .bl-head-id__hash { font-size: .7rem; opacity: .7; }
+#pageTitle .bl-head-id__copy { font-size: .72rem; opacity: .55; margin-left: 2px; }
+#pageTitle .bl-head-id:hover .bl-head-id__copy { opacity: .9; }
+#pageTitle .bl-head-id.is-copied {
+    background: #0f766e;
+    border-color: #0f766e;
+    color: #fff;
+}
+#pageTitle .bl-head-id.is-copied .bl-head-id__hash,
+#pageTitle .bl-head-id.is-copied .bl-head-id__copy { opacity: .9; }
+#pageTitle .bl-head-sep {
+    display: inline-block;
+    width: 1px;
+    height: 15px;
+    margin: 0 10px;
+    vertical-align: -2px;
+    background: #cdd7e3;
+}
+#pageTitle .bl-head-owner {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 1px 10px 1px 8px;
+    font-size: .8rem;
+    font-weight: 600;
+    border-radius: 999px;
+    background: #eef4fb;
+    border: 1px solid #d9e5f2;
+    color: #33455c;
+    vertical-align: 1px;
+}
+#pageTitle .bl-head-owner__icon { font-size: .72rem; color: #6b83a3; }
+
+/* ===== Similar / duplicate task warning under the Title (create form) ===== */
+.similar-tasks {
+    margin-top: .5rem;
+    padding: .55rem .75rem;
+    border: 1px solid #ffe08a;
+    background: #fff9e6;
+    border-radius: 8px;
+    font-size: .85rem;
+}
+.similar-tasks--exact {
+    border-color: #f5a3a3;
+    background: #fdeaea;
+}
+.similar-head { color: #7a5b00; font-weight: 600; margin-bottom: .35rem; }
+.similar-tasks--exact .similar-head { color: #a12a2a; }
+.similar-head .similar-scope-toggle { font-weight: 500; font-size: .8rem; margin-left: .4rem; }
+.similar-list { list-style: none; margin: 0; padding: 0; }
+.similar-item { padding: .15rem 0; }
+.similar-item + .similar-item { border-top: 1px dashed #eadfbf; }
+.similar-item--exact a { font-weight: 600; }
+
+/* GitLab "Code" card on the task */
+.task-code-section + .task-code-section {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #eef2f7;
+}
+
+.task-code-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.task-code-branch,
+.task-code-mr {
+    padding: 4px 0;
+}
+
+.task-code-branch-name {
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.task-code-mr-title {
+    font-size: 0.84rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.task-code-meta {
+    font-size: 0.75rem;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+.task-code-state {
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-top: 2px;
+}
+
+.task-code-state--open { background: #dbeafe; color: #1d4ed8; }
+.task-code-state--merged { background: #ede9fe; color: #6d28d9; }
+.task-code-state--closed { background: #fee2e2; color: #b91c1c; }
+.task-code-state--draft { background: #f1f5f9; color: #475569; }
+.task-code-state--other { background: #f1f5f9; color: #475569; }
+
+.branch-result-list {
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid #eef2f7;
+    border-radius: 6px;
+}
+
+/* ---- Root cause & fix tab ---- */
+.rcf-tab { color: #b45309; display: inline-flex; align-items: center; gap: 2px; }
+.rcf-tab.active { color: #92400e; }
+
+.rcf-tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 6px;
+    border-radius: 9px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.rcf-tab-badge:empty { display: none; }
+.rcf-tab-badge--done { background: #dcfce7; color: #15803d; }
+.rcf-tab-badge--partial { background: #f1f5f9; color: #475569; }
+.rcf-tab-badge--alert { background: #dc2626; color: #fff; animation: rcf-pulse 1.6s ease-out infinite; }
+
+@keyframes rcf-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, .45); }
+    70% { box-shadow: 0 0 0 7px rgba(220, 38, 38, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
+
+.rcf { position: relative; padding: 2px 0 6px; }
+
+.rcf-step {
+    position: relative;
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 12px;
+    padding-bottom: 18px;
+    --rcf-accent: #f59e0b;
+    --rcf-soft: #fffbeb;
+}
+.rcf-step:last-child { padding-bottom: 0; }
+.rcf-step--fix { --rcf-accent: #10b981; --rcf-soft: #ecfdf5; }
+
+.rcf-step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 16px;
+    top: 34px;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(#fcd34d, #6ee7b7);
+    border-radius: 2px;
+}
+
+.rcf-marker span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--rcf-accent);
+    color: var(--rcf-accent);
+    font-weight: 700;
+    font-size: 0.9rem;
+    box-shadow: 0 0 0 4px var(--rcf-soft);
+    transition: background .2s, color .2s;
+}
+.rcf-step--done .rcf-marker span { background: var(--rcf-accent); color: #fff; }
+
+.rcf-card {
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid var(--rcf-accent);
+    border-radius: 10px;
+    background: #fff;
+    padding: 10px 12px 12px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    transition: box-shadow .2s, border-color .2s;
+}
+.rcf-card:focus-within { box-shadow: 0 4px 14px rgba(15, 23, 42, .08); }
+.rcf-step--alert .rcf-card { border-color: #fecaca; border-left-color: #dc2626; background: linear-gradient(#fff7f7, #fff 60px); }
+.rcf-step--alert .rcf-marker span { border-color: #dc2626; color: #dc2626; box-shadow: 0 0 0 4px #fee2e2; }
+
+.rcf-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.rcf-head__text { flex: 1 1 auto; min-width: 0; }
+.rcf-title { font-weight: 600; color: #0f172a; font-size: 0.95rem; }
+.rcf-title i { color: var(--rcf-accent); }
+.rcf-sub { font-size: 0.78rem; color: #64748b; }
+
+.rcf-req, .rcf-state {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.rcf-req--later { background: #fef3c7; color: #92400e; }
+.rcf-req--now { background: #fee2e2; color: #b91c1c; }
+.rcf-state--done { background: #dcfce7; color: #15803d; }
+.rcf-state--empty { background: #f1f5f9; color: #64748b; }
+
+.rcf-flash { animation: rcf-flash 1.1s ease-out; }
+@keyframes rcf-flash {
+    0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, .55); }
+    100% { box-shadow: 0 0 0 12px rgba(59, 130, 246, 0); }
+}
+
+/* ---- Closing checklist (status panel) ---- */
+.closing-checklist {
+    margin-top: .5rem;
+    padding: 8px 10px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 10px;
+    background: #f8fafc;
+}
+.closing-checklist__head { font-size: 0.75rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: .03em; margin-bottom: 6px; }
+.closing-checklist__for { text-transform: none; letter-spacing: 0; color: #0f172a; }
+.closing-checklist__items { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.closing-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 3px 10px 3px 8px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    background: #fff;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+}
+.closing-chip:hover { transform: translateY(-1px); box-shadow: 0 2px 6px rgba(15, 23, 42, .08); }
+.closing-chip--done { border-color: #bbf7d0; color: #15803d; background: #f0fdf4; }
+.closing-chip--missing { border-color: #fecaca; color: #b91c1c; background: #fef2f2; }
+.closing-chip--missing .closing-chip__icon { animation: rcf-pulse 1.6s ease-out infinite; border-radius: 50%; }
+.closing-chip--pending { border-color: #fde68a; color: #92400e; background: #fffbeb; }
+.closing-chip--optional { border-color: #e2e8f0; color: #64748b; }
+.closing-chip--unknown { border-color: #e2e8f0; color: #64748b; font-style: italic; }
+
+/* ---- Code card: closing MR ---- */
+.task-code-mr--closing {
+    background: linear-gradient(90deg, #f5f3ff, transparent);
+    border-left: 3px solid #7c3aed;
+    padding-left: 8px;
+    border-radius: 4px;
+}
+.task-code-closing-badge {
+    flex: 0 0 auto;
+    font-size: 0.66rem;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-top: 2px;
+    background: #7c3aed;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* ---- Room for the floating action bar so it never covers the last card ---- */
+.backlog-fab-spacer { height: 5.5rem; }
+
+/* ---- Code card: branch deleted in GitLab, link-source button ---- */
+.task-code-branch--deleted .task-code-branch-name { color: #94a3b8; text-decoration: line-through; text-decoration-color: #cbd5e1; }
+.task-code-branch--deleted .fa-code-branch { opacity: .5; }
+.task-code-branch--deleted .task-code-meta { color: #94a3b8; }
+.task-code-deleted-badge {
+    flex: 0 0 auto;
+    font-size: 0.66rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #64748b;
+    white-space: nowrap;
+}
+.task-code-link-source { font-size: 0.74rem; text-decoration: none; margin-top: 2px; }
+.task-code-link-source code { font-size: 0.72rem; }
+
+/* ---- Code card: branch rows (wrapped names, ⋯ menu, group badge) ---- */
+.task-code-heading .task-code-add { font-size: .78rem; font-weight: 600; text-transform: none; letter-spacing: 0; text-decoration: none; }
+.task-code-branches { display: flex; flex-direction: column; gap: .45rem; }
+.task-code-branches .task-code-branch { border: 1px solid #e2e8f0; border-radius: .55rem; padding: .45rem .55rem; background: #fff; }
+.task-code-branches .task-code-branch:hover { border-color: #c7d2fe; }
+.task-code-branch__top { display: flex; align-items: flex-start; gap: .4rem; }
+.task-code-branch__icon { color: #94a3b8; margin-top: .2rem; }
+.task-code-branches .task-code-branch-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: #1e293b;
+    background: none;
+    padding: 0;
+    font-size: .8rem;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-all;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.task-code-branch__menu { flex: 0 0 auto; }
+.task-code-branch__menu > .btn { color: #64748b; }
+.task-code-branch__menu > .btn:hover { color: #0f172a; }
+.task-code-branch__meta { display: flex; flex-wrap: wrap; gap: .25rem; margin: .2rem 0 0 1.35rem; }
+.task-code-branch__meta strong { color: #334155; font-weight: 600; }
+.task-code-dot { color: #cbd5e1; }
+.task-code-branch__shared { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; margin: .3rem 0 0 1.35rem; font-size: .74rem; }
+.task-code-group-badge { font-size: .68rem; font-weight: 700; padding: .05rem .45rem; border-radius: .35rem; background: #eef2ff; color: #4338ca; }
+.task-code-shared-label { color: #64748b; }
+.task-code-task-link { font-weight: 600; text-decoration: none; }
+.task-code-branches .task-code-create-mr { margin: .3rem 0 0 1.35rem; font-size: .78rem; text-decoration: none; }
+.task-code-empty { display: flex; align-items: flex-start; font-size: .8rem; color: #64748b; background: #f8fafc; border: 1px dashed #e2e8f0; border-radius: .5rem; padding: .5rem .65rem; }
+.task-code-empty > i { margin-top: .15rem; color: #94a3b8; }
+
+/* Code card: make "+ Branch" and "Create merge request" read as buttons */
+.task-code-heading .task-code-add { padding: .15rem .55rem; border-radius: 999px; font-size: .74rem; line-height: 1.4; }
+.task-code-branches .task-code-create-mr {
+    display: inline-flex;
+    align-items: center;
+    margin: .4rem 0 0 1.35rem;
+    padding: .2rem .65rem;
+    font-size: .76rem;
+    font-weight: 600;
+    color: #4338ca;
+    background: #eef2ff;
+    border: 1px solid #c7d2fe;
+    border-radius: 999px;
+}
+.task-code-branches .task-code-create-mr:hover,
+.task-code-branches .task-code-create-mr:focus-visible { color: #fff; background: #4f46e5; border-color: #4f46e5; }
+
+/* Code card: one clear action per branch — solid primary Create MR; group badge as a neutral tag */
+.task-code-branches .task-code-create-mr {
+    color: #fff;
+    background: var(--cui-primary, #4f46e5);
+    border-color: var(--cui-primary, #4f46e5);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .12);
+}
+.task-code-branches .task-code-create-mr:hover,
+.task-code-branches .task-code-create-mr:focus-visible { color: #fff; filter: brightness(.92); box-shadow: 0 3px 8px rgba(15, 23, 42, .18); }
+.task-code-group-badge { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+/* Code card: Create MR in GitLab orange (darker GitLab red-orange keeps white text readable) */
+.task-code-branches .task-code-create-mr { background: #e24329; border-color: #e24329; color: #fff; }
+.task-code-branches .task-code-create-mr:hover,
+.task-code-branches .task-code-create-mr:focus-visible { background: #c93a23; border-color: #c93a23; color: #fff; filter: none; }
+.task-code-empty { align-items: flex-start; line-height: 1.45; }
+.task-code-empty > i { margin-top: .2em; flex: 0 0 auto; }
+
+.task-code-repo-badge {
+    flex: 0 0 auto;
+    font-size: 0.66rem;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-top: 2px;
+    background: #eef2f7;
+    color: #475467;
+    white-space: nowrap;
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.task-issue-link {
+    padding: 6px 0;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.task-issue-link:last-child {
+    border-bottom: 0;
+}
+
+.task-issue-link--off {
+    opacity: 0.6;
+}

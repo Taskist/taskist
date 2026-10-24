@@ -1,0 +1,27 @@
+@model IList<Taskist.Core.Domain.WorkItems.GitBranch>
+
+<div class="unlinked-branches" data-link-url="@Url.Action("LinkBranch", "Backlog")"
+	 data-prompt="@Localize("Backlog.UnlinkedBranches.Prompt").Text">
+	<p class="small text-muted">@Localize("Backlog.UnlinkedBranches.Intro")</p>
+
+	@if (Model.Any())
+	{
+		@foreach (var b in Model)
+		{
+			<div class="unlinked-branch-row" data-name="@b.Name">
+				<div class="d-flex align-items-center gap-2">
+					<i class="fas fa-code-branch text-muted"></i>
+					<code class="unlinked-branch-name" title="@b.Name">@b.Name</code>
+					<button type="button" class="btn btn-sm btn-outline-primary ms-auto unlinked-branch-link"><i class="fas fa-link me-1"></i>@Localize("Backlog.UnlinkedBranches.LinkToTask")</button>
+				</div>
+				<div class="unlinked-branch-meta">
+					@b.Project?.Name · @Localize("Backlog.UnlinkedBranches.PushedBy") @b.CreatedBy?.Name · @b.CreatedOn.ToString("dd-MMM-yyyy HH:mm") (UTC)
+				</div>
+			</div>
+		}
+	}
+	else
+	{
+		<wp-empty-state icon="far fa-circle-check" size="compact" heading="@Localize("EmptyState.Branches.Empty.Title").Text" text="@Localize("Backlog.UnlinkedBranches.Empty").Text"></wp-empty-state>
+	}
+</div>

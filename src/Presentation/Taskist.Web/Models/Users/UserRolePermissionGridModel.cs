@@ -1,11 +1,11 @@
-﻿namespace Taskist.Web.Models.Users;
+namespace Taskist.Web.Models.Users;
 
 public class UserRolePermissionGridModel
 {
     public UserRolePermissionGridModel()
     {
-        UserRolePermission = new List<UserRolePermissionModel>();
-        UserRolePermissionMap = new List<UserRolePermissionMapModel>();
+        UserRolePermission = [];
+        UserRolePermissionMap = [];
     }
 
     public int RoleId { get; set; }

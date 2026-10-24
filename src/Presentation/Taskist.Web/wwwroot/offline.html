@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#1cc7c9" />
+    <title>Offline — Taskist</title>
+    <style>
+        html, body { height: 100%; margin: 0; }
+        body {
+            display: flex; align-items: center; justify-content: center;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: #f4f7fb; color: #2a2f36; text-align: center; padding: 1.5rem;
+        }
+        .card {
+            max-width: 380px; background: #fff; border-radius: 16px;
+            padding: 2rem 1.75rem; box-shadow: 0 10px 30px rgba(20,40,80,.08);
+        }
+        img { width: 56px; height: 56px; margin-bottom: 1rem; }
+        h1 { font-size: 1.15rem; margin: 0 0 .5rem; }
+        p { font-size: .9rem; color: #6b7280; margin: 0 0 1.25rem; line-height: 1.5; }
+        button {
+            border: 0; border-radius: 9px; padding: .55rem 1.1rem; font-size: .9rem;
+            background: #1cc7c9; color: #fff; cursor: pointer;
+        }
+        button:hover { background: #17b0b2; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <img src="/images/brand/logo_icon.png" alt="Taskist" />
+        <h1>You're offline</h1>
+        <p>Taskist needs an internet connection to load this page. Check your connection and try again.</p>
+        <button type="button" onclick="location.reload()">Retry</button>
+    </div>
+</body>
+</html>

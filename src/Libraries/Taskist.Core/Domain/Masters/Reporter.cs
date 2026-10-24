@@ -1,8 +1,8 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Masters;
 
-public class Reporter : BaseEntity, ISoftDeletedEntity
+public class Reporter : BaseEntity, ISoftDeletedEntity, IAuditableEntity
 {
     public string Name { get; set; }
 

@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Taskist.Core.Domain.Common;
 using Taskist.Core.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Taskist.Data.Configuration;
 
@@ -12,7 +12,7 @@ public partial class EntityTypeConfiguration<TEntity> : IMappingConfiguration,
 
     public virtual void Configure(EntityTypeBuilder<TEntity> builder)
     {
-        //ConvertToSnakeCase(builder);
+
     }
 
     public virtual void ApplyConfiguration(ModelBuilder modelBuilder)

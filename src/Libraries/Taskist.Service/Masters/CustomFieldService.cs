@@ -1,7 +1,9 @@
-using Microsoft.EntityFrameworkCore;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 
 namespace Taskist.Service.Masters;
 
@@ -36,10 +38,14 @@ public class CustomFieldService : ICustomFieldService
         }, pageIndex, pageSize);
     }
 
+    public async Task<IList<CustomField>> GetAllAsync(int projectId)
+    {
+        return await _customFieldRepository.GetAllAsync(q => q.Where(x => x.ProjectId == projectId), false);
+    }
+
     public async Task<IList<CustomField>> GetAllAsync(int projectId, int placement)
     {
-        return await _customFieldRepository.GetAllAsync(q => q.Where(x => x.ProjectId == projectId && x.Placement == placement),
-            false);
+        return await _customFieldRepository.GetAllAsync(q => q.Where(x => x.ProjectId == projectId && x.Placement == placement), false);
     }
 
     public async Task<IList<CustomField>> GetAllMandatoryAsync(int projectId)

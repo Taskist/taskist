@@ -3,7 +3,7 @@ using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Localization;
 
-public class LanguageModel : BasePageModel
+public class LanguageModel : BaseModel
 {
     public LanguageModel()
     {

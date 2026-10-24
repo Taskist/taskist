@@ -1,42 +1,20 @@
-﻿using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Taskist.Core.Common;
-using Taskist.Service.Localization;
+using Taskist.Service.Logging;
 using Taskist.Service.Security;
 
 namespace Taskist.Web.Helpers.Attributes;
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-public sealed class CheckPermissionAttribute : TypeFilterAttribute
+public class CheckPermissionAttribute : TypeFilterAttribute
 {
     #region Ctor
 
-    public CheckPermissionAttribute(string permissionSystemName,
-        CheckPermissionResultType resultType = CheckPermissionResultType.Default)
-        : base(typeof(CheckPermissionFilter))
+    public CheckPermissionAttribute(string permissionSystemName, DenyMode denyMode = DenyMode.Auto)
+            : base(typeof(CheckPermissionFilter))
     {
-        Arguments = [resultType, new List<string> { permissionSystemName }];
-        PermissionSystemName.Add(permissionSystemName);
-        ResultType = resultType;
+        Arguments = [permissionSystemName, denyMode];
     }
-
-    public CheckPermissionAttribute(string[] permissionSystemNames,
-        CheckPermissionResultType resultType = CheckPermissionResultType.Default)
-        : base(typeof(CheckPermissionFilter))
-    {
-        Arguments = [resultType, permissionSystemNames.ToList()];
-        PermissionSystemName.AddRange(permissionSystemNames);
-        ResultType = resultType;
-    }
-
-    #endregion
-
-    #region Properties
-
-    public List<string> PermissionSystemName { get; } = new();
-
-    public CheckPermissionResultType ResultType { get; }
 
     #endregion
 
@@ -44,84 +22,51 @@ public sealed class CheckPermissionAttribute : TypeFilterAttribute
 
     private class CheckPermissionFilter : IAsyncAuthorizationFilter
     {
-
         #region Fields
 
-        protected readonly IHttpContextAccessor _httpContextAccessor;
-        protected readonly ILocalizationService _localizationService;
+        protected readonly string _permissionSystemName;
+        protected readonly DenyMode _denyMode;
         protected readonly IPermissionService _permissionService;
-        protected readonly IHttpHelper _httpHelper;
-        protected readonly CheckPermissionResultType _resultType;
-        protected readonly List<string> _permissionSystemNames;
+        protected readonly IUserActivityService _activityService;
 
         #endregion
 
         #region Ctor
 
-        public CheckPermissionFilter(CheckPermissionResultType resultType,
-            List<string> permissionSystemNames,
-            IHttpContextAccessor httpContextAccessor,
-            ILocalizationService localizationService,
-            IPermissionService permissionService,
-            IHttpHelper httpHelper)
+        public CheckPermissionFilter(string permissionSystemName, DenyMode denyMode,
+                    IPermissionService permissionService,
+                    IUserActivityService activityService)
         {
-            _resultType = resultType;
-            _permissionSystemNames = permissionSystemNames;
-            _httpContextAccessor = httpContextAccessor;
-            _localizationService = localizationService;
+            _permissionSystemName = permissionSystemName;
+            _denyMode = denyMode;
             _permissionService = permissionService;
-            _httpHelper = httpHelper;
+            _activityService = activityService;
         }
 
         #endregion
 
         #region Utilities
 
-        private async Task AuthorizeAsync(AuthorizationFilterContext context)
+        private async Task<DenyMode> ResolveModeAsync(HttpRequest request)
         {
-            ArgumentNullException.ThrowIfNull(context);
+            if (_denyMode != DenyMode.Auto)
+                return _denyMode;
 
-            if (!context.Filters.Any(filter => filter is CheckPermissionFilter))
-                return;
-
-            foreach (var permissionSystemName in _permissionSystemNames)
-                if (await _permissionService.AuthorizeAsync(permissionSystemName))
-                    return;
-
-            var resultType = _resultType;
-
-            var request = _httpContextAccessor.HttpContext?.Request;
-
-            if (request == null)
-                return;
-
-            if (resultType == CheckPermissionResultType.Default)
-                resultType = request.Method switch
-                {
-                    WebRequestMethods.Http.Post => _httpHelper.IsAjaxRequest(request) ? CheckPermissionResultType.Json : CheckPermissionResultType.Html,
-                    WebRequestMethods.Http.Get => CheckPermissionResultType.Html,
-                    _ => CheckPermissionResultType.Text,
-                };
-
-            IActionResult html()
+            var hasDraw = request.Query.ContainsKey("draw");
+            if (!hasDraw && request.HasFormContentType)
             {
-                return new RedirectToActionResult("AccessDenied", "Common", null);
+                var form = await request.ReadFormAsync();
+                hasDraw = form.ContainsKey("draw");
             }
 
-            context.Result = resultType switch
-            {
-                CheckPermissionResultType.Json => new JsonResult(new
-                {
-                    error = await _localizationService.GetResourceAsync("Admin.AccessDenied.Description")
-                }),
-                CheckPermissionResultType.Html => html(),
-                CheckPermissionResultType.Text => new ContentResult
-                {
-                    Content = await _localizationService.GetResourceAsync("Admin.AccessDenied.Description"),
-                    ContentType = "text/plain",
-                },
-                _ => context.Result
-            };
+            if (hasDraw)
+                return DenyMode.DataRead;
+
+            if (string.Equals(request.Headers["X-Requested-With"], "XMLHttpRequest",
+                            StringComparison.OrdinalIgnoreCase))
+                return DenyMode.Partial;
+
+            return DenyMode.Page;
         }
 
         #endregion
@@ -130,23 +75,23 @@ public sealed class CheckPermissionAttribute : TypeFilterAttribute
 
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
-            await AuthorizeAsync(context);
+            if (await _permissionService.AuthorizeAsync(_permissionSystemName))
+                return;
+
+            await _activityService.InsertAsync(ActivityType.AccessDenied,
+                $"Denied {_permissionSystemName} at {context.HttpContext.Request.Path}");
+
+            var mode = await ResolveModeAsync(context.HttpContext.Request);
+
+            context.Result = mode switch
+            {
+                DenyMode.DataRead => new JsonResult(new { error = "Access denied!" }),
+                DenyMode.Partial => new RedirectToActionResult("AccessDeniedPartial", "Common", null),
+                _ => new RedirectToActionResult("AccessDenied", "Common", null)
+            };
         }
 
         #endregion
-    }
-
-    #endregion
-
-    #region Nested class
-
-    public enum CheckPermissionResultType
-    {
-        Default = 0,
-        Html = 1,
-        Text = 2,
-        Json = 3,
-        NoData = 4
     }
 
     #endregion

@@ -1,43 +1,137 @@
-﻿@model CustomFieldsViewModel
+@model CustomFieldsViewModel
 
-@for (int i = 0; i < Model.CustomFields.Count; i++)
+@{
+    var i = Model.Index;
+    var updateCssClassName = "";
+
+    if (Model.BacklogId > 0)
+    {
+        updateCssClassName = "ajax-update-custom-field";
+    }
+}
+
+@if (Model.CustomFields.Count > 0)
 {
-    var field = Model.CustomFields[i];
-    var fieldValue = Model.Values.FirstOrDefault(f => f.CustomFieldId == field.Id)?.Value ?? "";
-    <input type="hidden" name="fieldValues[@i].CustomFieldId" value="@field.Id" />
-    <div class="@field.ColumnClass">
-        @if (field.FieldType == (int)FieldTypeEnum.TextBox)
+    <div class="row pt-4">
+        @for (int k = 0; k < Model.CustomFields.Count; k++)
         {
-            <div class="mb-3">
-                <label class="form-label">@Localize(field.ResourceKey)</label>
-                <input type="text" class="form-control" name="fieldValues[@i].Value" value="@fieldValue" data-val="@field.Mandatory.ToString().ToLower()" />
+            var field = Model.CustomFields[k];
+            var fieldValue = Model.Values.FirstOrDefault(f => f.CustomFieldId == field.Id)?.Value ?? "";
+            <input type="hidden" name="fieldValues[@i].CustomFieldId" value="@field.Id" />
+            <div class="col-md-@field.ColumnClass">
+                @if (field.FieldType == (int)FieldType.TextBox)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@Localize(field.ResourceKey)</label>
+                        <input type="text" class="form-control @updateCssClassName" data-reference="@field.Id" name="fieldValues[@i].Value" id="textbox_@field.Id" value="@fieldValue" data-val="@field.Mandatory.ToString().ToLower()" data-val-required="@Localize($"{field.ResourceKey}.RequiredMsg")" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+
+                }
+                else if (field.FieldType == (int)FieldType.Dropdown)
+                {
+                    var optionsArr = (field.Options ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
+                    <div class="mb-3">
+                        <label class="form-label">@Localize(field.ResourceKey)</label>
+                        <select class="form-control select2 @updateCssClassName" name="fieldValues[@i].Value" id="select_@field.Id" data-reference="@field.Id" data-val="@field.Mandatory.ToString().ToLower()" data-val-required="@Localize($"{field.ResourceKey}.RequiredMsg")">
+                            @foreach (var option in optionsArr)
+                            {
+                                <option value="@option" selected="@(fieldValue == option ? "selected" : null)">@option</option>
+                            }
+                        </select>
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.Checkbox)
+                {
+                    <input type="checkbox" name="fieldValues[@i].Value" value="true" @(fieldValue == "true" ? "checked" : "") />
+                }
+                else if (field.FieldType == (int)FieldType.Radio)
+                {
+                    @foreach (var option in field.Options.Split(','))
+                    {
+                        <input type="radio" name="fieldValues[@i].Value" value="@option" @(fieldValue == option ? "checked" : "") /> @option
+                    }
+                }
+                else if (field.FieldType == (int)FieldType.RangeSlider)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@Localize(field.ResourceKey)</label>
+                        <input type="text" class="js-range-slider" name="fieldValues[@i].Value" id="rangeslider_@field.Id" value="@fieldValue" data-reference="@field.Id" data-val="@field.Mandatory.ToString().ToLower()" data-val-required="@Localize($"{field.ResourceKey}.RequiredMsg")" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.DatePicker)
+                {
+                    <div class="mb-3">
+                        <label class="form-label">@Localize(field.ResourceKey)</label>
+                        <input type="text" class="form-control datepicker @updateCssClassName" name="fieldValues[@i].Value" id="datepicker_@field.Id" value="@fieldValue" data-reference="@field.Id" data-val="@field.Mandatory.ToString().ToLower()" data-val-required="@Localize($"{field.ResourceKey}.RequiredMsg")" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
             </div>
 
-        }
-        else if (field.FieldType == (int)FieldTypeEnum.Dropdown)
-        {
-            var optionsArr = (field.Options ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries);
-            <div class="mb-3">
-                <label class="form-label">@Localize(field.ResourceKey)</label>
-                <select class="form-control select2" name="fieldValues[@i].Value" id="select_@field.Id" data-val="@field.Mandatory.ToString().ToLower()">
-                    @foreach (var option in optionsArr)
-                    {
-                        <option value="@option" selected="@(fieldValue == option ? "selected" : null)">@option</option>
-                    }
-                </select>
-                <span class="text-danger" data-valmsg-for="select_@field.Id" data-valmsg-replace="true"></span>
-            </div>
-        }
-        else if (field.FieldType == (int)FieldTypeEnum.Checkbox)
-        {
-            <input type="checkbox" name="fieldValues[@i].Value" value="true" @(fieldValue == "true" ? "checked" : "") />
-        }
-        else if (field.FieldType == (int)FieldTypeEnum.Radio)
-        {
-            @foreach (var option in field.Options.Split(','))
-            {
-                <input type="radio" name="fieldValues[@i].Value" value="@option" @(fieldValue == option ? "checked" : "") /> @option
-            }
+            i++;
         }
     </div>
 }
+
+<script>
+    $(function () {
+        let className = '@updateCssClassName';
+
+        $(".js-range-slider").ionRangeSlider({
+             skin: "big",
+             min: 0,
+             max: 100,
+             postfix: "%",
+             hide_min_max: true,
+             onFinish: function (data) {
+                 let id = parseInt('@Model.BacklogId');
+                 if(id > 0){
+                     let reference = parseInt($(data.input).data('reference'));
+                     let value = data.from;
+                     if (window.BacklogEdit) {
+                         window.BacklogEdit.markCustomDirty(reference, value);
+                         return;
+                     }
+                     let dto = {
+                         id,
+                         reference,
+                         value
+                     };
+
+                     JSManager.ajaxPatch('@Url.Action("UpdateCustomField")', dto, undefined, undefined, function (response) {
+                         JSManager.showSuccess(response.message);
+                     });
+                 }
+             }
+        });
+
+        if(JSManager.hasValue(className)) {
+            $('.@updateCssClassName').change(function () {
+                if($(this).data('val')){
+                    let isValid = $(`#${$(this).prop('id')}`).valid();
+                    if(isValid) {
+                        let id = '@Model.BacklogId';
+                        let reference = parseInt($(this).data('reference'));
+                        let value = $(this).val();
+                        if (window.BacklogEdit) {
+                            window.BacklogEdit.markCustomDirty(reference, value);
+                            return;
+                        }
+                        let dto = {
+                            id,
+                            reference,
+                            value
+                        };
+
+                        JSManager.ajaxPatch('@Url.Action("UpdateCustomField")', dto, undefined, undefined, function (response){
+                            JSManager.showSuccess(response.message);
+                        });
+                    }
+                }
+        });
+    }
+    });
+</script>

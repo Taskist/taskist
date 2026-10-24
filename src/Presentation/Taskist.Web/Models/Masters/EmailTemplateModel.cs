@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Taskist.Web.Models.Masters;
 
-public class EmailTemplateModel : BasePageModel
+public class EmailTemplateModel : BaseModel
 {
     public EmailTemplateModel()
     {
@@ -27,17 +27,4 @@ public class EmailTemplateModel : BasePageModel
     public bool Active { get; set; } = true;
 
     public IList<SelectListItem> AvailableEmailAccounts { get; set; }
-}
-
-public class EmailTemplateGridModel
-{
-    public int Id { get; set; }
-
-    public string Name { get; set; }
-
-    public string EmailSubject { get; set; }
-
-    public string EmailAccount { get; set; }
-
-    public bool Active { get; set; }
 }

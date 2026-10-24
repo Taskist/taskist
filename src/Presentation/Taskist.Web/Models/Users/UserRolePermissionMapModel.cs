@@ -1,4 +1,4 @@
-﻿namespace Taskist.Web.Models.Users;
+namespace Taskist.Web.Models.Users;
 
 public class UserRolePermissionMapModel
 {

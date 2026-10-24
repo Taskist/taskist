@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ----- build -----
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /source
 
 # restore first so the layer is cached until a project file changes
@@ -21,7 +21,7 @@ RUN dotnet publish Presentation/Taskist.Web/Taskist.Web.csproj \
     --no-restore
 
 # ----- runtime -----
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 # curl backs the container health check
@@ -31,11 +31,11 @@ RUN apt-get update \
 
 COPY --from=build /app ./
 
-# data protection keys and uploads must outlive the container
-RUN mkdir -p /app/App_Data/DataProtectionKeys /app/wwwroot/uploads
+# data protection keys must outlive the container (attachments live in the database)
+RUN mkdir -p /app/App_Data/DataProtectionKeys \
+    && chown -R $APP_UID:$APP_UID /app/App_Data
 
 # run as the non-root user provided by the base image
-RUN chown -R $APP_UID:$APP_UID /app/App_Data /app/wwwroot/uploads
 USER $APP_UID
 
 ENV ASPNETCORE_ENVIRONMENT=Production \

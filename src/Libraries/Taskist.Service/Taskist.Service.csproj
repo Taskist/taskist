@@ -1,17 +1,24 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Copyright>Copyright © Taskist</Copyright>
+		<Copyright>Copyright © Somaraj</Copyright>
 		<Authors>Somaraj N</Authors>
 		<Version>1.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Taskist.Core\Taskist.Core.csproj" />
-	  <ProjectReference Include="..\Taskist.Data\Taskist.Data.csproj" />
+	  <PackageReference Include="HtmlSanitizer" Version="9.2.1039" />
+	  <PackageReference Include="Markdig" Version="0.41.3" />
+	  <PackageReference Include="RestSharp" Version="114.0.0" />
+	  <PackageReference Include="ReverseMarkdown" Version="4.6.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Taskist.Core\Taskist.Core.csproj" />
+		<ProjectReference Include="..\Taskist.Data\Taskist.Data.csproj" />
 	</ItemGroup>
 
 </Project>

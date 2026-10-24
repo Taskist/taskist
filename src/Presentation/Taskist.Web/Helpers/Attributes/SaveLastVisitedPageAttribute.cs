@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
@@ -60,17 +60,19 @@ public sealed class SaveLastVisitedPageAttribute : TypeFilterAttribute
             if (string.IsNullOrEmpty(pageUrl))
                 return;
 
-            var user = await _workContext.GetCurrentUserAsync();
+            var userId = _workContext.GetCurrentUserId();
+            if (userId == null)
+                return;
 
             var previousPageAttribute = (await _genericAttributeService
-                .GetAttributesForEntityAsync(user.Id, nameof(User)))
+                .GetAttributesForEntityAsync(userId.Value, nameof(User)))
                 .FirstOrDefault(attribute => attribute.Key.Equals(Constant.LastVisitedPageAttribute, StringComparison.InvariantCultureIgnoreCase));
 
             if (previousPageAttribute == null)
             {
                 await _genericAttributeRepository.InsertAsync(new GenericAttribute
                 {
-                    EntityId = user.Id,
+                    EntityId = userId.Value,
                     Key = Constant.LastVisitedPageAttribute,
                     KeyGroup = nameof(User),
                     Value = pageUrl,

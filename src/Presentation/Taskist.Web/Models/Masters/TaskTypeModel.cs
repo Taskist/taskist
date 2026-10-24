@@ -1,9 +1,9 @@
-﻿using Taskist.Web.Helpers.Attributes;
+using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters;
 
-public class TaskTypeModel : BasePageModel
+public class TaskTypeModel : BaseModel
 {
     [LocalizedDisplayName("TaskTypeModel.Name")]
     public string Name { get; set; }

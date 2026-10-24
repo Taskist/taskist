@@ -1,0 +1,222 @@
+@model ProfileModel
+@{
+    ViewData["Title"] = Localize("ProfilePage.Title");
+}
+
+@section PageStyles {
+    <link href="~/lib/cropperjs/cropper.min.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/pages/profile.css" rel="stylesheet" asp-append-version="true" />
+}
+
+@Html.AntiForgeryToken()
+
+<div id="profile-config" class="d-none"
+     data-upload-url="@Url.Action("UploadPhoto")"
+     data-remove-url="@Url.Action("RemovePhoto")"
+     data-update-url="@Url.Action("UpdateProfile")"
+     data-photo-url="@Url.Action("Photo")"
+     data-changepw-url="@Url.Action("ChangePassword")"
+     data-changepw-title="@Localize("Profile.ChangePassword").Text"></div>
+
+@{
+    var gitConnected = Model.GitConnections.Count(g => g.Connected && !g.Expired);
+    var gitAttention = Model.GitConnections.Any(g => g.Expired || g.ExpiringSoon);
+}
+<div class="row g-3 profile-layout">
+    <div class="col-12 col-lg-3">
+        <div class="card profile-side">
+            <div class="card-body text-center profile-identity">
+                <div class="profile-photo">
+                    <img id="profilePhoto" src="@Url.Action("Photo")" alt="@Model.Name" />
+                    <label class="profile-photo__edit" title="@Localize("Profile.ChangePhoto").Text">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" id="profilePhotoInput" accept="image/*" hidden />
+                    </label>
+                </div>
+                <h5 class="mt-3 mb-0 text-truncate">@Model.Name</h5>
+                <div class="text-muted small text-truncate">@Model.Email</div>
+                <div class="mt-2">
+                    <button type="button" id="removePhoto" class="btn btn-sm btn-link text-danger p-0"><i class="fas fa-trash-can me-1"></i>@Localize("Profile.RemovePhoto").Text</button>
+                </div>
+            </div>
+            <nav class="profile-nav" aria-label="@Localize("ProfilePage.Title").Text">
+                <a href="#details" class="profile-nav__link" data-section="details">
+                    <i class="fas fa-id-card"></i><span>@Localize("Profile.Section.Details").Text</span><span class="profile-nav__dirty" title="@Localize("Profile.Section.Unsaved").Text"></span>
+                </a>
+                <a href="#appearance" class="profile-nav__link" data-section="appearance">
+                    <i class="fas fa-palette"></i><span>@Localize("Profile.Appearance.Title").Text</span>
+                </a>
+                <a href="#security" class="profile-nav__link" data-section="security">
+                    <i class="fas fa-lock"></i><span>@Localize("Profile.Security").Text</span>
+                </a>
+                <a href="#git" class="profile-nav__link" data-section="git">
+                    <i class="fas fa-code-branch"></i><span>@Localize("Profile.Git.Title").Text</span>
+                    @if (Model.GitConnections.Any())
+                    {
+                        <span class="badge rounded-pill ms-auto @(gitAttention ? "bg-warning text-dark" : gitConnected > 0 ? "bg-success" : "bg-secondary")">@gitConnected/@Model.GitConnections.Count</span>
+                    }
+                </a>
+            </nav>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-9">
+        <section class="card profile-section" data-section="details">
+            <div class="card-header"><i class="fas fa-id-card me-2 text-teal"></i>@Localize("Profile.Section.Details").Text</div>
+            <div class="card-body">
+                <form asp-action="UpdateProfile" asp-controller="Profile" method="post"
+                      data-ajax="true" data-ajax-method="post" data-ajax-success="profileSaved">
+                    <div class="validation-errors"></div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <wc-label asp-for="FirstName" />
+                            <input asp-for="FirstName" class="form-control" maxlength="50" autocomplete="off" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <wc-label asp-for="LastName" />
+                            <input asp-for="LastName" class="form-control" maxlength="50" autocomplete="off" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <wc-label asp-for="FriendlyName" />
+                            <input asp-for="FriendlyName" class="form-control" maxlength="100" autocomplete="off" />
+                            <span asp-validation-for="FriendlyName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <wc-label asp-for="MobileNumber" />
+                            <input asp-for="MobileNumber" class="form-control" maxlength="10" autocomplete="off" />
+                            <span asp-validation-for="MobileNumber" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <wc-label asp-for="MaritalStatus" />
+                            <select asp-for="MaritalStatus" asp-items="Html.GetEnumSelectList<Taskist.Core.Enums.MaritalStatus>()" class="form-control select2"></select>
+                            <span asp-validation-for="MaritalStatus" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <wc-label asp-for="Email" />
+                            <input class="form-control" value="@Model.Email" disabled />
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-save me-1"></i>@Localize("Profile.Save").Text</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section class="card profile-section appearance-card" data-section="appearance" data-url="@Url.Action("SaveAppearance")">
+            <div class="card-header"><i class="fas fa-palette me-2 text-teal"></i>@Localize("Profile.Appearance.Title").Text</div>
+            <div class="card-body">
+                <div class="text-muted small mb-2">@Localize("Profile.Appearance.Mode").Text</div>
+                <div class="appearance-modes mb-3" role="radiogroup" aria-label="@Localize("Profile.Appearance.Mode").Text">
+                    @foreach (var mode in Taskist.Web.Helpers.Appearance.AppearanceOptions.Modes)
+                    {
+                        var selected = Model.Appearance.Mode == mode;
+                        var icon = mode == "dark" ? "fa-moon" : mode == "auto" ? "fa-circle-half-stroke" : "fa-sun";
+                        <button type="button" class="appearance-mode js-appearance-mode @(selected ? "is-selected" : "")" data-mode="@mode" role="radio" aria-checked="@(selected ? "true" : "false")">
+                            <span class="appearance-preview appearance-preview--@mode" aria-hidden="true">
+                                <span class="appearance-preview-side"></span>
+                                <span class="appearance-preview-main">
+                                    <span class="appearance-preview-bar is-accent"></span>
+                                    <span class="appearance-preview-bar"></span>
+                                    <span class="appearance-preview-bar w-75"></span>
+                                </span>
+                            </span>
+                            <span class="appearance-mode-label"><i class="fas @icon"></i>@Localize($"Profile.Appearance.Mode.{mode}").Text</span>
+                        </button>
+                    }
+                </div>
+                <div class="text-muted small mb-2">@Localize("Profile.Appearance.Accent").Text</div>
+                <div class="appearance-accents" role="radiogroup" aria-label="@Localize("Profile.Appearance.Accent").Text">
+                    @foreach (var accent in Taskist.Web.Helpers.Appearance.AppearanceOptions.Accents)
+                    {
+                        var selected = Model.Appearance.Accent == accent;
+                        var name = Localize($"Profile.Appearance.Accent.{accent}").Text;
+                        <button type="button" class="appearance-accent js-appearance-accent @(selected ? "is-selected" : "")" data-accent="@accent" role="radio" aria-checked="@(selected ? "true" : "false")" title="@name" aria-label="@name">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    }
+                </div>
+            </div>
+        </section>
+
+        <section class="card profile-section" data-section="security">
+            <div class="card-header"><i class="fas fa-lock me-2 text-teal"></i>@Localize("Profile.Security").Text</div>
+            <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <div class="fw-semibold">@Localize("Profile.ChangePassword").Text</div>
+                    <div class="text-muted small">@Localize("Profile.Security.PasswordHint").Text</div>
+                </div>
+                <button type="button" id="btnChangePassword" class="btn btn-sm btn-outline-secondary"><i class="fas fa-key me-1"></i>@Localize("Profile.ChangePassword").Text</button>
+            </div>
+        </section>
+
+        <section class="card profile-section" data-section="git" id="gitConnections">
+            <div class="card-header"><i class="fas fa-code-branch me-2 text-teal"></i>@Localize("Profile.Git.Title").Text</div>
+            @if (!Model.GitConnections.Any())
+            {
+                <div class="card-body text-muted small">@Localize("Profile.Git.Empty").Text</div>
+            }
+            else
+            {
+                <div class="card-body pb-0 text-muted small">@Localize("Profile.Git.Intro").Text</div>
+            }
+            @foreach (var gl in Model.GitConnections)
+            {
+                <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="text-muted">
+                        <i class="fab @(gl.ProviderType == (int)Taskist.Core.Enums.GitProviderType.GitHub ? "fa-github" : "fa-gitlab") me-1"></i>@gl.ConnectionName
+                        @if (gl.Connected)
+                        {
+                            <span class="badge @(gl.Expired ? "bg-danger" : gl.ExpiringSoon ? "bg-warning text-dark" : "bg-success") ms-1">
+                                @(gl.Expired ? Localize("Profile.GitLab.Expired").Text : $"{Localize("Profile.GitLab.ConnectedAs").Text} {gl.AccountUserName}")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary ms-1">@Localize("Profile.GitLab.NotConnected")</span>
+                        }
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary js-git-connection" data-connection-id="@gl.ConnectionId"
+                            data-url="@Url.Action("GitConnection", new { connectionId = gl.ConnectionId })" data-title="@gl.ConnectionName">
+                        <i class="fas fa-plug me-1"></i>@(gl.Connected ? Localize("Profile.GitLab.Manage").Text : Localize("Profile.GitLab.Connect").Text)
+                    </button>
+                </div>
+            }
+        </section>
+    </div>
+</div>
+
+@* ===== Photo crop modal ===== *@
+<div class="modal fade" id="photoCropModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title mb-0"><i class="fas fa-crop-simple me-2 text-teal"></i>@Localize("Profile.CropPhoto").Text</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="crop-stage">
+                    <img id="cropImage" alt="" />
+                </div>
+                <div class="crop-controls">
+                    <button type="button" class="btn btn-sm btn-light" id="cropZoomOut" title="@Localize("Profile.ZoomOut").Text"><i class="fas fa-magnifying-glass-minus"></i></button>
+                    <input type="range" class="form-range crop-zoom" id="cropZoom" min="0" max="1" step="0.01" value="0" />
+                    <button type="button" class="btn btn-sm btn-light" id="cropZoomIn" title="@Localize("Profile.ZoomIn").Text"><i class="fas fa-magnifying-glass-plus"></i></button>
+                    <button type="button" class="btn btn-sm btn-light ms-1" id="cropRotate" title="@Localize("Profile.Rotate").Text"><i class="fas fa-rotate-right"></i></button>
+                </div>
+                <div class="crop-hint text-muted small mt-2 text-center">@Localize("Profile.CropHint").Text</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">@Localize("Button.Cancel").Text</button>
+                <button type="button" class="btn btn-sm btn-primary" id="cropSave"><i class="fas fa-check me-1"></i>@Localize("Profile.ApplyPhoto").Text</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts {
+    <script src="~/lib/cropperjs/cropper.min.js" asp-append-version="true"></script>
+    <script src="~/js/pages/profile.js" asp-append-version="true"></script>
+}

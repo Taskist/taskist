@@ -1,5 +1,4 @@
-﻿@model EmailAccountModel
-@Html.AntiForgeryToken()
+@model EmailAccountModel
 <input type="hidden" asp-for="Id" />
 <div class="validation-errors"></div>
 <div class="row">
@@ -27,7 +26,8 @@
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="Password" />
-            <input asp-for="Password" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <input asp-for="Password" class="form-control form-control-maxlength" autocomplete="new-password" maxlength="250"
+                   placeholder="@(Model.Id > 0 ? Localize("EmailAccountModel.Password.KeepHint").Text : "")" />
             <span asp-validation-for="Password" class="text-danger"></span>
         </div>
     </div>

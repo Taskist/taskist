@@ -2,7 +2,7 @@ using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Localization;
 
-public class LocaleResource : BaseEntity
+public class LocaleResource : BaseEntity, IAuditableEntity
 {
     public int LanguageId { get; set; }
 

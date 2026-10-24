@@ -1,0 +1,107 @@
+@model BacklogBatchUpdateModel
+
+<div class="validation-errors"></div>
+<input type="hidden" asp-for="TaskIds" />
+@if (Model.IsMixedProject)
+{
+	<div class="alert alert-info py-2 px-3 small d-flex align-items-start">
+		<i class="fas fa-circle-info me-2 mt-1"></i>
+		<div class="flex-grow-1">
+			Tasks span <strong>multiple projects</strong> &mdash; only common fields can be bulk-edited.
+			<strong>Module, Sub-Module</strong> are disabled; <strong>Developer, Tester</strong> can only be set to Unassigned; <strong>Status</strong> shows global options only; <strong>Release</strong> shows releases available to every selected project.
+		</div>
+	</div>
+}
+<div class="row">
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="ModuleId" />
+			<select class="form-control select2" asp-for="ModuleId" id="ModuleIdBatchUpdate" asp-items="Model.AvailableModules" disabled="@Model.IsMixedProject"></select>
+			<span asp-validation-for="ModuleId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="SubModuleId" />
+			<select class="form-control select2" asp-for="SubModuleId" id="SubModuleIdBatchUpdate" asp-items="Model.AvailableSubModules" disabled="@Model.IsMixedProject"></select>
+			<span asp-validation-for="SubModuleId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="mb-3">
+			<wc-label asp-for="TaskTypeId" />
+			<select class="form-control select2" asp-for="TaskTypeId" asp-items="Model.AvailableTaskTypes"></select>
+			<span asp-validation-for="TaskTypeId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="mb-3">
+			<wc-label asp-for="SeverityId" />
+			<select class="form-control select2" asp-for="SeverityId" asp-items="Model.AvailableSeverities"></select>
+			<span asp-validation-for="SeverityId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="ReporterId" />
+			<select class="form-control select2" asp-for="ReporterId" asp-items="Model.AvailableReporters"></select>
+			<span asp-validation-for="ReporterId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="AssigneeId" />
+			<select class="form-control select2" asp-for="AssigneeId" asp-items="Model.AvailableAssignees"></select>
+			<span asp-validation-for="AssigneeId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="TesterId" />
+			<select class="form-control select2" asp-for="TesterId" asp-items="Model.AvailableTesters"></select>
+			<span asp-validation-for="TesterId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="StatusId" />
+			<select class="form-control select2" asp-for="StatusId" id="StatusIdBatchUpdate" asp-items="Model.AvailableStatus"></select>
+			<span asp-validation-for="StatusId" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="DueDate" />
+			<input asp-for="DueDate" class="form-control datepicker" autocomplete="off" type="text" maxlength="15" />
+			<span asp-validation-for="DueDate" class="text-danger"></span>
+		</div>
+	</div>
+	<div class="col-md-12">
+		<div class="mb-3">
+			<wc-label asp-for="ReleaseId" />
+			<select class="form-control select2" asp-for="ReleaseId" asp-items="Model.AvailableReleases"></select>
+			<span asp-validation-for="ReleaseId" class="text-danger"></span>
+		</div>
+	</div>
+</div>
+
+<script>
+	$(function () {
+		$("#ModuleIdBatchUpdate").change(function () {
+			var dto = {
+				module: $(this).val(),
+			};
+			JSManager.bindSelect("SubModuleIdBatchUpdate", "@Url.Action("GetSubModules", "SubModule")", dto);
+		});
+
+		$("#StatusIdBatchUpdate").change(function () {
+			const status = parseInt($(this).val());
+			if(status <= 0)
+				return;
+			var response = JSManager.ajaxGetWithResponse('@Url.Action("CheckStatusCommentsRequired")', { status });
+			if(response){
+				JSManager.showSwal('To update to this status, developers or testers must provide a valid root cause, resolution, or merge request (MR) number. Tasks lacking this information will not be updated.','warning')
+			}
+		});
+	});
+</script>

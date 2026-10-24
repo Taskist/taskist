@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Domain.Localization;
+using Taskist.Core.Domain.Localization;
 using Taskist.Core.Domain.Users;
 
 namespace Taskist.Core.Common;
@@ -7,7 +7,9 @@ public interface IWorkContext
 {
     Task<User> GetCurrentUserAsync();
 
-    Task<Language> GetCurrentUserLanguageAsync();
+    int? GetCurrentUserId();
 
-    Task SetCurrentUserAsync(User? user = null);
+    int? GetCurrentUserLanguageId();
+
+    Task<Language> GetCurrentUserLanguageAsync();
 }

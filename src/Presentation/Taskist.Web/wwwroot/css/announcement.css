@@ -1,0 +1,86 @@
+/* Announcement banners (full-width, in-flow under the header) */
+.ann-banner-stack { width: 100%; }
+/* Rendered hidden; JS reveals only non-dismissed ones (no dismissed-then-flash). */
+.ann-banner--pending { display: none !important; }
+.ann-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, .06);
+    border-left: 4px solid transparent;
+    font-size: .88rem;
+    box-shadow: 0 2px 6px rgba(20, 40, 70, .08);
+    animation: annSlideDown .35s ease-out;
+}
+@keyframes annSlideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ann-banner { animation: none; }
+}
+.ann-banner__mega {
+    flex: 0 0 auto;
+    width: 26px; height: 26px;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .7);
+    font-size: .8rem;
+}
+.ann-banner__icon { flex: 0 0 auto; }
+.ann-banner__body { flex: 1 1 auto; min-width: 0; }
+.ann-banner__title { font-weight: 700; margin-right: 6px; }
+.ann-banner__text > * { display: inline; margin: 0; }
+.ann-banner__close {
+    flex: 0 0 auto; background: none; border: none; font-size: 1.2rem;
+    line-height: 1; color: inherit; opacity: .6; cursor: pointer;
+}
+.ann-banner__close:hover { opacity: 1; }
+.ann-banner__ack {
+    flex: 0 0 auto;
+    background: rgba(255, 255, 255, .65);
+    border: 1px solid rgba(0, 0, 0, .12);
+    color: inherit;
+    font-weight: 600;
+    font-size: .76rem;
+    white-space: nowrap;
+}
+.ann-banner__ack:hover { background: #fff; }
+
+.ann-banner--info { background: #dcebfd; color: #14508f; border-left-color: #3b82f6; }
+.ann-banner--info .ann-banner__icon, .ann-banner--info .ann-banner__mega { color: #3b82f6; }
+
+.ann-banner--success { background: #d8f3e3; color: #176437; border-left-color: #22c55e; }
+.ann-banner--success .ann-banner__icon, .ann-banner--success .ann-banner__mega { color: #16a34a; }
+
+.ann-banner--warning { background: #fdefc7; color: #7a5c00; border-left-color: #e0a800; }
+.ann-banner--warning .ann-banner__icon, .ann-banner--warning .ann-banner__mega { color: #d69700; }
+
+.ann-banner--critical {
+    background: #fbdce1; color: #9c1b30; border-left-color: #dc3545;
+    font-weight: 500;
+    box-shadow: 0 2px 10px rgba(220, 53, 69, .2);
+}
+.ann-banner--critical .ann-banner__title { text-transform: uppercase; letter-spacing: .02em; }
+.ann-banner--critical .ann-banner__icon, .ann-banner--critical .ann-banner__mega { color: #dc3545; }
+
+/* One-time announcement modal */
+.ann-modal .modal-content { border: none; border-radius: 14px; overflow: hidden; box-shadow: 0 16px 48px rgba(20, 40, 70, .28); }
+.ann-modal__head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 18px 22px; color: #fff;
+}
+.ann-modal__icon {
+    flex: 0 0 auto; width: 40px; height: 40px; border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, .22); font-size: 1.05rem;
+}
+.ann-modal__title { margin: 0; font-size: 1.1rem; font-weight: 700; color: #fff; }
+.ann-modal__body { padding: 22px; font-size: .92rem; color: #33455c; line-height: 1.55; }
+.ann-modal__footer { border-top: 1px solid #eef2f7; padding: 12px 18px; }
+
+.ann-modal--info .ann-modal__head { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.ann-modal--success .ann-modal__head { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.ann-modal--warning .ann-modal__head { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.ann-modal--critical .ann-modal__head { background: linear-gradient(135deg, #ef4444, #dc2626); }

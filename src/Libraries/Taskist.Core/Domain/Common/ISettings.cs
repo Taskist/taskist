@@ -1,4 +1,4 @@
-﻿namespace Taskist.Core.Domain.Common;
+namespace Taskist.Core.Domain.Common;
 
 public interface ISettings
 {

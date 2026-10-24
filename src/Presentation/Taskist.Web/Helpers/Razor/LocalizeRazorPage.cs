@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Nop.Web.Framework.Localization;
 using Taskist.Core.Common;

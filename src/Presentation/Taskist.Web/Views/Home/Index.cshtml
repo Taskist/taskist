@@ -1,19 +1,46 @@
+@model DashboardModel
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = Localize("DashboardPage.Title");
     Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
 @section PageStyles {
-    <link rel="stylesheet" href="~/css/pages/dashboard/dashboard.css" asp-append-version="true" />
+    <link href="~/css/pages/dashboard.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div id="dashConfig" class="d-none" data-content-url="@Url.Action("Content", "Home")"></div>
+
+@if (Model.IsExecutive)
+{
+    <ul class="nav nav-tabs mb-3" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a href="#tabMyDash" class="nav-link active" data-bs-toggle="tab" role="tab">
+                <i class="fas fa-gauge-high me-2"></i>@Localize("Dashboard.MyDashboard").Text
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="#tabOrgDash" class="nav-link" data-bs-toggle="tab" role="tab">
+                <i class="fas fa-building me-2"></i>@Localize("Dashboard.OrgDashboard").Text
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active show" id="tabMyDash" role="tabpanel">
+            @await Html.PartialAsync("_DashboardMain", Model)
+        </div>
+        <div class="tab-pane" id="tabOrgDash" role="tabpanel">
+            <div id="orgDashboardContent" data-url="@Url.Action("OrgContent", "Home")">
+                <div class="text-center text-muted py-5"><span class="spinner-border" role="status"></span></div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    @await Html.PartialAsync("_DashboardMain", Model)
 }
 
 @section PageScripts {
-    <script src="~/js/pages/dashboard/welcome-card.js" asp-append-version="true"></script>
-    <script src="~/js/pages/dashboard/dashboard.js" asp-append-version="true"></script>
+    <script src="~/js/pages/backlog/backlog-branch.js" asp-append-version="true"></script>
+    <script src="~/js/pages/dashboard.js" asp-append-version="true"></script>
 }
-
-@await Html.PartialAsync("Sections/_WelcomeCard")
-
-<div id="dashboardContent" data-content-url="@Url.Action("DashboardContent", "Home")">
-    @await Component.InvokeAsync("DashboardWidgets")
-</div>

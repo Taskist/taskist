@@ -17,13 +17,527 @@ namespace Taskist.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Proxies:ChangeTracking", false)
-                .HasAnnotation("Proxies:CheckEquality", false)
-                .HasAnnotation("Proxies:LazyLoading", true)
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Taskist.Core.Domain.Announcements.Announcement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Audience")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RequiresAcknowledgement")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Severity")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("ValidTo")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Active", "Deleted");
+
+                    b.ToTable("Announcement", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Announcements.AnnouncementAcknowledgement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AcknowledgedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("AnnouncementId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("AnnouncementId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("AnnouncementAcknowledgement", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Announcements.AnnouncementRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnnouncementId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserRoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserRoleId");
+
+                    b.HasIndex("AnnouncementId", "UserRoleId");
+
+                    b.ToTable("AnnouncementRole", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.ExternalCommentLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BacklogCommentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContentHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("ExternalCommentId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("ExternalIssueLinkId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Inbound")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LastSyncedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BacklogCommentId");
+
+                    b.HasIndex("ExternalIssueLinkId", "ExternalCommentId")
+                        .IsUnique();
+
+                    b.ToTable("ExternalCommentLink", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.ExternalIssueLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BacklogId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("LastSyncedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectRepositoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RemoteState")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("RemoteUpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Snapshot")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("SyncEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BacklogId");
+
+                    b.HasIndex("ProjectRepositoryId", "Number")
+                        .IsUnique();
+
+                    b.ToTable("ExternalIssueLink", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.GitConnection", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AllowInsecureHttp")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ApiUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("AppId")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("AppPrivateKey")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("AuthMode")
+                        .HasColumnType("int");
+
+                    b.Property<string>("BaseUrl")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("OAuthClientId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("OAuthClientSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ProviderType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceAccountExternalId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("ServiceAccountUserName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ServiceToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("GitConnection", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.GitWebhookDelivery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DeliveryId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("EventName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Payload")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ProcessedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProjectRepositoryId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ReceivedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ReceivedOn");
+
+                    b.HasIndex("ProjectRepositoryId", "DeliveryId")
+                        .IsUnique();
+
+                    b.ToTable("GitWebhookDelivery", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.ProjectRepository", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DefaultBranch")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("ExternalRepoId")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("GitConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
+                    b.Property<bool?>("IsPrivate")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("IssueClosedStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IssueImportLabel")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("IssueImportLimitPerHour")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("IssueLastPolledOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("IssueOpenStatusId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IssueSeverityId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IssueSyncComments")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("IssueSyncEnabledOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IssueSyncMode")
+                        .HasColumnType("int");
+
+                    b.Property<string>("IssueSyncTaskTypeIds")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("IssueSyncUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("IssueTaskTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RepoRef")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("WebUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("WebhookKey")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("WebhookLastDeliveryOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("WebhookSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("WebhookSecretCreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GitConnectionId");
+
+                    b.HasIndex("IssueClosedStatusId");
+
+                    b.HasIndex("IssueOpenStatusId");
+
+                    b.HasIndex("IssueSeverityId");
+
+                    b.HasIndex("IssueSyncUserId");
+
+                    b.HasIndex("IssueTaskTypeId");
+
+                    b.HasIndex("WebhookKey")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId", "GitConnectionId", "RepoRef");
+
+                    b.ToTable("ProjectRepository", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.UserGitAccount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ConnectedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("ExpiresOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ExternalUserId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("GitConnectionId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("LastUsedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("RefreshExpiresOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RefreshToken")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Scopes")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("TokenType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GitConnectionId", "ExternalUserId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "GitConnectionId")
+                        .IsUnique();
+
+                    b.ToTable("UserGitAccount", (string)null);
+                });
 
             modelBuilder.Entity("Taskist.Core.Domain.Localization.Language", b =>
                 {
@@ -129,6 +643,50 @@ namespace Taskist.Data.Migrations
                     b.ToTable("ActivityLog", (string)null);
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Logging.AuditLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntityName", "EntityId");
+
+                    b.ToTable("AuditLog", (string)null);
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.Logging.Log", b =>
                 {
                     b.Property<int>("Id")
@@ -169,6 +727,37 @@ namespace Taskist.Data.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Log", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Masters.Address", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address1")
+                        .IsRequired()
+                        .HasMaxLength(750)
+                        .HasColumnType("nvarchar(750)");
+
+                    b.Property<string>("Address2")
+                        .HasMaxLength(750)
+                        .HasColumnType("nvarchar(750)");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ZipPostalCode")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Address", (string)null);
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Masters.Client", b =>
@@ -225,9 +814,6 @@ namespace Taskist.Data.Migrations
 
                     b.Property<int>("ColumnClass")
                         .HasMaxLength(20)
-                        .HasColumnType("int");
-
-                    b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
 
                     b.Property<int>("FieldType")
@@ -498,6 +1084,53 @@ namespace Taskist.Data.Migrations
                     b.ToTable("Module", (string)null);
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Masters.NotificationChannel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ChannelType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("EndpointUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("LastSentOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SigningSecret")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationChannel", (string)null);
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.Masters.Project", b =>
                 {
                     b.Property<int>("Id")
@@ -512,6 +1145,9 @@ namespace Taskist.Data.Migrations
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CodeReviewerId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
 
@@ -522,19 +1158,72 @@ namespace Taskist.Data.Migrations
                     b.Property<DateOnly?>("EndDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("GitProjectReference")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("ProjectManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReleaseFullIncrement")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ReleaseVersionFormat")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
                     b.Property<DateOnly?>("StartDate")
                         .HasColumnType("date");
+
+                    b.Property<int?>("TeamLeadId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ClientId");
 
+                    b.HasIndex("CodeReviewerId");
+
+                    b.HasIndex("ProjectManagerId");
+
+                    b.HasIndex("TeamLeadId");
+
                     b.ToTable("Project", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Masters.ProjectNotificationChannel", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Events")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NotificationChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificationChannelId");
+
+                    b.HasIndex("ProjectId", "NotificationChannelId")
+                        .IsUnique();
+
+                    b.ToTable("ProjectNotificationChannel", (string)null);
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Masters.Reporter", b =>
@@ -657,6 +1346,9 @@ namespace Taskist.Data.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
+                    b.Property<bool>("ExternalUse")
+                        .HasColumnType("bit");
+
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
 
@@ -669,6 +1361,27 @@ namespace Taskist.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("RequiredMrNumberForBug")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiredMrNumberForCr")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiredResolutionForBug")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiredResolutionForCr")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiredRootCauseForBug")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("RequiredRootCauseForCr")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("SystemDefined")
                         .HasColumnType("bit");
 
@@ -677,6 +1390,8 @@ namespace Taskist.Data.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("Status", (string)null);
                 });
@@ -717,6 +1432,30 @@ namespace Taskist.Data.Migrations
                     b.HasIndex("OwnerId");
 
                     b.ToTable("SubModule", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Masters.Tag", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Tag", (string)null);
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Masters.TaskType", b =>
@@ -770,11 +1509,17 @@ namespace Taskist.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("AvatarVersion")
+                    b.Property<int>("AddressId")
                         .HasColumnType("int");
 
                     b.Property<Guid>("Code")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly>("DateOfJoin")
+                        .HasColumnType("date");
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
@@ -792,8 +1537,16 @@ namespace Taskist.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("FriendlyName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int>("GenderId")
                         .HasColumnType("int");
+
+                    b.Property<string>("GitUserName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("LanguageId")
                         .HasColumnType("int");
@@ -816,8 +1569,16 @@ namespace Taskist.Data.Migrations
                     b.Property<bool>("Locked")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("LockoutEndDate")
-                        .HasColumnType("datetime2");
+                    b.Property<int>("MaritalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MobileNumber")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int?>("PhotoDocumentId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -827,9 +1588,60 @@ namespace Taskist.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddressId");
+
                     b.HasIndex("LanguageId");
 
                     b.ToTable("User", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserNotification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DedupeKey")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<DateTime?>("ReadOnUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "DedupeKey");
+
+                    b.HasIndex("UserId", "IsRead", "CreatedOnUtc");
+
+                    b.ToTable("UserNotification", (string)null);
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserPassword", b =>
@@ -842,11 +1654,6 @@ namespace Taskist.Data.Migrations
 
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
-
-                    b.Property<int>("HashFormat")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -874,13 +1681,19 @@ namespace Taskist.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("CanAddWiki")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanChangeProject")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("CanClose")
                         .HasColumnType("bit");
 
                     b.Property<bool>("CanComment")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("CanDelete")
+                    b.Property<bool>("CanDeleteTask")
                         .HasColumnType("bit");
 
                     b.Property<bool>("CanEdit")
@@ -889,10 +1702,22 @@ namespace Taskist.Data.Migrations
                     b.Property<bool>("CanEditOthersTask")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("CanMergeMergeRequests")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("CanReOpen")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("CanReport")
+                    b.Property<bool>("CanReportBug")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanReportCR")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanReportToDo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CanReviewMergeRequests")
                         .HasColumnType("bit");
 
                     b.Property<bool>("CanViewOthersTask")
@@ -1007,6 +1832,138 @@ namespace Taskist.Data.Migrations
                     b.ToTable("UserRolePermissionMap", (string)null);
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("WikiCategory", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ModifiedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ModuleId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SubModuleId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ModifiedById");
+
+                    b.HasIndex("ModuleId");
+
+                    b.HasIndex("SubModuleId");
+
+                    b.ToTable("WikiDocument", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiDocumentVersion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentHtml")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ModifiedById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int>("WikiDocumentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ModifiedById");
+
+                    b.HasIndex("WikiDocumentId");
+
+                    b.ToTable("WikiDocumentVersion", (string)null);
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Backlog", b =>
                 {
                     b.Property<int>("Id")
@@ -1018,8 +1975,14 @@ namespace Taskist.Data.Migrations
                     b.Property<int?>("AssigneeId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("AttachmentCount")
+                        .HasColumnType("int");
+
                     b.Property<Guid>("Code")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<int?>("CommentCount")
+                        .HasColumnType("int");
 
                     b.Property<int>("CreatedById")
                         .HasColumnType("int");
@@ -1036,6 +1999,18 @@ namespace Taskist.Data.Migrations
                     b.Property<DateOnly?>("DueDate")
                         .HasColumnType("date");
 
+                    b.Property<string>("EnvironmentJson")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ExternalNotes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("MergeRequestId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("MergeRequestRepositoryId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("ModifiedById")
                         .HasColumnType("int");
 
@@ -1048,16 +2023,34 @@ namespace Taskist.Data.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
 
+                    b.Property<DateOnly?>("PlannedStartDate")
+                        .HasColumnType("date");
+
                     b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReOpenCount")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ReleaseId")
                         .HasColumnType("int");
 
                     b.Property<int?>("ReporterId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ResolutionDetails")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RootCauseAnalysis")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("SeverityId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SprintId")
+                    b.Property<int?>("SourceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SourceWikiDocumentId")
                         .HasColumnType("int");
 
                     b.Property<int>("StatusId")
@@ -1072,6 +2065,9 @@ namespace Taskist.Data.Migrations
                     b.Property<int>("TaskTypeId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("TesterId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -1083,6 +2079,8 @@ namespace Taskist.Data.Migrations
 
                     b.HasIndex("CreatedById");
 
+                    b.HasIndex("MergeRequestRepositoryId");
+
                     b.HasIndex("ModifiedById");
 
                     b.HasIndex("ModuleId");
@@ -1091,17 +2089,21 @@ namespace Taskist.Data.Migrations
 
                     b.HasIndex("ProjectId");
 
+                    b.HasIndex("ReleaseId");
+
                     b.HasIndex("ReporterId");
 
                     b.HasIndex("SeverityId");
 
-                    b.HasIndex("SprintId");
+                    b.HasIndex("SourceWikiDocumentId");
 
                     b.HasIndex("StatusId");
 
                     b.HasIndex("SubModuleId");
 
                     b.HasIndex("TaskTypeId");
+
+                    b.HasIndex("TesterId");
 
                     b.ToTable("Backlog", (string)null);
                 });
@@ -1127,11 +2129,24 @@ namespace Taskist.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("FieldName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<int?>("ModifiedById")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("ModifiedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("NewValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OldValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PostToIssue")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("SystemComment")
                         .HasColumnType("bit");
@@ -1235,7 +2250,7 @@ namespace Taskist.Data.Migrations
                     b.ToTable("BacklogStatusLog", (string)null);
                 });
 
-            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Sprint", b =>
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.BacklogTag", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1243,8 +2258,113 @@ namespace Taskist.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("Completed")
+                    b.Property<int>("BacklogId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TagId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("BacklogId", "TagId");
+
+                    b.ToTable("BacklogTag", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.GitBranch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BaseBranch")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Deleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("GitProjectReference")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int?>("Origin")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProjectRepositoryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedById");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ProjectRepositoryId");
+
+                    b.HasIndex("GitProjectReference", "Name");
+
+                    b.ToTable("GitBranch", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.GitBranchTask", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BacklogId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GitBranchId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LinkedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("LinkedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BacklogId");
+
+                    b.HasIndex("LinkedById");
+
+                    b.HasIndex("GitBranchId", "BacklogId")
+                        .IsUnique();
+
+                    b.ToTable("GitBranchTask", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Release", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<bool>("Deleted")
                         .HasColumnType("bit");
@@ -1253,28 +2373,257 @@ namespace Taskist.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<DateOnly>("EndDate")
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("ReleaseDate")
                         .HasColumnType("date");
+
+                    b.Property<int>("ReleaseType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.ToTable("Release", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.ReleaseProject", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ReleaseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("ReleaseId", "ProjectId")
+                        .IsUnique();
+
+                    b.ToTable("ReleaseProject", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.StatusDurationMetric", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Deleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FromStatusId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("ProjectId")
+                    b.Property<int?>("ProjectId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("StartDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("Started")
+                    b.Property<bool>("ShowOnTask")
                         .HasColumnType("bit");
+
+                    b.Property<int>("ToStatusId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FromStatusId");
+
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("Sprint", (string)null);
+                    b.HasIndex("ToStatusId");
+
+                    b.ToTable("StatusDurationMetric", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Announcements.AnnouncementAcknowledgement", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Announcements.Announcement", "Announcement")
+                        .WithMany()
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Announcements.AnnouncementRole", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Announcements.Announcement", "Announcement")
+                        .WithMany("Roles")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.UserRole", "UserRole")
+                        .WithMany()
+                        .HasForeignKey("UserRoleId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("UserRole");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.ExternalCommentLink", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.WorkItems.BacklogComment", "BacklogComment")
+                        .WithMany()
+                        .HasForeignKey("BacklogCommentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Git.ExternalIssueLink", "ExternalIssueLink")
+                        .WithMany()
+                        .HasForeignKey("ExternalIssueLinkId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("BacklogComment");
+
+                    b.Navigation("ExternalIssueLink");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.ExternalIssueLink", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.WorkItems.Backlog", "Backlog")
+                        .WithMany()
+                        .HasForeignKey("BacklogId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Git.ProjectRepository", "ProjectRepository")
+                        .WithMany()
+                        .HasForeignKey("ProjectRepositoryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Backlog");
+
+                    b.Navigation("ProjectRepository");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.GitWebhookDelivery", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Git.ProjectRepository", "ProjectRepository")
+                        .WithMany()
+                        .HasForeignKey("ProjectRepositoryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ProjectRepository");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.ProjectRepository", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Git.GitConnection", "GitConnection")
+                        .WithMany()
+                        .HasForeignKey("GitConnectionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Status", "IssueClosedStatus")
+                        .WithMany()
+                        .HasForeignKey("IssueClosedStatusId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Status", "IssueOpenStatus")
+                        .WithMany()
+                        .HasForeignKey("IssueOpenStatusId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Severity", "IssueSeverity")
+                        .WithMany()
+                        .HasForeignKey("IssueSeverityId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "IssueSyncUser")
+                        .WithMany()
+                        .HasForeignKey("IssueSyncUserId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.TaskType", "IssueTaskType")
+                        .WithMany()
+                        .HasForeignKey("IssueTaskTypeId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("GitConnection");
+
+                    b.Navigation("IssueClosedStatus");
+
+                    b.Navigation("IssueOpenStatus");
+
+                    b.Navigation("IssueSeverity");
+
+                    b.Navigation("IssueSyncUser");
+
+                    b.Navigation("IssueTaskType");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Git.UserGitAccount", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Git.GitConnection", "GitConnection")
+                        .WithMany()
+                        .HasForeignKey("GitConnectionId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("GitConnection");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Localization.LocaleResource", b =>
@@ -1328,10 +2677,60 @@ namespace Taskist.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Taskist.Core.Domain.Users.User", "CodeReviewer")
+                        .WithMany()
+                        .HasForeignKey("CodeReviewerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "ProjectManager")
+                        .WithMany()
+                        .HasForeignKey("ProjectManagerId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "TeamLead")
+                        .WithMany()
+                        .HasForeignKey("TeamLeadId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Client");
+
+                    b.Navigation("CodeReviewer");
+
+                    b.Navigation("ProjectManager");
+
+                    b.Navigation("TeamLead");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Masters.ProjectNotificationChannel", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Masters.NotificationChannel", "NotificationChannel")
+                        .WithMany()
+                        .HasForeignKey("NotificationChannelId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("NotificationChannel");
+
+                    b.Navigation("Project");
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Masters.Reporter", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Masters.Status", b =>
                 {
                     b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
                         .WithMany()
@@ -1361,13 +2760,32 @@ namespace Taskist.Data.Migrations
 
             modelBuilder.Entity("Taskist.Core.Domain.Users.User", b =>
                 {
+                    b.HasOne("Taskist.Core.Domain.Masters.Address", "Address")
+                        .WithMany()
+                        .HasForeignKey("AddressId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("Taskist.Core.Domain.Localization.Language", "Language")
                         .WithMany()
                         .HasForeignKey("LanguageId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.Navigation("Address");
+
                     b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserNotification", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Users.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserPassword", b =>
@@ -1403,7 +2821,7 @@ namespace Taskist.Data.Migrations
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserRoleMap", b =>
                 {
                     b.HasOne("Taskist.Core.Domain.Users.User", "User")
-                        .WithMany("UserRoleMaps")
+                        .WithMany("UserUserRoleMaps")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1438,6 +2856,83 @@ namespace Taskist.Data.Migrations
                     b.Navigation("UserRole");
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiCategory", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Wiki.WikiCategory", "ParentCategory")
+                        .WithMany()
+                        .HasForeignKey("ParentCategoryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("ParentCategory");
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiDocument", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Wiki.WikiCategory", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Module", "Module")
+                        .WithMany()
+                        .HasForeignKey("ModuleId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.SubModule", "SubModule")
+                        .WithMany()
+                        .HasForeignKey("SubModuleId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Category");
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("ModifiedBy");
+
+                    b.Navigation("Module");
+
+                    b.Navigation("SubModule");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiDocumentVersion", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Users.User", "ModifiedBy")
+                        .WithMany()
+                        .HasForeignKey("ModifiedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Wiki.WikiDocument", "WikiDocument")
+                        .WithMany()
+                        .HasForeignKey("WikiDocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ModifiedBy");
+
+                    b.Navigation("WikiDocument");
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Backlog", b =>
                 {
                     b.HasOne("Taskist.Core.Domain.Users.User", "Assignee")
@@ -1450,6 +2945,11 @@ namespace Taskist.Data.Migrations
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Git.ProjectRepository", null)
+                        .WithMany()
+                        .HasForeignKey("MergeRequestRepositoryId")
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Taskist.Core.Domain.Users.User", "ModifiedBy")
                         .WithMany()
@@ -1472,6 +2972,11 @@ namespace Taskist.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Taskist.Core.Domain.WorkItems.Release", "Release")
+                        .WithMany()
+                        .HasForeignKey("ReleaseId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.HasOne("Taskist.Core.Domain.Masters.Reporter", "Reporter")
                         .WithMany()
                         .HasForeignKey("ReporterId")
@@ -1483,9 +2988,9 @@ namespace Taskist.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("Taskist.Core.Domain.WorkItems.Sprint", "Sprint")
+                    b.HasOne("Taskist.Core.Domain.Wiki.WikiDocument", "SourceWikiDocument")
                         .WithMany()
-                        .HasForeignKey("SprintId")
+                        .HasForeignKey("SourceWikiDocumentId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("Taskist.Core.Domain.Masters.Status", "Status")
@@ -1505,6 +3010,11 @@ namespace Taskist.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Taskist.Core.Domain.Users.User", "Tester")
+                        .WithMany()
+                        .HasForeignKey("TesterId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Assignee");
 
                     b.Navigation("CreatedBy");
@@ -1517,17 +3027,21 @@ namespace Taskist.Data.Migrations
 
                     b.Navigation("Project");
 
+                    b.Navigation("Release");
+
                     b.Navigation("Reporter");
 
                     b.Navigation("Severity");
 
-                    b.Navigation("Sprint");
+                    b.Navigation("SourceWikiDocument");
 
                     b.Navigation("Status");
 
                     b.Navigation("SubModule");
 
                     b.Navigation("TaskType");
+
+                    b.Navigation("Tester");
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.WorkItems.BacklogComment", b =>
@@ -1628,7 +3142,89 @@ namespace Taskist.Data.Migrations
                     b.Navigation("Status");
                 });
 
-            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Sprint", b =>
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.BacklogTag", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.WorkItems.Backlog", "Backlog")
+                        .WithMany()
+                        .HasForeignKey("BacklogId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Backlog");
+
+                    b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.GitBranch", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Users.User", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Git.ProjectRepository", "ProjectRepository")
+                        .WithMany()
+                        .HasForeignKey("ProjectRepositoryId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("CreatedBy");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("ProjectRepository");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.GitBranchTask", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.WorkItems.Backlog", "Backlog")
+                        .WithMany()
+                        .HasForeignKey("BacklogId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.WorkItems.GitBranch", "GitBranch")
+                        .WithMany("Tasks")
+                        .HasForeignKey("GitBranchId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", "LinkedBy")
+                        .WithMany()
+                        .HasForeignKey("LinkedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Backlog");
+
+                    b.Navigation("GitBranch");
+
+                    b.Navigation("LinkedBy");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Release", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.Navigation("Project");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.ReleaseProject", b =>
                 {
                     b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
                         .WithMany()
@@ -1636,12 +3232,51 @@ namespace Taskist.Data.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("Taskist.Core.Domain.WorkItems.Release", "Release")
+                        .WithMany("ReleaseProjects")
+                        .HasForeignKey("ReleaseId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Project");
+
+                    b.Navigation("Release");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.StatusDurationMetric", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Masters.Status", "FromStatus")
+                        .WithMany()
+                        .HasForeignKey("FromStatusId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", "Project")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Status", "ToStatus")
+                        .WithMany()
+                        .HasForeignKey("ToStatusId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("FromStatus");
+
+                    b.Navigation("Project");
+
+                    b.Navigation("ToStatus");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Announcements.Announcement", b =>
+                {
+                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Users.User", b =>
                 {
-                    b.Navigation("UserRoleMaps");
+                    b.Navigation("UserUserRoleMaps");
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserRole", b =>
@@ -1652,6 +3287,16 @@ namespace Taskist.Data.Migrations
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserRolePermission", b =>
                 {
                     b.Navigation("UserRolePermissionMaps");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.GitBranch", b =>
+                {
+                    b.Navigation("Tasks");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Release", b =>
+                {
+                    b.Navigation("ReleaseProjects");
                 });
 #pragma warning restore 612, 618
         }

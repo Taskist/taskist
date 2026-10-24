@@ -1,12 +1,14 @@
-using Taskist.Service.Common;
-using Taskist.Service.Users;
-using Microsoft.AspNetCore.Http;
-using Taskist.Core.Caching;
-using Taskist.Core.Domain.Users;
+using Taskist.Core.Enums;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
-using Taskist.Core.Common;
+using Taskist.Core.Caching;
+using Taskist.Core.Domain.Settings;
+using Taskist.Core.Domain.Users;
+using Taskist.Service.Common;
+using Taskist.Service.Masters;
+using Taskist.Service.Users;
 
 namespace Taskist.Service.Authentication;
 
@@ -17,6 +19,7 @@ public class AuthenticationService : IAuthenticationService
     protected readonly IUserService _userService;
     protected readonly IHttpContextAccessor _httpContextAccessor;
     protected readonly ICacheManager _cacheManager;
+    protected readonly ISettingService _settingService;
 
     private User _cachedUser;
 
@@ -25,13 +28,14 @@ public class AuthenticationService : IAuthenticationService
     #region Ctor
 
     public AuthenticationService(IUserService userService,
-        IHttpContextAccessor httpContextAccessor,
-        ICacheManager cacheManager)
+            IHttpContextAccessor httpContextAccessor,
+            ICacheManager cacheManager,
+            ISettingService settingService)
     {
         _userService = userService;
         _httpContextAccessor = httpContextAccessor;
         _cacheManager = cacheManager;
-
+        _settingService = settingService;
     }
 
     #endregion
@@ -46,19 +50,39 @@ public class AuthenticationService : IAuthenticationService
         var claims = new List<Claim>();
 
         if (!string.IsNullOrEmpty(entity.Email))
+        {
             claims.Add(new Claim(ClaimTypes.Email, entity.Email, ClaimValueTypes.String, ServiceConstant.ClaimsIssuer));
+            claims.Add(new Claim(ClaimTypes.Name, entity.Name, ClaimValueTypes.String, ServiceConstant.ClaimsIssuer));
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, entity.Id.ToString(), ClaimValueTypes.Integer, ServiceConstant.ClaimsIssuer));
+            claims.Add(new Claim(ServiceConstant.LanguageIdClaim, entity.LanguageId.ToString(), ClaimValueTypes.Integer, ServiceConstant.ClaimsIssuer));
+
+            var roles = await _userService.GetUserRolesAsync(entity);
+            foreach (var role in roles)
+                claims.Add(new Claim(ClaimTypes.Role, role.SystemName, ClaimValueTypes.String, ServiceConstant.ClaimsIssuer));
+
+            var isAdmin = roles.Any(r => r.SystemName == UserConstant.AdministratorsRoleName);
+            claims.Add(new Claim(ServiceConstant.IsAdminClaim, isAdmin.ToString(), ClaimValueTypes.Boolean, ServiceConstant.ClaimsIssuer));
+        }
 
         var userIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         var userPrincipal = new ClaimsPrincipal(userIdentity);
 
+        var security = await _settingService.LoadSettingAsync<SecuritySettings>();
+        var idleMinutes = security.SessionTimeoutMinutes > 0 ? security.SessionTimeoutMinutes : 180;
+        var rememberDays = security.RememberMeDurationDays > 0 ? security.RememberMeDurationDays : 30;
+
         var authenticationProperties = new AuthenticationProperties
         {
             IsPersistent = isPersistent,
-            IssuedUtc = DateTime.UtcNow
+            AllowRefresh = true,
+            IssuedUtc = DateTimeOffset.UtcNow,
+            ExpiresUtc = isPersistent
+                ? DateTimeOffset.UtcNow.AddDays(rememberDays)
+                : DateTimeOffset.UtcNow.AddMinutes(idleMinutes)
         };
 
         await _httpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,
-            userPrincipal, authenticationProperties);
+                    userPrincipal, authenticationProperties);
 
         _cachedUser = entity;
     }
@@ -86,10 +110,14 @@ public class AuthenticationService : IAuthenticationService
             user = await _userService.GetByEmailAsync(claims.Value);
 
         if (user == null ||
-            user.Status != (int)UserStatusEnum.Active || user.Deleted)
+                    user.Status != (int)UserStatus.Active || user.Deleted)
             return null;
 
-        user.IsAdmin = await _userService.IsAdminAsync(user);
+        var isAdminClaim = authenticateResult.Principal.FindFirst(claim => claim.Type == ServiceConstant.IsAdminClaim
+                        && claim.Issuer.Equals(ServiceConstant.ClaimsIssuer, StringComparison.InvariantCultureIgnoreCase));
+        user.IsAdmin = isAdminClaim != null
+            ? bool.TryParse(isAdminClaim.Value, out var admin) && admin
+            : await _userService.IsAdminAsync(user);
 
         _cachedUser = user;
 

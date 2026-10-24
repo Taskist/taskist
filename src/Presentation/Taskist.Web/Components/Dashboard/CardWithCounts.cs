@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Service.WorkItems;
 using Taskist.Web.Models.Dashboard;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Taskist.Web.Components.Dashboard;
 
@@ -10,14 +10,14 @@ public class CardWithCounts : ViewComponent
     #region Fields
 
     protected readonly IWorkContext _workContext;
-    protected readonly IBacklogItemService _backlogService;
+    protected readonly IBacklogService _backlogService;
 
     #endregion
 
     #region Ctor
 
     public CardWithCounts(IWorkContext workContext,
-        IBacklogItemService backlogService)
+        IBacklogService backlogService)
     {
         _workContext = workContext;
         _backlogService = backlogService;
@@ -27,10 +27,10 @@ public class CardWithCounts : ViewComponent
 
     #region Methods
 
-    public async Task<IViewComponentResult> InvokeAsync()
+    public async Task<IViewComponentResult> InvokeAsync(int[] projectIds, int selectedProjectId = 0)
     {
-        var user = await _workContext.GetCurrentUserAsync();
-        var tasks = await _backlogService.GetTaskCountAsync(user.Id);
+        var userId = _workContext.GetCurrentUserId() ?? 0;
+        var tasks = await _backlogService.GetTaskCountAsync(userId, projectIds);
 
         var model = new List<CardModel>();
 
@@ -45,13 +45,13 @@ public class CardWithCounts : ViewComponent
                     "My Tasks" => 1,
                     "Reopened Tasks" => 2,
                     "Closed Tasks" => 3,
-                    _ => 0,
+                    _ => 5,
                 }
             };
             model.Add(cardModel);
         }
 
-        return View(model);
+        return View(new CardWithCountsModel { Cards = model, SelectedProjectId = selectedProjectId });
     }
 
     #endregion

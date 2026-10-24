@@ -1,6 +1,7 @@
-﻿@using Taskist.Service.Common
-@using Taskist.Service.Messages
 @using Newtonsoft.Json
+@using Taskist.Service.Common
+@using Taskist.Service.Messages
+@using NotifyType = Taskist.Service.Messages.NotifyType
 @{
     //Get messages from TempData
 var notes = TempData.ContainsKey(ServiceConstant.NotificationListKey)

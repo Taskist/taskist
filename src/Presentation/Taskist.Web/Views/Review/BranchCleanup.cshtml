@@ -1,0 +1,105 @@
+@model Taskist.Core.Dtos.Git.BranchCleanupDto
+@{
+	var groups = Model.Items.GroupBy(x => x.Reason).ToList();
+	string ReasonLabel(BranchCleanupReason r) => Localize($"Backlog.Cleanup.Reason.{r}").Text;
+	string ReasonHint(BranchCleanupReason r) => r == BranchCleanupReason.Idle
+		? string.Format(Localize("Backlog.Cleanup.Reason.Idle.Hint").Text, Model.IdleDays)
+		: Localize($"Backlog.Cleanup.Reason.{r}.Hint").Text;
+	string ReasonIcon(BranchCleanupReason r) => r switch
+	{
+		BranchCleanupReason.Gone => "fa-ghost",
+		BranchCleanupReason.Merged => "fa-code-merge",
+		BranchCleanupReason.TasksClosed => "fa-circle-check",
+		_ => "fa-hourglass-end"
+	};
+}
+
+<div class="branch-cleanup" data-delete-url="@Url.Action("DeleteBranches")"
+	 data-confirm="@Localize("Backlog.Cleanup.Confirm").Text"
+	 data-yes="@Localize("Backlog.Cleanup.Delete").Text" data-no="@Localize("Button.Back").Text">
+	<p class="small text-muted">@string.Format(Localize("Backlog.Cleanup.Intro").Text, Model.IdleDays)</p>
+
+	@if (!string.IsNullOrEmpty(Model.Error) && !Model.FailedProjects.Any())
+	{
+		<div class="alert alert-danger py-2 small">@Model.Error</div>
+	}
+	@if (Model.FailedProjects.Any())
+	{
+		<div class="alert alert-warning py-2 small">
+			@string.Format(Localize("Backlog.Cleanup.FailedProjects").Text, string.Join(", ", Model.FailedProjects))
+			@if (!string.IsNullOrEmpty(Model.Error))
+			{
+				<div class="mt-1 text-muted">@Model.Error</div>
+			}
+		</div>
+	}
+	@if (!Model.Connected && Model.Items.Any())
+	{
+		<div class="alert alert-info py-2 small d-flex align-items-center justify-content-between gap-2">
+			<span><i class="fas fa-plug me-1"></i>@Localize("Backlog.Cleanup.Connect")</span>
+			<a href="@Url.Action("Index", "Profile", new { connect = "gitlab" }, null, null, "git")" class="btn btn-sm btn-primary">@Localize("ReviewPage.Connect.Button")</a>
+		</div>
+	}
+
+	@if (!Model.Items.Any())
+	{
+		<div class="branch-cleanup__empty">
+			<i class="far fa-circle-check"></i>
+			<div>@Localize("Backlog.Cleanup.Empty")</div>
+		</div>
+	}
+	else
+	{
+		@foreach (var group in groups)
+		{
+			<div class="branch-cleanup__group">
+				<label class="branch-cleanup__group-head">
+					<input type="checkbox" class="form-check-input branch-cleanup__all" @(Model.Connected ? "" : "disabled") />
+					<i class="fas @ReasonIcon(group.Key)"></i>
+					<span>@ReasonLabel(group.Key)</span>
+					<span class="branch-cleanup__count">@group.Count()</span>
+				</label>
+				<div class="branch-cleanup__hint">@ReasonHint(group.Key)</div>
+				@foreach (var b in group)
+				{
+					<label class="branch-cleanup__row">
+						<input type="checkbox" class="form-check-input branch-cleanup__pick" value="@b.BranchId" @(Model.Connected ? "" : "disabled") />
+						<span class="branch-cleanup__main">
+							<code class="branch-cleanup__name" title="@b.Name">@b.Name</code>
+							<span class="branch-cleanup__meta">
+								<span>@b.ProjectName</span>
+								@if (b.TaskIds.Any())
+								{
+									<span>@string.Join(", ", b.TaskIds.Take(3).Select(t => "#" + t))@(b.TaskIds.Count > 3 ? " …" : "")</span>
+								}
+								else
+								{
+									<span>@Localize("Backlog.Cleanup.NoTask")</span>
+								}
+								@if (b.LastCommitOn.HasValue)
+								{
+									<span>@string.Format(Localize("Backlog.Cleanup.LastCommit").Text, b.LastCommitOn.Value.ToLocalTime().ToString("dd-MMM-yyyy"))</span>
+								}
+								@if (!string.IsNullOrEmpty(b.CreatedBy))
+								{
+									<span>@b.CreatedBy</span>
+								}
+							</span>
+						</span>
+						@if (!string.IsNullOrEmpty(b.WebUrl))
+						{
+							<a href="@b.WebUrl" target="_blank" rel="noopener" class="branch-cleanup__open" title="@Localize("Backlog.Code.OpenBranchInGitLab").Text"><i class="fas fa-arrow-up-right-from-square"></i></a>
+						}
+					</label>
+				}
+			</div>
+		}
+
+		<div class="branch-cleanup__foot">
+			<span class="small text-muted">@Localize("Backlog.Cleanup.ProtectedNote")</span>
+			<button type="button" class="btn btn-sm btn-danger text-light ms-auto branch-cleanup__delete" disabled>
+				<i class="fas fa-trash-can me-1"></i>@Localize("Backlog.Cleanup.Delete") <span class="branch-cleanup__selected">0</span>
+			</button>
+		</div>
+	}
+</div>

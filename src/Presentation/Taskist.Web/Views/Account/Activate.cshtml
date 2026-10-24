@@ -1,0 +1,69 @@
+@model SetPasswordModel
+@{
+	ViewData["Title"] = "Set Password";
+	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+}
+
+@section PageStyles {
+	<link rel="stylesheet" href="~/css/pages/login.css" asp-append-version="true" />
+}
+
+<div class="login-card">
+	<div class="login-form">
+		<div class="login-form-inner">
+			<div class="login-form-header">
+				<h2>Set your password</h2>
+				<p>Choose a new password to access your account.</p>
+			</div>
+
+			@if (!Model.Valid)
+			{
+				<div class="alert alert-danger">@Model.Message</div>
+				<div class="login-form-row">
+					<a class="login-forgot" asp-route="ForgotPassword">Request a new link</a>
+					<a class="login-forgot" asp-route="Login">Back to sign in</a>
+				</div>
+			}
+			else
+			{
+				<form asp-action="Activate" method="post" autocomplete="off">
+					<input type="hidden" asp-for="Token" />
+					<input type="hidden" asp-for="Code" />
+					<input type="hidden" asp-for="Email" />
+					<input type="hidden" asp-for="Name" />
+					<input type="hidden" asp-for="Valid" />
+
+					<div asp-validation-summary="ModelOnly" class="login-error"></div>
+
+					<p class="text-muted">Hello <strong>@Model.Name</strong>, set a password for <strong>@Model.Email</strong>.</p>
+
+					<div class="mb-3">
+						<label asp-for="Password" class="form-label"></label>
+						<div class="login-input">
+							<i class="fas fa-lock login-input-icon"></i>
+							<input asp-for="Password" type="password" class="form-control" placeholder="New password" autocomplete="new-password" />
+						</div>
+						<span asp-validation-for="Password" class="text-danger"></span>
+					</div>
+
+					<div class="mb-3">
+						<label asp-for="ConfirmPassword" class="form-label"></label>
+						<div class="login-input">
+							<i class="fas fa-lock login-input-icon"></i>
+							<input asp-for="ConfirmPassword" type="password" class="form-control" placeholder="Confirm password" autocomplete="new-password" />
+						</div>
+						<span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+					</div>
+
+					<button type="submit" class="btn btn-primary login-submit">
+						<span>Set password <i class="fas fa-check ms-1"></i></span>
+					</button>
+
+					<div class="login-form-row mt-3">
+						<a class="login-forgot" asp-route="Login"><i class="fas fa-arrow-left me-1"></i>Back to sign in</a>
+					</div>
+				</form>
+			}
+		</div>
+	</div>
+</div>

@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Extensions;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
-using Taskist.Data.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 
 namespace Taskist.Service.Masters;
 
@@ -29,7 +31,7 @@ public class ModuleService : IModuleService
         return await _moduleRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBySafe(sortColumn, sortDirection);
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));
@@ -49,8 +51,14 @@ public class ModuleService : IModuleService
 
     public async Task<IList<Module>> GetAllActiveByProjectAsync(int projectId)
     {
-        return await _moduleRepository.GetAllAsync(q => q.Where(x => x.Active
+        return await _moduleRepository.GetAllAsync(q => q.Where(x => !x.Deleted && x.Active
         && (x.ProjectId == null || x.ProjectId == projectId)));
+    }
+
+    public async Task<IList<Module>> GetAllActiveByProjectAsync(List<int> projectIds)
+    {
+        return await _moduleRepository.GetAllAsync(q => q.Where(x => !x.Deleted && x.Active
+        && (x.ProjectId == null || projectIds.Contains(x.ProjectId ?? 0))));
     }
 
     public async Task<Module> GetByIdAsync(int id)

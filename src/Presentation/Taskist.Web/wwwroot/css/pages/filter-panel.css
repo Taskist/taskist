@@ -1,0 +1,55 @@
+/* ============================================================================
+   Shared collapsible filter panel — one mechanism across all list/report pages.
+   Markup: a "Filters" toggle button (.wp-filter-btn) with a count badge
+   (.wp-filter-count) toggles a Bootstrap .collapse card, collapsed by default.
+   Legacy .tlr-filter-* classes are aliased so existing pages keep working.
+   ============================================================================ */
+
+/* Toggle button: distinct when the panel is open, and when filters are applied */
+.wp-filter-btn[aria-expanded="true"],
+.tlr-filter-btn[aria-expanded="true"] {
+    background: #eef2ff;
+    border-color: #6f78e6;
+    color: #4c56c0;
+}
+.wp-filter-btn--active,
+.tlr-filter-btn--active {
+    background: #eaf1ff;
+    border-color: #3b82f6;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+.wp-filter-btn--active[aria-expanded="true"],
+.tlr-filter-btn--active[aria-expanded="true"] {
+    background: #dbe6ff;
+}
+
+.wp-filter-count,
+.tlr-filter-count {
+    display: inline-block;
+    margin-left: 6px;
+    min-width: 16px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: .66rem;
+    font-weight: 700;
+    line-height: 16px;
+    text-align: center;
+}
+
+/* Consistent select2 sizing inside any shared filter panel */
+.wp-filter .select2-container { width: 100% !important; }
+.wp-filter .form-control,
+.wp-filter .select2-container--default .select2-selection--multiple { min-height: 31px; }
+.wp-filter .select2-container--default .select2-selection--multiple {
+    max-height: 76px;
+    overflow-y: auto;
+}
+
+.wp-filter .select2-container--default.select2-summary .select2-selection--multiple {
+    min-height: 31px;
+    max-height: 31px;
+    font-size: .875rem;
+}

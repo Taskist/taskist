@@ -1,25 +1,20 @@
 namespace Taskist.Web.Models.Common;
 
-/// <summary>
-/// Backs the top-bar tools cluster: global search + the quick-add ("+") menu.
-/// Every flag is permission-gated so the UI only offers what the user may do.
-/// </summary>
 public class HeaderToolsModel
 {
-    // which part to render: "search", "create", or "all"
-    public string Section { get; set; } = "all";
+	public bool CanSearch { get; set; }
 
-    public bool ShowSearch => (Section == "all" || Section == "search") && CanSearch;
-    public bool ShowCreate => (Section == "all" || Section == "create") && HasCreate;
+	public bool CanBacklog { get; set; }
 
-    // global search is available to anyone who can reach the dashboard
-    public bool CanSearch { get; set; }
+	public bool CanWiki { get; set; }
 
-    // quick-add ("+") menu
-    public bool CanCreateTask { get; set; }
-    public bool CanCreateProject { get; set; }
-    public bool CanCreateClient { get; set; }
+	public bool CanCreateBacklog => CanBacklog;
 
-    // convenience: is there anything to show under the "+" at all
-    public bool HasCreate => CanCreateTask || CanCreateProject || CanCreateClient;
+	public int OverdueTasks { get; set; }
+
+	public int UnreadNotifications { get; set; }
+
+	public int AlertCount => OverdueTasks + UnreadNotifications;
+
+	public bool HasCreate => CanCreateBacklog || CanWiki;
 }

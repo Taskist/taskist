@@ -1,8 +1,8 @@
-using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
-using Taskist.Web.Models.Masters;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Models.Masters;
+using FluentValidation;
 
 namespace Taskist.Web.Helpers.Validators.Masters;
 
@@ -12,8 +12,8 @@ public class EmailTemplateValidator : AbstractValidator<EmailTemplateModel>
         IEmailTemplateService emailTemplateService)
     {
         RuleFor(r => r.Name)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailTemplateModel.Name.RequiredMsg"))
-            .MaximumLength(100).WithMessageAwait(localizationService.GetResourceAsync("EmailTemplateModel.Name.MaxLengthMsg"))
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailTemplateModel.Name.RequiredMsg"))
+            .MaximumLength(100).WithMessage(localizationService.GetResource("EmailTemplateModel.Name.MaxLengthMsg"))
             .MustAwait(async (x, context) =>
             {
                 if (x.Id > 0)
@@ -23,13 +23,13 @@ public class EmailTemplateValidator : AbstractValidator<EmailTemplateModel>
                 }
                 var entity = await emailTemplateService.GetByNameAsync(x.Name);
                 return entity == null;
-            }).WithMessageAwait(localizationService.GetResourceAsync("EmailTemplateModel.Name.UniqueMsg"));
+            }).WithMessage(localizationService.GetResource("EmailTemplateModel.Name.UniqueMsg"));
 
         RuleFor(r => r.EmailSubject)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailTemplateModel.EmailSubject.RequiredMsg"))
-            .MaximumLength(250).WithMessageAwait(localizationService.GetResourceAsync("EmailTemplateModel.EmailSubject.MaxLengthMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailTemplateModel.EmailSubject.RequiredMsg"))
+            .MaximumLength(250).WithMessage(localizationService.GetResource("EmailTemplateModel.EmailSubject.MaxLengthMsg"));
 
         RuleFor(r => r.EmailAccountId)
-            .NotEmpty().WithMessageAwait(localizationService.GetResourceAsync("EmailTemplateModel.EmailAccount.RequiredMsg"));
+            .NotEmpty().WithMessage(localizationService.GetResource("EmailTemplateModel.EmailAccount.RequiredMsg"));
     }
 }

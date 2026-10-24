@@ -1,62 +1,40 @@
 @model BacklogCommentModel
-@functions {
-    static string DayLabel(DateTime d)
-    {
-        var today = DateTime.Now.Date;
-        if (d.Date == today) return "Today";
-        if (d.Date == today.AddDays(-1)) return "Yesterday";
-        return d.ToString("dd MMM yyyy");
-    }
-}
 
-<div class="comments-container" id="comments">
-    <div id="comments-empty" class="comments-empty @(Model.Comments.Any() ? "d-none" : "")">
-        <i class="far fa-comments"></i>
-        <div>Nobody commented yet!</div>
-        <small>Be the first to add a comment.</small>
-    </div>
-    <div id="comments-list" class="comments-list" data-current-user="@Model.CurrentUserId">
-        @{ string lastDay = null; }
-        @foreach (var comment in Model.Comments.OrderBy(c => c.CommentOn))
-        {
-            var day = DayLabel(comment.CommentOn);
-            if (day != lastDay)
+<div class="comments-root" data-task-id="@Model.BackLogId" data-create-url="@Url.Action("CommentCreate")" data-photo-url="@Url.Action("Photo", "Profile")">
+    <div class="comments-container" id="comments">
+        <div id="comments-empty" class="comments-empty @(Model.Comments.Any() ? "d-none" : "")">
+            <i class="far fa-comments"></i>
+            <div>Nobody commented yet!</div>
+            <small>Be the first to add a comment.</small>
+        </div>
+        <div id="comments-list" class="comments-list">
+            @foreach (var comment in Model.Comments.OrderBy(c => c.CommentOn))
             {
-                lastDay = day;
-                <div class="comment-day"><span>@day</span></div>
-            }
-            var mine = comment.CommentById == Model.CurrentUserId && !comment.SystemComment;
-            <div class="comment-item @(mine ? "comment-mine" : "") @(comment.SystemComment ? "comment-system" : "")">
-                @if (!mine)
-                {
-                    <div class="comment-avatar">
-                        <img src="@Url.Action("GetAvatar", "Profile", new { userId = comment.CommentById })" alt="@comment.CommentBy" loading="lazy" />
+                <div class="comment-item">
+                    <div class="comment-avatar"><img src="@Url.Action("Photo", "Profile", new { userId = comment.CommentById })" alt="@comment.CommentBy" /></div>
+                    <div class="comment-body">
+                        <div class="comment-meta">
+                            <span class="comment-author">@comment.CommentBy</span>
+                            <span class="comment-time" data-time="@DateTime.SpecifyKind(comment.CommentOn, DateTimeKind.Utc).ToString("o")"></span>
+                        </div>
+                        <div class="comment-text">@if (comment.SystemComment) { @Html.Raw(comment.Comment) } else { @comment.Comment }</div>
                     </div>
-                }
-                <div class="comment-body">
-                    <div class="comment-meta">
-                        <span class="comment-author">@(mine ? "You" : comment.CommentBy)</span>
-                        <span class="comment-time" data-time="@comment.CommentOn.ToString("o")" title="@comment.CommentOn.ToString("dd-MMM-yyyy HH:mm")"></span>
-                    </div>
-                    <div class="comment-text">@if (comment.SystemComment) { @Html.Raw(comment.Comment) } else { @comment.Comment }</div>
                 </div>
+            }
+        </div>
+    </div>
+    <div class="comment-box" id="comment-box">
+        <div class="comment-input-wrap">
+            <textarea id="tbComment" class="form-control comment-input" rows="1" placeholder="Write a comment..." autocomplete="off"></textarea>
+            <button type="button" class="btn btn-primary comment-send" id="btnAddComment" title="Send" aria-label="Send comment" disabled><i class="far fa-paper-plane"></i></button>
+        </div>
+        <small class="comment-hint text-muted">Enter to send &middot; Shift+Enter for a new line</small>
+        @if (Model.CanPostToIssue)
+        {
+            <div class="form-check form-check-inline small mt-1">
+                <input class="form-check-input comment-post-to-issue" type="checkbox" id="cbPostToIssue" />
+                <label class="form-check-label" for="cbPostToIssue" title="@Localize("Backlog.Issue.PostToIssueHint").Text">@Localize("Backlog.Issue.PostToIssue")</label>
             </div>
         }
     </div>
 </div>
-<div class="comment-box" id="comment-box">
-    <div class="comment-input-wrap">
-        <textarea id="tbComment" class="form-control" rows="1" placeholder="Write a comment..." autocomplete="off"></textarea>
-        <button class="btn btn-primary" id="btnAddComment" title="Send" aria-label="Send comment" disabled><i class="far fa-paper-plane"></i></button>
-    </div>
-    <small class="comment-hint text-muted">Enter to send &middot; Shift+Enter for a new line</small>
-</div>
-
-@* AJAX-injected partial: config + init call into the globally-loaded module *@
-<div id="backlog-comments-config" class="d-none"
-     data-backlog-id="@Model.BackLogId"
-     data-create-url="@Url.Action("CommentCreate")"
-     data-photo-url="@Url.Action("GetAvatar", "Profile")"></div>
-<script>
-    if (window.BacklogComments) BacklogComments.init($('#backlog-comments-config').data());
-</script>

@@ -1,0 +1,244 @@
+.board-header-project {
+    min-width: 200px;
+}
+
+/* ===== Timeline ===== */
+.tl-event {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    font-size: 0.78rem;
+    padding: 1px 2px;
+}
+
+.tl-sev {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+
+.tl-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.tl-assignee {
+    margin-left: auto;
+    padding-left: 6px;
+    opacity: 0.85;
+    font-size: 0.7rem;
+    white-space: nowrap;
+}
+
+.fc-event.tl-overdue {
+    box-shadow: 0 0 0 2px #e55353;
+}
+
+.tl-legend__heat {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: rgba(229, 83, 83, 0.35);
+    vertical-align: middle;
+    margin-right: 4px;
+}
+
+/* ===== Timeline — Gantt swimlanes ===== */
+#taskGantt {
+    overflow-x: auto;
+}
+
+.gantt {
+    min-width: 760px;
+    font-size: 0.8rem;
+}
+
+.gantt-axis,
+.gantt-row {
+    display: flex;
+    align-items: center;
+}
+
+.gantt-axis-label,
+.gantt-row-label {
+    flex: 0 0 200px;
+    width: 200px;
+    padding-right: 8px;
+}
+
+.gantt-row-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: inherit;
+    text-decoration: none;
+}
+
+.gantt-row-label:hover {
+    text-decoration: underline;
+}
+
+.gantt-axis-track,
+.gantt-track {
+    position: relative;
+    flex: 1 1 auto;
+}
+
+.gantt-axis-track {
+    height: 24px;
+    border-bottom: 1px solid #e3eaf2;
+}
+
+.gantt-tick {
+    position: absolute;
+    top: 4px;
+    transform: translateX(-50%);
+    color: #8a93a2;
+    font-size: 0.68rem;
+    white-space: nowrap;
+}
+
+.gantt-today,
+.gantt-today-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #e55353;
+}
+
+.gantt-group {
+    font-weight: 600;
+    margin-top: 8px;
+    padding: 4px 0;
+    color: #384b66;
+    border-top: 1px solid #eef2f7;
+}
+
+.gantt-row {
+    height: 26px;
+}
+
+.gantt-track {
+    height: 26px;
+    border-bottom: 1px dashed #f0f3f8;
+}
+
+.gantt-bar {
+    position: absolute;
+    top: 5px;
+    height: 16px;
+    border-radius: 4px;
+    min-width: 3px;
+    display: block;
+}
+
+.gantt-bar--overdue {
+    box-shadow: 0 0 0 2px #e55353;
+}
+
+.board-wrap {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 0.5rem;
+    align-items: stretch;
+    height: 70vh; /* fallback; refined to available area by board.js */
+}
+
+.board-column {
+    flex: 0 0 280px;
+    max-width: 280px;
+    background: #f4f6fa;
+    border: 1px solid #e3eaf2;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.board-column__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0.6rem;
+    font-weight: 600;
+    background: #fff;
+    border-top: 3px solid #6f78e6;
+    border-radius: 8px 8px 0 0;
+    flex-shrink: 0;
+}
+
+.board-column__count {
+    font-size: 0.72rem;
+    background: #eef1f8;
+    border-radius: 999px;
+    padding: 0 0.45rem;
+    color: #5a6b85;
+}
+
+.board-column__cards {
+    padding: 0.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.board-card {
+    background: #fff;
+    border: 1px solid #e3eaf2;
+    border-radius: 6px;
+    padding: 0.5rem 0.6rem;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.board-card:hover {
+    border-color: #c7d2e6;
+}
+
+.board-card__title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    margin-bottom: 0.35rem;
+}
+
+.board-card__meta {
+    margin-bottom: 0.35rem;
+}
+
+.board-card__meta .board-badge {
+    font-size: 0.68rem;
+    margin-right: 0.25rem;
+    font-weight: 600;
+}
+
+.board-card__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    color: #768192;
+}
+
+.board-card__assignee {
+    font-weight: 500;
+}
+
+.board-card--placeholder {
+    border: 1px dashed #b5c2da;
+    border-radius: 6px;
+    background: #eef2f8;
+    height: 48px;
+    margin-bottom: 0.5rem;
+}
+
+.board-card.ui-sortable-helper {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}

@@ -11,5 +11,6 @@ public class RegistrationValidator : AbstractValidator<UserRegistrationModel>
         IUserService userService)
     {
         RuleFor(r => r.User).SetValidator(new UserValidator(localizationService, userService));
+        RuleFor(r => r.Address).SetValidator(new AddressValidator(localizationService));
     }
 }

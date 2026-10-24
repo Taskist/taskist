@@ -1,0 +1,14 @@
+@model UserModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<form asp-action="Unlock" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+    <input type="hidden" asp-for="Id" />
+    <div class="alert alert-warning">
+        <i class="fas fa-unlock me-1"></i>
+        @string.Format(Localize("UserUnlock.Confirm").Text, $"{Model.FirstName} {Model.LastName}")
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-unlock me-1"></i>@Localize("UserUnlock.Unlock")</button>
+    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="offcanvas"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel")</button>
+</form>

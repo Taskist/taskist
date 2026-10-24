@@ -1,0 +1,46 @@
+﻿@model ViewClosingCommentModel
+@{
+	Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+	var hasRootCause = HtmlText.HasContent(Model.RootCauseAnalysis);
+	var hasResolution = HtmlText.HasContent(Model.ResolutionDetails);
+	var hasMr = Model.MergeRequestId != null && Model.MergeRequestId > 0;
+}
+
+@section Scripts {
+	<script src="~/js/pages/backlog/backlog-closing.js" asp-append-version="true"></script>
+}
+
+<div class="closing-view">
+	@if (!hasRootCause && !hasResolution && !hasMr)
+	{
+		<div class="files-empty">
+			<i class="far fa-folder-open"></i>
+			<div>@Localize("ClosingComment.NothingRecorded")</div>
+		</div>
+	}
+
+	@if (hasRootCause)
+	{
+		<section class="closing-view__block closing-view__block--cause">
+			<div class="closing-view__title"><i class="fas fa-bug me-2"></i>@Localize("BacklogPage.RootCauseFix.RootCause")</div>
+			<div class="closing-view__body closing-rich" data-html="@Model.RootCauseAnalysis"></div>
+		</section>
+	}
+
+	@if (hasResolution)
+	{
+		<section class="closing-view__block closing-view__block--fix">
+			<div class="closing-view__title"><i class="fas fa-screwdriver-wrench me-2"></i>@Localize("BacklogPage.RootCauseFix.Resolution")</div>
+			<div class="closing-view__body closing-rich" data-html="@HtmlText.FromPlainText(Model.ResolutionDetails)"></div>
+		</section>
+	}
+
+	@if (hasMr)
+	{
+		<section class="closing-view__block closing-view__block--mr">
+			<div class="closing-view__title"><i class="fas fa-flag-checkered me-2"></i>@Localize("Backlog.Code.ClosingMr") @(Model.RefPrefix)@Model.MergeRequestId</div>
+			<div class="closing-view__body closing-view-mr" id="closingViewMr"
+				 data-url="@Url.Action("MergeRequest")" data-task-id="@Model.TaskId"></div>
+		</section>
+	}
+</div>

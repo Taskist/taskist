@@ -1,5 +1,4 @@
-﻿@model SeverityModel
-@Html.AntiForgeryToken()
+@model SeverityModel
 <input type="hidden" asp-for="Id" />
 <div class="validation-errors"></div>
 <div class="row">
@@ -24,7 +23,7 @@
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="GroupId" />
-            <select asp-for="GroupId" asp-items="Html.GetEnumSelectList<SeverityGroupEnum>()" class="form-control"></select>
+            <select asp-for="GroupId" asp-items="Html.GetEnumSelectList<SeverityGroup>()" class="form-control"></select>
             <span asp-validation-for="GroupId" class="text-danger"></span>
         </div>
     </div>
@@ -33,14 +32,14 @@
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="TextColor" />
-            <input asp-for="TextColor" class="form-control form-control-maxlength" autocomplete="off" maxlength="20" />
+            <input asp-for="TextColor" type="color" class="form-control form-control-color" autocomplete="off" maxlength="20" />
             <span asp-validation-for="TextColor" class="text-danger"></span>
         </div>
     </div>
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="BackgroundColor" />
-            <input asp-for="BackgroundColor" class="form-control form-control-maxlength" autocomplete="off" maxlength="20" />
+            <input asp-for="BackgroundColor" type="color" class="form-control form-control-color" autocomplete="off" maxlength="20" />
             <span asp-validation-for="BackgroundColor" class="text-danger"></span>
         </div>
     </div>
@@ -51,6 +50,7 @@
             <wc-label asp-for="IconClass" />
             <input asp-for="IconClass" class="form-control form-control-maxlength" autocomplete="off" maxlength="50" />
             <span asp-validation-for="IconClass" class="text-danger"></span>
+            <a href="https://fontawesome.com/v5/search?ic=free" target="_blank">View Icons</a>
         </div>
     </div>
 </div>

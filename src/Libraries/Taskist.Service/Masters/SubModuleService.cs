@@ -1,8 +1,10 @@
-using Microsoft.EntityFrameworkCore;
+using Taskist.Core.Extensions;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
-using Taskist.Data.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
+using System.Linq.Dynamic.Core;
 
 namespace Taskist.Service.Masters;
 
@@ -29,7 +31,7 @@ public class SubModuleService : ISubModuleService
         return await _subModuleRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBySafe(sortColumn, sortDirection);
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));
@@ -49,7 +51,14 @@ public class SubModuleService : ISubModuleService
 
     public async Task<IList<SubModule>> GetAllActiveByModuleAsync(int moduleId)
     {
-        return await _subModuleRepository.GetAllAsync(q => q.Where(x => x.Active && x.ModuleId == moduleId));
+        return await _subModuleRepository.GetAllAsync(q => q.Where(x => !x.Deleted && x.Active
+            && x.ModuleId == moduleId));
+    }
+
+    public async Task<IList<SubModule>> GetAllActiveByModuleAsync(List<int> moduleIds)
+    {
+        return await _subModuleRepository.GetAllAsync(q => q.Where(x => !x.Deleted && x.Active
+            && moduleIds.Contains(x.ModuleId)));
     }
 
     public async Task<SubModule> GetByIdAsync(int id)
@@ -65,6 +74,18 @@ public class SubModuleService : ISubModuleService
         var query = from c in _subModuleRepository.Table
                     orderby c.Id
                     where !c.Deleted && c.Name == name
+                    select c;
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<SubModule> GetByNameAsync(string name, int moduleId)
+    {
+        if (string.IsNullOrWhiteSpace(name) || moduleId <= 0)
+            return null;
+
+        var query = from c in _subModuleRepository.Table
+                    orderby c.Id
+                    where !c.Deleted && c.ModuleId == moduleId && c.Name == name
                     select c;
         return await query.FirstOrDefaultAsync();
     }

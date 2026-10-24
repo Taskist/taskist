@@ -1,0 +1,253 @@
+@model PivotDetailsModel
+@{
+	Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<div>
+	<table class="table table-bordered table-condensed table-striped nowrap" id="PivotDetailsGrid"></table>
+</div>
+
+<script>
+	$(document).ready(function () {
+		JSManager.setPageTitle('@Localize("BacklogPage.Title").Text');
+
+		let tablePivotDetails = $("#PivotDetailsGrid").DataTable({
+			processing: true,
+			serverSide: true,
+			stateSave: true,
+			info: true,
+			autoWidth: false,
+			filter: false,
+			lengthChange: true,
+			pageLength: 10,
+			searching: true,
+			ordering: true,
+			order: [[1, 'desc']],
+			rowGroup: {
+				dataSrc: [],
+				enable: false,
+				startRender: function (rows, group, level) {
+					var count = rows.count();
+					var indent = "&nbsp;&nbsp;&nbsp;".repeat(level);
+					return $(`<tr class="group-header"><td colspan="4">${indent}<strong>${group} (${count})</strong></td></tr>`);
+				}
+			},
+			language: {
+				search: '<span>@Localize("Grid.SearchLabel").Text</span> _INPUT_',
+				searchPlaceholder: '@Localize("Grid.SearchPlaceholder").Text',
+				lengthMenu: '_MENU_ @Localize("Grid.LengthChangeLabel").Text',
+				paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
+				zeroRecords: '@Localize("Grid.ZeroRecords").Text',
+				info: '@Localize("Grid.FooterInfo").Text',
+				infoEmpty: '@Localize("Grid.FooterInfoWhenEmpty").Text'
+			},
+			ajax: {
+				url: "@Url.Action("DataRead")",
+				type: "POST",
+				datatype: "json",
+				data: function (dto) {
+					dto.projectName = '@Model.ProjectName';
+					dto.moduleName = '@Model.ModuleName';
+					dto.subModuleName = '@Model.SubModuleName';
+					dto.severityName = '@Model.SeverityName';
+					dto.reporterName = '@Model.ReporterName';
+					dto.developerName = '@Model.DeveloperName';
+					dto.testerName = '@Model.TesterName';
+					dto.taskTypeName = '@Model.TaskTypeName';
+					dto.statusName = '@Model.StatusName';
+
+					JSManager.addAntiForgeryToken(dto);
+				}
+			},
+			columns: [{
+				title: '@Localize("BacklogGrid.TaskId")',
+				data: 'Id',
+				name: 'Id',
+				sortable: true
+			},{
+				title: '@Localize("BacklogGrid.Title")',
+				data: 'Title',
+				sortable: true,
+				render: function (data, type, row) {
+					let html = '';
+					let reopenCounterClass = '';
+
+					if (parseInt(row.ReOpenCount) > 2) {
+						reopenCounterClass = 'bg-danger';
+					}else if (parseInt(row.ReOpenCount) > 0) {
+						reopenCounterClass = 'bg-warning';
+					}
+
+					if(data.length > 50) {
+						let truncatedText = data.substr(0, 50) + "...";
+						html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit", "Backlog")/${row.Id}" target="_blank"><span class="dt-truncate"
+								 tabindex="0"
+								 role="button"
+								 data-bs-toggle="popover"
+								 data-bs-trigger="hover focus"
+								 data-bs-content="${data}">
+								${truncatedText}
+							</span></a>`;
+					}else {
+						html = `<a title = "@Localize("Button.Edit")" href="@Url.Action("Edit", "Backlog")/${row.Id}" target="_blank">${data}</a>`;
+					}
+
+					if(parseInt(row.ReOpenCount) > 0) {
+						html = `<div class="position-relative badge-counter" title="Reopened count">${html}
+						<span class="position-absolute top-0 start-0 translate-middle badge rounded-pill ${reopenCounterClass}">
+						${row.ReOpenCount}
+						<span class="visually-hidden">unread messages</span>
+						</span>
+						</div>`;
+					}
+
+					return html;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.TaskType")',
+				data: 'TaskType.Name',
+				name: 'TaskType.Name',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<span class="badge" style="color:${row.TaskType.TextColor};background-color:${row.TaskType.BackgroundColor};"><i class="${row.TaskType.IconClass} me-1"></i>${row.TaskType.Name}</span>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Severity")',
+				data: 'Severity.Name',
+				name: 'Severity.Name',
+				sortable: true,
+				render: function (data, type, row) {
+					return `<span class="badge" style="color:${row.Severity.TextColor};background-color:${row.Severity.BackgroundColor};"><i class="${row.Severity.IconClass} me-1"></i>${row.Severity.Name}</span>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Status")',
+				sortable: true,
+				data: 'Status.Name',
+				name: 'Status.Name',
+				render: function (data, type, row) {
+					let statusTitle = `C: ${row.CreatedBy} on ${moment(row.CreatedOn).format('DD-MMM-YYYY HH:MM:SS')}`;
+					if(JSManager.hasValue(row.ModifiedBy)){
+						statusTitle = `M: ${row.ModifiedBy} on ${moment(row.ModifiedOn).format('DD-MMM-YYYY HH:MM:SS')}`;
+					}
+					return `<span class="badge" style="color:${row.Status.TextColor};background-color:${row.Status.BackgroundColor};"><i class="${row.Status.IconClass} me-1"></i>${row.Status.Name}</span>`;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Project")',
+				name: 'Project',
+				data: 'Project',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Module")',
+				name: 'Module',
+				data: 'Module',
+				sortable: true
+			},
+			{
+				title: '@Localize("BacklogGrid.SubModule")',
+				name: 'SubModule',
+				data: 'SubModule',
+				sortable: true
+			},
+			{
+				title: '@Localize("BacklogGrid.Assignee")',
+				name: 'Assignee',
+				data: 'Assignee',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)){
+						return data;
+					}
+					else{
+						return '-'
+					}
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Tester")',
+				name: 'Tester',
+				data: 'Tester',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)){
+						return data;
+					}
+					else{
+						return '-';
+					}
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.Release")',
+				name: 'Release',
+				data: 'Release',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)){
+						return data;
+					}
+					else{
+						return '-';
+					}
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.DueDate")',
+				name: 'DueDate',
+				data: 'DueDate',
+				sortable: true,
+				render: function (data, type, row) {
+					if(JSManager.hasValue(data)) {
+						  const today = moment();
+						  const targetDate = moment(data);
+						  const dayDifference = targetDate.diff(today, "days");
+						  if (dayDifference < 0) {
+							  return `<i class="far fa-calendar-times text-danger me-1" title="Overdue by ${Math.abs(dayDifference)} days"></i>${moment(data).format('DD-MMM-YYYY')}`;
+						  } else if (dayDifference === 0) {
+							  return `<i class="far fa-calendar-check text-success me-1" title="${dayDifference} Due today!"></i>${moment(data).format('DD-MMM-YYYY')}`;
+						  } else {
+							  return `<i class="far fa-calendar-plus text-primary me-1" title="${dayDifference} days remaining"></i>${moment(data).format('DD-MMM-YYYY')}`;
+						  }
+					}
+					else
+						return 'Not set';
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.CreatedBy")',
+				name: 'CreatedBy',
+				data: 'CreatedBy',
+				sortable: true,
+				render: function (data, type, row) {
+					return data;
+				}
+			},
+			{
+				title: '@Localize("BacklogGrid.CreatedOn")',
+				name: 'CreatedOn',
+				data: 'CreatedOn',
+				sortable: true,
+				render: function (data, type, row) {
+					const age = moment(data).fromNow();
+					return `<div title="${age}">${moment(data).format('DD-MMM-YYYY')}</div>`;
+				}
+			}]
+		});
+
+		$("#PivotDetailsGrid").closest('div').addClass("table-responsive");
+
+		$('#PivotDetailsGrid').on('draw.dt', function () {
+			let popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+			let popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+				return new bootstrap.Popover(popoverTriggerEl)
+			})
+		});
+	});
+</script>

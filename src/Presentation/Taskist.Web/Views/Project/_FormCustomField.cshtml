@@ -1,5 +1,4 @@
-﻿@model CustomFieldModel
-@Html.AntiForgeryToken()
+@model CustomFieldModel
 <input type="hidden" asp-for="Id" />
 <input type="hidden" asp-for="ProjectId" />
 <div class="validation-errors"></div>
@@ -25,7 +24,7 @@
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="FieldType" />
-            <select class="form-control select2" data-style="btn-default" asp-for="FieldType" asp-items="Html.GetEnumSelectList<FieldTypeEnum>()"></select>
+            <select class="form-control select2" data-style="btn-default" asp-for="FieldType" asp-items="Html.GetEnumSelectList<FieldType>()"></select>
             <span asp-validation-for="ResourceKey" class="text-danger"></span>
         </div>
     </div>
@@ -41,7 +40,7 @@
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="Placement" />
-            <select class="form-control select2" data-style="btn-default" asp-for="Placement" asp-items="Html.GetEnumSelectList<CustomFieldPlacementEnum>()"></select>
+            <select class="form-control select2" data-style="btn-default" asp-for="Placement" asp-items="Html.GetEnumSelectList<CustomFieldPlacement>()"></select>
             <span asp-validation-for="Placement" class="text-danger"></span>
         </div>
     </div>
@@ -65,9 +64,14 @@
         </div>
     </div>
 </div>
-<div id="custom-field-config" class="d-none" data-project-name="@Model.ProjectName"></div>
 <script>
-    if (window.ProjectCustomField) {
-        ProjectCustomField.init({ projectName: $('#custom-field-config').data('project-name') });
-    }
+    $(function() {
+        $("#Label").on("input", function() {
+            let prefix = "@Model.ProjectName";
+            prefix = prefix.replace(/[^a-zA-Z0-9]/g, '') + '.';
+            let input = $(this).val();
+            let output = input.replace(/[^a-zA-Z0-9]/g, '');
+            $("#ResourceKey").val(prefix + output);
+        });
+    });
 </script>

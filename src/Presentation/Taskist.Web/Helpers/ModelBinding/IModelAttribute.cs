@@ -1,4 +1,4 @@
-﻿
+
 namespace Taskist.Web.Helpers.ModelBinding;
 
 public partial interface IModelAttribute
