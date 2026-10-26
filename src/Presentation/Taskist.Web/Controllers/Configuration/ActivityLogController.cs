@@ -188,7 +188,6 @@ public class ActivityLogController : BaseController
         }
         catch
         {
-            // leave empty — malformed/legacy payloads fall back to the raw view
         }
 
         return result;

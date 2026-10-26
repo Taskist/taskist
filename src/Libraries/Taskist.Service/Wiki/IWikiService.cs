@@ -16,6 +16,8 @@ namespace Taskist.Service.Wiki
 
         Task<IList<WikiDocumentVersion>> GetVersionsAsync(int wikiId);
 
-        Task RestoreVersionAsync(int wikiId, int versionId, int modifiedBy);
+        Task<bool> RestoreVersionAsync(int wikiId, int versionId, int modifiedBy);
+
+        Task<int?> GetImageOwnerPageIdAsync(int documentId);
     }
 }

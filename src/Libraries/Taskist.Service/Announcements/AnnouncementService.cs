@@ -114,7 +114,6 @@ public class AnnouncementService : IAnnouncementService
             if (!MatchesAudience(a, myRoleIds))
                 continue;
 
-            // Sticky always shows while valid; others hide once acknowledged.
             if (a.Type != AnnouncementType.Sticky && ackedSet.Contains(a.Id))
                 continue;
 

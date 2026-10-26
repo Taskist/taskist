@@ -134,7 +134,6 @@ public class BacklogService : IBacklogService
         {
             query = query.Where(x => !x.Deleted);
 
-            // Eager-load grid nav columns so the projection doesn't lazy-load them per row.
             query = query.Include(x => x.Reporter);
 
             if (rootsOnly)
@@ -470,11 +469,6 @@ public class BacklogService : IBacklogService
     {
         try
         {
-            // Load WITHOUT eager reference navigations. UpdateEntityProperty changes only the
-            // scalar FKs; if a matching navigation (e.g. Assignee) were tracked, EF relationship
-            // fixup would overwrite the new FK with the stale navigation's key on SaveChanges
-            // (reverting the change). Lazy-loading proxies still populate navs on demand for the
-            // notification reads below, reflecting the new values.
             var entity = await _backlogRepository.GetByIdAsync(id);
             if (entity == null)
                 return "Error: Task not found.";
@@ -528,8 +522,6 @@ public class BacklogService : IBacklogService
                 if (property == nameof(Backlog.StatusId) && value.ToInt() == (int)StatusGroup.ReOpened)
                     entity.ReOpenCount++;
 
-                // FK fields display via a nav property that EF won't reload after the FK change,
-                // so resolve the new name from the new id directly (else old == new in the history).
                 var newValue = await ResolveFkNameAsync(property, value)
                     ?? CommonHelper.GetPropertyValue(entity, cleanedPropertyName);
 
@@ -1134,8 +1126,6 @@ public class BacklogService : IBacklogService
                 var newValue = "N/A";
                 var comment = $"Release: {oldValue} → {newValue}";
 
-
-
                 if (releaseId > 0)
                 {
                     var newRelease = await _releaseService.GetByIdAsync(releaseId.ToInt());
@@ -1638,7 +1628,6 @@ public class BacklogService : IBacklogService
 
                 message = $"{CommonHelper.Beautify(customField.Label)} updated!";
             }
-
 
             var loggedUser = await _workContext.GetCurrentUserAsync();
             await _backlogCommentRepository.InsertAsync(new BacklogComment

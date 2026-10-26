@@ -12,7 +12,6 @@ namespace Taskist.Web.Helpers.Filters
 
             if (httpContext.User?.Identity?.IsAuthenticated == true)
             {
-                // Administrators always have access; other roles need the ManageJobs permission.
                 if (httpContext.User.IsInRole(Constant.AdministratorRoleName))
                     return true;
 

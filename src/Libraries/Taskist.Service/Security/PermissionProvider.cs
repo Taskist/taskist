@@ -14,7 +14,6 @@ public class PermissionProvider : IPermissionProvider
     public static readonly UserRolePermission ManagePortfolio = new() { Name = "Portfolio", SystemName = "ManagePortfolio", RoleGroup = "Configuration", SystemDefined = true };
     public static readonly UserRolePermission ManageWorkItemSetup = new() { Name = "Work Item Setup", SystemName = "ManageWorkItemSetup", RoleGroup = "Configuration", SystemDefined = true };
     public static readonly UserRolePermission ManageIntegrations = new() { Name = "Integrations", SystemName = "ManageIntegrations", RoleGroup = "Configuration", SystemDefined = true };
-    public static readonly UserRolePermission ManageNotificationSettings = new() { Name = "Manage Notification Settings", SystemName = "ManageNotificationSettings", RoleGroup = "Configuration", SystemDefined = true };
     public static readonly UserRolePermission ManageGeneralSettings = new() { Name = "Manage General Settings", SystemName = "ManageGeneralSettings", RoleGroup = "Configuration", SystemDefined = true };
     public static readonly UserRolePermission ManageSecuritySettings = new() { Name = "Manage Security Settings", SystemName = "ManageSecuritySettings", RoleGroup = "Configuration", SystemDefined = true };
     public static readonly UserRolePermission ManageWorkItemSettings = new() { Name = "Manage Work Item Settings", SystemName = "ManageWorkItemSettings", RoleGroup = "Configuration", SystemDefined = true };
@@ -59,7 +58,6 @@ public class PermissionProvider : IPermissionProvider
         [
             ManageDashboard,
             ManageConfiguration,
-            ManageNotificationSettings,
             ManageGeneralSettings,
             ManageSecuritySettings,
             ManageWorkItemSettings,

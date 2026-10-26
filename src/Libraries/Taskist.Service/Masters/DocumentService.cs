@@ -1,4 +1,5 @@
 using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
 using Taskist.Core.Domain.WorkItems;
 using Taskist.Data.Repository;
 using Microsoft.AspNetCore.Http;
@@ -12,15 +13,18 @@ public class DocumentService : IDocumentService
 
     protected readonly IRepository<Document> _documentRepository;
     protected readonly IRepository<BacklogDocument> _backlogDocumentRepository;
+    protected readonly IRepository<User> _userRepository;
 
     #endregion
 
     #region Ctor
     public DocumentService(IRepository<Document> documentRepository,
-        IRepository<BacklogDocument> backlogDocumentRepository)
+        IRepository<BacklogDocument> backlogDocumentRepository,
+        IRepository<User> userRepository)
     {
         _documentRepository = documentRepository;
         _backlogDocumentRepository = backlogDocumentRepository;
+        _userRepository = userRepository;
     }
     #endregion
 
@@ -34,6 +38,11 @@ public class DocumentService : IDocumentService
     public async Task<bool> IsTaskAttachmentAsync(int documentId)
     {
         return await _backlogDocumentRepository.Table.AnyAsync(x => x.DocumentId == documentId);
+    }
+
+    public async Task<bool> IsProfilePhotoAsync(int documentId)
+    {
+        return await _userRepository.Table.AnyAsync(x => x.PhotoDocumentId == documentId);
     }
 
     public async Task<Document> InsertAsync(IFormFile file)

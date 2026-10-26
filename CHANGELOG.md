@@ -35,6 +35,8 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 
 ### Security
 
+- Wiki reads (content, tree, history, linked tasks, Word export) are limited to members of the page's project; previously any signed-in user could read any project's pages by id. Restoring a version now requires the version to belong to the page, and pages and folders can no longer be moved into another project or into their own sub-folders.
+- Wiki images are served only to people who can view the page that owns them; previously any user with the Wiki permission could fetch any stored image (including other projects' wiki images, profile photos and unsaved task uploads) by id.
 - Task attachments are access-checked on download, upload and delete, uploads require the antiforgery token, and files are served as downloads with `nosniff`.
 - Uploads are limited to an allow-list of file types and a size cap; wiki images and profile photos accept raster images only.
 - Files uploaded before a task is saved are linked through a signed, user-bound token instead of a raw document ID.
@@ -45,6 +47,9 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - "Open tasks by project" on the dashboard no longer counts closed or deleted tasks.
 - Missing "Reporter" label on the task form.
 - Branch names from accented titles no longer split words ("déjà" → `deja`).
+- Malformed wiki page or category ids no longer cause a server error; the action returns its normal "not found" response.
+- Word export of a wiki page now includes its images (image links were not recognised before).
+- Wiki pages now open read-only for users without edit rights (the editor call that set the mode had been removed in TinyMCE 5).
 
 ### Removed
 
@@ -55,6 +60,7 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - Dev, Test and Release status fields on tasks; release tracking uses the Release Plan.
 - The Client User role; signing in requires the Registered role.
 - The unused "Form Name" column in the release export.
+- The Configuration → Notifications tab: its daily-digest switches no longer controlled anything (the digest jobs were removed with the HR module).
 - The built-in encryption key and the legacy `enc:` secret format.
 
 ### Upgrade notes

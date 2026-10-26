@@ -53,7 +53,6 @@ public static class ApplicationBuilderExtensions
         app.UseErrorTrackingUser();
         app.UseAuthorization();
 
-        // After auth so the dashboard filter can see the authenticated user.
         app.UseHangfireDashboard("/hangfire", new DashboardOptions
         {
             Authorization = [app.Services.GetRequiredService<HangfireAuthorizationFilter>()],

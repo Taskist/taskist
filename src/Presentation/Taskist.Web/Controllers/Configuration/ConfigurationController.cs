@@ -60,30 +60,12 @@ public class ConfigurationController : BaseController
         _stageMetricService = stageMetricService;
     }
 
-    public async Task<IActionResult> Index(string tab = "notifications")
+    public async Task<IActionResult> Index(string tab = "general")
     {
         var model = await BuildModelAsync();
         model.ActiveTab = ResolveActiveTab(model, tab);
 
         return View(model);
-    }
-
-    [HttpPost]
-    [CheckPermission(nameof(PermissionProvider.ManageNotificationSettings))]
-    public async Task<IActionResult> SaveNotifications([Bind(Prefix = "Notifications")] NotificationSettingsModel model)
-    {
-        var settings = await _settingService.LoadSettingAsync<NotificationSettings>();
-
-        settings.EnableDailyDigest = model.EnableDailyDigest;
-        settings.EnableOpenTaskDigest = model.EnableOpenTaskDigest;
-        settings.EnableProjectStatusDigest = model.EnableProjectStatusDigest;
-        settings.SummaryForProjectManager = model.SummaryForProjectManager;
-        settings.SummaryForTeamLead = model.SummaryForTeamLead;
-
-        await _settingService.SaveSettingAsync(settings);
-        await NotifySavedAsync();
-
-        return RedirectToAction("Index", new { tab = "notifications" });
     }
 
     [HttpPost]
@@ -253,7 +235,6 @@ public class ConfigurationController : BaseController
     {
         var model = new ConfigurationModel
         {
-            CanNotifications = await _permissionService.AuthorizeAsync(PermissionProvider.ManageNotificationSettings),
             CanGeneral = await _permissionService.AuthorizeAsync(PermissionProvider.ManageGeneralSettings),
             CanSecurity = await _permissionService.AuthorizeAsync(PermissionProvider.ManageSecuritySettings),
             CanWorkItem = await _permissionService.AuthorizeAsync(PermissionProvider.ManageWorkItemSettings),
@@ -261,16 +242,6 @@ public class ConfigurationController : BaseController
             CanReports = await _permissionService.AuthorizeAsync(PermissionProvider.ManageReportSettings),
             CanResource = await _permissionService.AuthorizeAsync(PermissionProvider.ManageResourceReport),
             CanStageDuration = await _permissionService.AuthorizeAsync(PermissionProvider.ManageStageDuration)
-        };
-
-        var notifications = await _settingService.LoadSettingAsync<NotificationSettings>();
-        model.Notifications = new NotificationSettingsModel
-        {
-            EnableDailyDigest = notifications.EnableDailyDigest,
-            EnableOpenTaskDigest = notifications.EnableOpenTaskDigest,
-            EnableProjectStatusDigest = notifications.EnableProjectStatusDigest,
-            SummaryForProjectManager = notifications.SummaryForProjectManager,
-            SummaryForTeamLead = notifications.SummaryForTeamLead
         };
 
         var general = await _settingService.LoadSettingAsync<GeneralSettings>();
@@ -449,7 +420,6 @@ public class ConfigurationController : BaseController
     {
         var tabs = new (string Key, bool Can)[]
         {
-            ("notifications", model.CanNotifications),
             ("general", model.CanGeneral),
             ("security", model.CanSecurity),
             ("workitem", model.CanWorkItem),
@@ -462,6 +432,6 @@ public class ConfigurationController : BaseController
         if (!string.IsNullOrWhiteSpace(requested) && tabs.Any(t => t.Key == requested && t.Can))
             return requested;
 
-        return tabs.FirstOrDefault(t => t.Can).Key ?? "notifications";
+        return tabs.FirstOrDefault(t => t.Can).Key ?? "general";
     }
 }

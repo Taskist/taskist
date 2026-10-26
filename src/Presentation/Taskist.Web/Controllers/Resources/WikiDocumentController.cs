@@ -14,6 +14,9 @@ using Taskist.Service.WorkItems;
 using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Wiki;
+using Taskist.Web.Helpers.Common;
+using Taskist.Web.Helpers.Wiki;
+using Taskist.Web.Helpers.Extensions;
 
 namespace Taskist.Web.Controllers.Resources;
 
@@ -29,6 +32,7 @@ public class WikiDocumentController : BaseController
     protected readonly IBacklogService _backlogItemService;
     protected readonly ILocalizationService _localizationService;
     protected readonly IWorkContext _workContext;
+    protected readonly IWikiAccessService _wikiAccessService;
 
     #endregion
 
@@ -41,7 +45,8 @@ public class WikiDocumentController : BaseController
         IDocumentService documentService,
         IBacklogService backlogItemService,
         ILocalizationService localizationService,
-        IWorkContext workContext)
+        IWorkContext workContext,
+        IWikiAccessService wikiAccessService)
     {
         _wikiService = wikiService;
         _wikiCategoryService = wikiCategoryService;
@@ -51,29 +56,34 @@ public class WikiDocumentController : BaseController
         _backlogItemService = backlogItemService;
         _localizationService = localizationService;
         _workContext = workContext;
+        _wikiAccessService = wikiAccessService;
     }
 
     #endregion
 
     #region Helpers
 
-    private async Task<bool> CanEditAsync(int projectId)
-    {
-        if (projectId <= 0)
-            return false;
+    private Task<bool> CanEditAsync(int projectId) => _wikiAccessService.CanEditProjectAsync(projectId);
 
-        var map = await _userService.GetProjectMapping(UserId, projectId);
-        return map != null && map.CanAddWiki;
+    private Task<bool> CanEditPageAsync(int wikiId) => _wikiAccessService.CanEditPageAsync(wikiId);
+
+    private const string UploadedImagesSessionKey = "Wiki.UploadedImages";
+
+    private const int UploadedImagesSessionLimit = 200;
+
+    private async Task RememberUploadedImageAsync(int documentId)
+    {
+        var uploaded = await HttpContext.Session.GetAsync<List<int>>(UploadedImagesSessionKey) ?? [];
+        uploaded.Add(documentId);
+        if (uploaded.Count > UploadedImagesSessionLimit)
+            uploaded.RemoveRange(0, uploaded.Count - UploadedImagesSessionLimit);
+        await HttpContext.Session.SetAsync(UploadedImagesSessionKey, uploaded);
     }
 
-    private async Task<bool> CanEditPageAsync(int wikiId)
+    private async Task<bool> UploadedInThisSessionAsync(int documentId)
     {
-        var wiki = await _wikiService.GetByIdAsync(wikiId);
-        if (wiki == null)
-            return false;
-
-        var category = await _wikiCategoryService.GetByIdAsync(wiki.CategoryId);
-        return category != null && await CanEditAsync(category.ProjectId);
+        var uploaded = await HttpContext.Session.GetAsync<List<int>>(UploadedImagesSessionKey);
+        return uploaded != null && uploaded.Contains(documentId);
     }
 
     private static IActionResult Denied() => new JsonResult(new { success = false, message = "You don't have permission to edit this wiki." });
@@ -156,10 +166,8 @@ public class WikiDocumentController : BaseController
     [HttpPost]
     public async Task<IActionResult> SaveWiki(string id, string content)
     {
-        if (string.IsNullOrEmpty(id))
+        if (!WikiNodeId.TryParsePage(id, out var wikiId))
             return Json(new { success = false, message = "Wiki page not found." });
-
-        var wikiId = int.Parse(id.Replace("page_", ""));
 
         if (!await CanEditPageAsync(wikiId))
             return Denied();
@@ -186,7 +194,8 @@ public class WikiDocumentController : BaseController
         if (string.IsNullOrWhiteSpace(title))
             return Json(new { success = false, message = "Title is required." });
 
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId))
+            return Json(new { success = false, message = "Wiki page not found." });
 
         if (!await CanEditPageAsync(wikiId))
             return Denied();
@@ -206,8 +215,10 @@ public class WikiDocumentController : BaseController
     [HttpPost]
     public async Task<IActionResult> MoveWiki(string id, string categoryId)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
-        var targetCategoryId = int.Parse(categoryId.Replace("cat_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId))
+            return Json(new { success = false, message = "Wiki page not found." });
+        if (!WikiNodeId.TryParseCategory(categoryId, out var targetCategoryId))
+            return Json(new { success = false, message = "Wiki category not found." });
 
         if (!await CanEditPageAsync(wikiId))
             return Denied();
@@ -215,6 +226,10 @@ public class WikiDocumentController : BaseController
         var wiki = await _wikiService.GetByIdAsync(wikiId);
         if (wiki == null)
             return Json(new { success = false, message = "Wiki page not found." });
+
+        var currentCategory = await _wikiCategoryService.GetByIdAsync(wiki.CategoryId);
+        if (currentCategory == null || !await _wikiAccessService.IsCategoryInProjectAsync(targetCategoryId, currentCategory.ProjectId))
+            return Json(new { success = false, message = "Wiki category not found." });
 
         wiki.CategoryId = targetCategoryId;
         wiki.ModifiedOn = DateTime.Now;
@@ -227,7 +242,8 @@ public class WikiDocumentController : BaseController
     [HttpPost]
     public async Task<IActionResult> DeleteWiki(string id)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId))
+            return Json(new { success = false, message = "Wiki page not found." });
 
         if (!await CanEditPageAsync(wikiId))
             return Denied();
@@ -240,10 +256,9 @@ public class WikiDocumentController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetContent(string id)
     {
-        if (string.IsNullOrEmpty(id))
+        if (!WikiNodeId.TryParsePage(id, out var wikiId) || !await _wikiAccessService.CanViewPageAsync(wikiId))
             return Json(new { content = "" });
 
-        var wikiId = int.Parse(id.Replace("page_", ""));
         var wikiPage = await _wikiService.GetByIdAsync(wikiId);
         if (wikiPage == null)
             return Json(new { content = "" });
@@ -260,6 +275,9 @@ public class WikiDocumentController : BaseController
     [CheckPermission(nameof(PermissionProvider.ManageWiki))]
     public async Task<IActionResult> ExportWord(int id)
     {
+        if (!await _wikiAccessService.CanViewPageAsync(id))
+            return NotFound();
+
         var wikiPage = await _wikiService.GetByIdAsync(id);
         if (wikiPage == null)
             return NotFound();
@@ -337,17 +355,13 @@ public class WikiDocumentController : BaseController
         foreach (Match match in matches)
         {
             var src = match.Groups[1].Value;
-            var idMatch = Regex.Match(src, @"[?&]id=(\d+)", RegexOptions.IgnoreCase);
-            if (!idMatch.Success)
+            var docId = WikiImageReference.ExtractId(src);
+            if (docId == null || !await _wikiAccessService.CanViewImageAsync(docId.Value))
                 continue;
 
-            if (!int.TryParse(idMatch.Groups[1].Value, out var docId))
-                continue;
-
-            var document = await _documentService.GetByIdAsync(docId);
+            var document = await _documentService.GetByIdAsync(docId.Value);
             var imageType = UploadPolicy.ImageContentType(document?.Extension);
-            if (document?.FileData == null || document.FileData.Length == 0 || imageType == null
-                || await _documentService.IsTaskAttachmentAsync(docId))
+            if (document?.FileData == null || document.FileData.Length == 0 || imageType == null)
                 continue;
 
             var dataUri = $"data:{imageType};base64,{Convert.ToBase64String(document.FileData)}";
@@ -381,7 +395,9 @@ public class WikiDocumentController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetTags(string id)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId) || !await _wikiAccessService.CanViewPageAsync(wikiId))
+            return Json(new { });
+
         var wiki = await _wikiService.GetByIdAsync(wikiId);
         if (wiki == null)
             return Json(new { });
@@ -398,7 +414,8 @@ public class WikiDocumentController : BaseController
     [HttpPost]
     public async Task<IActionResult> SaveTags(string id, int? moduleId, int? subModuleId)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId))
+            return Json(new { success = false, message = "Wiki page not found." });
 
         if (!await CanEditPageAsync(wikiId))
             return Denied();
@@ -427,6 +444,7 @@ public class WikiDocumentController : BaseController
             return Json(new { error = $"Only PNG, JPEG, GIF, WebP or BMP images up to {UploadPolicy.MaxImageMegabytes} MB can be uploaded." });
 
         var document = await _documentService.InsertAsync(file);
+        await RememberUploadedImageAsync(document.Id);
 
         return Json(new { location = Url.Action("Image", "WikiDocument", new { id = document.Id }) });
     }
@@ -435,8 +453,10 @@ public class WikiDocumentController : BaseController
     [CheckPermission(nameof(PermissionProvider.ManageWiki))]
     public async Task<IActionResult> Image(int id)
     {
-        var document = await _documentService.GetByIdAsync(id);
-        if (document == null || await _documentService.IsTaskAttachmentAsync(id))
+        var allowed = await _wikiAccessService.CanViewImageAsync(id)
+            || (await UploadedInThisSessionAsync(id) && !await _documentService.IsTaskAttachmentAsync(id));
+        var document = allowed ? await _documentService.GetByIdAsync(id) : null;
+        if (document == null)
             return NotFound();
 
         return ImageFile(document);
@@ -445,7 +465,9 @@ public class WikiDocumentController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetVersions(string id)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId) || !await _wikiAccessService.CanViewPageAsync(wikiId))
+            return Json(Array.Empty<object>());
+
         var versions = await _wikiService.GetVersionsAsync(wikiId);
 
         return Json(versions.Select(v => new
@@ -460,12 +482,14 @@ public class WikiDocumentController : BaseController
     [HttpPost]
     public async Task<IActionResult> RestoreVersion(string id, int versionId)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId))
+            return Json(new { success = false, message = "Wiki page not found." });
 
         if (!await CanEditPageAsync(wikiId))
             return Denied();
 
-        await _wikiService.RestoreVersionAsync(wikiId, versionId, UserId);
+        if (!await _wikiService.RestoreVersionAsync(wikiId, versionId, UserId))
+            return Json(new { success = false, message = "Version not found." });
 
         return Json(new { success = true });
     }
@@ -473,7 +497,9 @@ public class WikiDocumentController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetLinkedTasks(string id)
     {
-        var wikiId = int.Parse(id.Replace("page_", ""));
+        if (!WikiNodeId.TryParsePage(id, out var wikiId) || !await _wikiAccessService.CanViewPageAsync(wikiId))
+            return Json(Array.Empty<object>());
+
         var tasks = await _backlogItemService.GetBySourceWikiDocumentAsync(wikiId);
 
         return Json(tasks.Select(t => new

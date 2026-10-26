@@ -5,6 +5,8 @@ using Taskist.Service.Localization;
 using Taskist.Service.Users;
 using Taskist.Service.Wiki;
 using Taskist.Web.Controllers.Common;
+using Taskist.Web.Helpers.Common;
+using Taskist.Web.Helpers.Wiki;
 
 namespace Taskist.Web.Controllers.Resources;
 
@@ -17,6 +19,7 @@ public class WikiCategoryController : BaseController
     protected readonly IUserService _userService;
     protected readonly ILocalizationService _localizationService;
     protected readonly IWorkContext _workContext;
+    protected readonly IWikiAccessService _wikiAccessService;
 
     #endregion
 
@@ -26,27 +29,22 @@ public class WikiCategoryController : BaseController
         IWikiService wikiService,
         IUserService userService,
         ILocalizationService localizationService,
-        IWorkContext workContext)
+        IWorkContext workContext,
+        IWikiAccessService wikiAccessService)
     {
         _wikiCategoryService = wikiCategoryService;
         _wikiService = wikiService;
         _userService = userService;
         _localizationService = localizationService;
         _workContext = workContext;
+        _wikiAccessService = wikiAccessService;
     }
 
     #endregion
 
     #region Helpers
 
-    private async Task<bool> CanEditAsync(int projectId)
-    {
-        if (projectId <= 0)
-            return false;
-
-        var map = await _userService.GetProjectMapping(UserId, projectId);
-        return map != null && map.CanAddWiki;
-    }
+    private Task<bool> CanEditAsync(int projectId) => _wikiAccessService.CanEditProjectAsync(projectId);
 
     private static IActionResult Denied() => new JsonResult(new { success = false, message = "You don't have permission to edit this wiki." });
 
@@ -65,6 +63,9 @@ public class WikiCategoryController : BaseController
 
         if (!await CanEditAsync(projectId))
             return Denied();
+
+        if (parentId.HasValue && !await _wikiAccessService.IsCategoryInProjectAsync(parentId.Value, projectId))
+            return Json(new { success = false, message = "Folder not found." });
 
         var siblings = parentId.HasValue
             ? await _wikiCategoryService.GetAllByParentCategoryIdAsync(parentId.Value, projectId)
@@ -116,8 +117,8 @@ public class WikiCategoryController : BaseController
         if (!await CanEditAsync(cat.ProjectId))
             return Denied();
 
-        if (parentId == id)
-            return Json(new { success = false, message = "A folder cannot be moved into itself." });
+        if (parentId == id || !await _wikiAccessService.CanPlaceCategoryUnderAsync(cat, parentId))
+            return Json(new { success = false, message = "A folder can only be moved into another folder of the same project, and not into itself or one of its sub-folders." });
 
         cat.ParentCategoryId = parentId;
         await _wikiCategoryService.UpdateAsync(cat);
@@ -142,6 +143,9 @@ public class WikiCategoryController : BaseController
 
     public async Task<IActionResult> GetParent(int projectId)
     {
+        if (!await _wikiAccessService.CanViewProjectAsync(projectId))
+            return Json(Enumerable.Empty<object>());
+
         var categories = await _wikiCategoryService.GetAllParentAsync(projectId);
 
         var result = categories.Select(c => new
@@ -157,12 +161,14 @@ public class WikiCategoryController : BaseController
 
     public async Task<IActionResult> GetChildren(string id, int projectId)
     {
-        if (string.IsNullOrEmpty(id))
+        if (!WikiNodeId.TryParseCategory(id, out var categoryId))
             return Json(Enumerable.Empty<object>());
 
-        var categoryId = int.Parse(id.Replace("cat_", ""));
+        var category = await _wikiAccessService.GetViewableCategoryAsync(categoryId);
+        if (category == null)
+            return Json(Enumerable.Empty<object>());
 
-        var subCategories = (await _wikiCategoryService.GetAllByParentCategoryIdAsync(categoryId, projectId))
+        var subCategories = (await _wikiCategoryService.GetAllByParentCategoryIdAsync(categoryId, category.ProjectId))
             .Select(c => new
             {
                 id = "cat_" + c.Id,

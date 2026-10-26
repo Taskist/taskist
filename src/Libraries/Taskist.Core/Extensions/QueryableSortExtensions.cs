@@ -38,13 +38,9 @@ public static class QueryableSortExtensions
                     .Where(p => p.CanRead)
                     .ToList();
 
-                // Top-level scalar columns (e.g. "Title", "CreatedOn").
                 foreach (var p in props.Where(p => IsSortable(p.PropertyType)))
                     map.TryAdd(p.Name.ToLowerInvariant(), p.Name);
 
-                // One-level navigation scalars (e.g. "TaskType.Name", "Status.Name") so grid
-                // columns bound to a FK nav's display value sort correctly instead of falling
-                // back to Id. Only reference navs with a matching sortable scalar are allowed.
                 foreach (var nav in props.Where(p => IsNavigation(p.PropertyType)))
                 {
                     foreach (var child in nav.PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance)

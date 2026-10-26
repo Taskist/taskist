@@ -121,8 +121,6 @@ public class LocalizationService : ILocalizationService
 		if (language != null)
 			return await GetResourceAsync(language.Id, resourceKey);
 
-		// No user language: fall back to a language-agnostic lookup (mirrors the sync GetResource)
-		// so messages resolve instead of coming back empty.
 		var normalizedKey = resourceKey.Trim().ToLowerInvariant();
 		var value = await _localeResourceRepository.Table
 			.Where(l => l.ResourceKey == normalizedKey)

@@ -82,6 +82,13 @@ Secrets are write-only in the UI and are never written to the activity log.
 - The forgot-password endpoint is rate limited per IP address.
 - Change the seeded `admin@taskist.org` password immediately after installation.
 
+### Wiki access
+
+- A project's wiki — page content, tree, history, linked tasks and Word export — is visible only to members of that project who also hold the *Wiki* permission. Requests for pages in other projects get an empty or "not found" response that does not reveal whether the page exists.
+- Editing (create, save, rename, move, delete, restore) additionally requires the member's *Can add wiki* right.
+- Pages and folders can only be moved within their own project; a folder cannot be moved into itself or one of its sub-folders; a version can only be restored onto the page it belongs to.
+- **Wiki images** belong to the first page that saved a reference to them and are served only to people who can view that page (the uploader can also see an image before the page is saved). Pasting another project's image URL into your own page does not grant access, and the image endpoint never serves profile photos or task attachments. The Word export embeds only images the reader may view.
+
 ### Attachments and images
 
 - Task attachments can only be downloaded by users who can see the task, and only added or removed by users who can edit it.

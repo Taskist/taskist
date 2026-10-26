@@ -582,13 +582,11 @@ public class BacklogController : BaseController
 
             if (projectIds.Count > 1)
             {
-                // Mixed projects: project-bound fields can't be applied.
                 model.ModuleId = null;
                 model.SubModuleId = null;
                 model.AssigneeId = model.AssigneeId == 0 ? 0 : null;
                 model.TesterId = model.TesterId == 0 ? 0 : null;
 
-                // Status must be global across projects.
                 if (model.StatusId.HasValue && model.StatusId > 0)
                 {
                     var status = await _statusService.GetByIdAsync(model.StatusId.Value);
@@ -1367,7 +1365,6 @@ public class BacklogController : BaseController
         var loggedUser = await _workContext.GetCurrentUserAsync();
         var value = await _genericAttributeService.GetAttributeAsync<string>(loggedUser, Constant.BacklogGroupByParent);
 
-        // Default ON when the user hasn't set a preference.
         var enabled = string.IsNullOrEmpty(value) || value == "true";
         return Json(enabled);
     }
@@ -1991,7 +1988,6 @@ public class BacklogController : BaseController
         model.AvailableAssignees.Add(new SelectListItem { Text = "Unassigned", Value = "0" });
         model.AvailableTesters.Add(new SelectListItem { Text = "Unassigned", Value = "0" });
 
-        // Global fields are always available (valid across any project).
         foreach (var item in await _taskTypeService.GetAllActiveAsync())
             model.AvailableTaskTypes.Add(new SelectListItem { Text = item.Name, Value = item.Id.ToString() });
 
@@ -2003,7 +1999,6 @@ public class BacklogController : BaseController
 
         if (!isMixed && singleProjectId > 0)
         {
-            // Single project: scope the project-bound fields to that project.
             var modules = await _moduleService.GetAllActiveByProjectAsync(singleProjectId);
             var assignees = await _userService.GetAllActiveByProjectAsync(singleProjectId, Constant.DeveloperRoleName);
             var testers = await _userService.GetAllActiveByProjectAsync(singleProjectId, Constant.QualityAssuranceRoleName);
@@ -2047,8 +2042,6 @@ public class BacklogController : BaseController
         }
         else
         {
-            // Mixed projects: project-bound fields (Module/SubModule) are disabled
-            // in the view. Only global statuses, and releases available to every selected project, apply.
             var commonStatus = (await _statusService.GetAllActiveAsync()).Where(x => x.ProjectId == null);
             foreach (var item in commonStatus)
                 model.AvailableStatus.Add(new SelectListItem { Text = item.Name, Value = item.Id.ToString() });

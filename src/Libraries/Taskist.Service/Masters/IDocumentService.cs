@@ -9,6 +9,8 @@ public interface IDocumentService
 
     Task<bool> IsTaskAttachmentAsync(int documentId);
 
+    Task<bool> IsProfilePhotoAsync(int documentId);
+
     Task<Document> InsertAsync(IFormFile file);
 
     Task<Document> InsertAsync(byte[] data, string fileName, string contentType);

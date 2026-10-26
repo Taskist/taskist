@@ -2,9 +2,7 @@ namespace Taskist.Web.Models.Configuration;
 
 public class ConfigurationModel
 {
-    public string ActiveTab { get; set; } = "notifications";
-
-    public bool CanNotifications { get; set; }
+    public string ActiveTab { get; set; } = "general";
 
     public bool CanGeneral { get; set; }
 
@@ -19,8 +17,6 @@ public class ConfigurationModel
     public bool CanResource { get; set; }
 
     public bool CanStageDuration { get; set; }
-
-    public NotificationSettingsModel Notifications { get; set; } = new();
 
     public GeneralSettingsModel General { get; set; } = new();
 

@@ -4,9 +4,6 @@ namespace Taskist.Web.Helpers.Extensions;
 
 public static class RuleBuilderOptionsExtension
 {
-    // NOTE: registered as SYNCHRONOUS rules. ASP.NET's FluentValidation auto-validation
-    // pipeline is synchronous and throws if a validator contains async rules, so the
-    // (short, single-lookup) predicates are run synchronously here.
     public static IRuleBuilderOptions<T, TProperty> MustAwait<T, TProperty>(this IRuleBuilder<T, TProperty> ruleBuilder,
         Func<T, TProperty, Task<bool>> predicate)
     {

@@ -8,8 +8,6 @@ namespace Taskist.Web.Helpers.Mapping;
 [Mapper]
 public partial class WorkItemsMapper
 {
-    // ParentTitle is set explicitly in the controller; don't let Mapperly flatten it
-    // from source.Parent.Title (Parent is null for tasks with no parent -> NRE).
     [MapperIgnoreTarget(nameof(BacklogModel.ParentTitle))]
     public partial BacklogModel ToModel(Backlog source);
 

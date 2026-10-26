@@ -118,7 +118,6 @@ public class BoardController : BaseController
             ? string.Empty
             : string.Join(",", statusIds.Distinct());
 
-        // Use a plain (non-proxy) User so the attribute key group matches the read side ("User").
         await _genericAttributeService.SaveAttributeAsync(new User { Id = UserId }, BoardColumnsKey(projectId), value);
 
         return Json(new JsonResponseModel
@@ -207,8 +206,6 @@ public class BoardController : BaseController
         return accessible.FirstOrDefault()?.Id ?? 0;
     }
 
-    // Mirrors the backlog grid: a user only sees others' tasks in projects where they have that right;
-    // otherwise they see only tasks where they are the assignee or tester.
     private async Task<bool> CanViewOthersAsync(int projectId)
     {
         var viewAll = await _userService.GetAllAccessibleProjects(UserId, fetchOnlyCanViewOthersTask: true);

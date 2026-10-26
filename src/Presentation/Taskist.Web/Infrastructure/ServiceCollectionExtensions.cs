@@ -42,6 +42,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IWorkContext, WorkContext>();
         services.AddScoped<Helpers.Appearance.IAppearanceService, Helpers.Appearance.AppearanceService>();
         services.AddScoped<Helpers.Reports.IReportLayoutService, Helpers.Reports.ReportLayoutService>();
+        services.AddScoped<Helpers.Wiki.IWikiAccessService, Helpers.Wiki.WikiAccessService>();
         services.AddSingleton<Helpers.Documents.IUploadTokenService, Helpers.Documents.UploadTokenService>();
 
         return services;

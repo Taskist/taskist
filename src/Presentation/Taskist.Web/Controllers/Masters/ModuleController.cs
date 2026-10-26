@@ -170,9 +170,9 @@ public class ModuleController : BaseController
         var sortDirection = "asc";
         var search = string.Empty;
 
-        if (!string.IsNullOrEmpty(Request.Form["order[0][column]"]))
+        if (int.TryParse(Request.Form["order[0][column]"], out var requestedSortColumn))
         {
-            sortColumn = int.Parse(Request.Form["order[0][column]"]);
+            sortColumn = requestedSortColumn;
         }
 
         if (!string.IsNullOrEmpty(Request.Form["order[0][dir]"]))

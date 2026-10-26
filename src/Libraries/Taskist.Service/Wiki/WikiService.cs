@@ -98,11 +98,12 @@ namespace Taskist.Service.Wiki
                 .ToListAsync();
         }
 
-        public async Task RestoreVersionAsync(int wikiId, int versionId, int modifiedBy)
+        public async Task<bool> RestoreVersionAsync(int wikiId, int versionId, int modifiedBy)
         {
             var doc = await _wikiDocumentRepository.GetByIdAsync(wikiId);
             var version = await _wikiDocumentVersionRepository.GetByIdAsync(versionId);
-            if (doc == null || version == null) return;
+            if (doc == null || version == null || version.WikiDocumentId != doc.Id)
+                return false;
 
             var currentSnapshot = new WikiDocumentVersion
             {
@@ -120,6 +121,23 @@ namespace Taskist.Service.Wiki
             doc.ModifiedOn = DateTime.UtcNow;
 
             await _wikiDocumentRepository.UpdateAsync(doc);
+            return true;
+        }
+
+        public async Task<int?> GetImageOwnerPageIdAsync(int documentId)
+        {
+            if (documentId <= 0)
+                return null;
+
+            var fragments = WikiImageReference.SearchFragments(documentId);
+            var candidates = await _wikiDocumentVersionRepository.Table
+                .Where(v => v.ContentHtml != null && (v.ContentHtml.Contains(fragments[0]) || v.ContentHtml.Contains(fragments[1])))
+                .OrderBy(v => v.CreatedOn).ThenBy(v => v.Id)
+                .Select(v => new { v.WikiDocumentId, v.ContentHtml })
+                .Take(50)
+                .ToListAsync();
+
+            return candidates.FirstOrDefault(v => WikiImageReference.References(v.ContentHtml, documentId))?.WikiDocumentId;
         }
 
         #endregion
