@@ -11,7 +11,8 @@ COPY src/Libraries/Taskist.Data/Taskist.Data.csproj Libraries/Taskist.Data/
 COPY src/Libraries/Taskist.Service/Taskist.Service.csproj Libraries/Taskist.Service/
 COPY src/Presentation/Taskist.Web/Taskist.Web.csproj Presentation/Taskist.Web/
 
-RUN dotnet restore Taskist.sln
+# restore the web project, not the solution: the solution also lists the test project, which is not copied here
+RUN dotnet restore Presentation/Taskist.Web/Taskist.Web.csproj
 
 COPY src/ ./
 

@@ -16,8 +16,9 @@ COPY src/Libraries/Taskist.Data/Taskist.Data.csproj Libraries/Taskist.Data/
 COPY src/Libraries/Taskist.Service/Taskist.Service.csproj Libraries/Taskist.Service/
 COPY src/Presentation/Taskist.Web/Taskist.Web.csproj Presentation/Taskist.Web/
 
-# the bundle is published self-contained, so restore must target that runtime
-RUN dotnet restore Taskist.sln -r linux-x64
+# the bundle is published self-contained, so restore must target that runtime.
+# restore the startup project, not the solution: the solution also lists the test project, which is not copied here
+RUN dotnet restore Libraries/Taskist.Data/Taskist.Data.csproj -r linux-x64
 
 COPY src/ ./
 
