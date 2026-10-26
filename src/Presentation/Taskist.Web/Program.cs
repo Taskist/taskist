@@ -7,6 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;
 
+builder.AddErrorTracking();
+
 builder.Host.UseDefaultServiceProvider(options =>
 {
 	options.ValidateScopes = false;
@@ -34,6 +36,7 @@ builder.Services.AddSingleton(new Taskist.Core.Configuration.BackgroundJobMode {
 var app = builder.Build();
 
 app.LogSecurityWarnings();
+app.LogErrorTrackingStatus();
 
 await GitStartup.UpgradeLegacySettingsAsync(app.Services);
 

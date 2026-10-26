@@ -22,4 +22,15 @@ public static class StartupDiagnostics
         if (security.ForwardedHeaders.Enabled && security.ForwardedHeaders.KnownProxies.Length == 0 && security.ForwardedHeaders.KnownNetworks.Length == 0)
             logger.LogInformation("Forwarded headers are enabled but no Security:ForwardedHeaders:KnownProxies or KnownNetworks are set, so only a proxy on loopback is trusted.");
     }
+
+    public static void LogErrorTrackingStatus(this WebApplication app)
+    {
+        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(StartupDiagnostics));
+        var errorTracking = app.Services.GetRequiredService<ErrorTrackingOptions>();
+
+        if (errorTracking.IsMisconfigured)
+            logger.LogWarning("Sentry:Enabled is true but Sentry:Dsn is missing or not a valid DSN, so error tracking is off. Copy the DSN from your Sentry project settings.");
+        else if (errorTracking.IsActive)
+            logger.LogInformation("Error tracking is on: unhandled exceptions and errors are sent to Sentry (traces sample rate {Rate}).", errorTracking.EffectiveTracesSampleRate);
+    }
 }

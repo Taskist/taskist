@@ -74,6 +74,7 @@ Restored at build time; not stored in this repository.
 | [ReverseMarkdown](https://github.com/mysticmind/reversemarkdown-net) | MIT |
 | [Riok.Mapperly](https://mapperly.riok.app) | Apache-2.0 |
 | [Scrutor](https://github.com/khellang/Scrutor) | MIT |
+| [Sentry.AspNetCore](https://github.com/getsentry/sentry-dotnet) (optional error tracking) | MIT |
 | [ZiggyCreatures.FusionCache](https://github.com/ZiggyCreatures/FusionCache) | MIT |
 | [xUnit](https://xunit.net) (tests only) | Apache-2.0 |
 

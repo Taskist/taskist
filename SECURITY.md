@@ -95,6 +95,18 @@ Secrets are write-only in the UI and are never written to the activity log.
 - **Outbound requests** to Git providers and chat services go through hardened HTTP clients that use HTTPS only, do not follow redirects, and refuse loopback, link-local and cloud-metadata addresses. Notification channels are also restricted to the expected host for their type.
 - Branch creation, merge/pull requests, approvals and merges always use the **acting user's own** Git token, so the provider's own permission rules apply.
 
+### Error tracking (optional)
+
+Taskist can send unhandled exceptions and errors logged by the application to [Sentry](https://sentry.io). It is **off by default** and starts only when `Sentry:Enabled` is `true` and `Sentry:Dsn` is a valid DSN; otherwise the SDK is never initialised, and a misconfiguration is logged as a startup warning.
+
+When enabled, every event is filtered before it leaves the server:
+
+- **Not sent:** request bodies, cookies, query strings (they can carry password-reset tokens) — also stripped from URLs inside log breadcrumbs and exception messages — and the `Authorization`, `Cookie`, antiforgery and webhook-signature headers.
+- **Users** are identified by their numeric Taskist user ID only — no name, e-mail address or IP address (`SendDefaultPii` is always off).
+- Performance tracing is off unless `Sentry:TracesSampleRate` is set above `0`.
+
+Exception messages and stack traces are sent as they are, so treat your Sentry project as holding operational data and restrict who can see it.
+
 ### Operations
 
 - **Restrict the Hangfire dashboard.** `/hangfire` is limited to administrators and users with the *Manage Jobs* permission; consider also blocking it at your reverse proxy.

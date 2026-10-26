@@ -50,6 +50,7 @@ public static class ApplicationBuilderExtensions
         app.UseRateLimiter();
         app.UseSession();
         app.UseAuthentication();
+        app.UseErrorTrackingUser();
         app.UseAuthorization();
 
         // After auth so the dashboard filter can see the authenticated user.

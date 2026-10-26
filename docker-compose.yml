@@ -52,6 +52,11 @@ services:
       # enable when a reverse proxy terminates TLS in front of this container
       Security__ForwardedHeaders__Enabled: ${TASKIST_FORWARDED_HEADERS:-false}
       Security__ForwardedHeaders__KnownNetworks__0: ${TASKIST_PROXY_NETWORK:-172.16.0.0/12}
+      # optional error tracking; see SENTRY_* in .env.example
+      Sentry__Enabled: ${SENTRY_ENABLED:-false}
+      Sentry__Dsn: ${SENTRY_DSN:-}
+      Sentry__Environment: ${SENTRY_ENVIRONMENT:-}
+      Sentry__TracesSampleRate: ${SENTRY_TRACES_SAMPLE_RATE:-0}
     ports:
       - "${TASKIST_PORT:-8080}:8080"
     volumes:

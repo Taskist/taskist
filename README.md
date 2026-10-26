@@ -170,10 +170,12 @@ Taskist reads `appsettings.json`, `appsettings.{Environment}.json`, user-secrets
 | `DataProtection:CertificateThumbprint` | — | …or with a certificate from the machine store |
 | `DataProtection:ProtectWithDpapi` / `DpapiLocalMachine` | `false` | …or with Windows DPAPI |
 | `App:IsBeta` / `App:BetaMessage` | `true` / text | Beta banner |
+| `Sentry:Enabled` / `Sentry:Dsn` | `false` / — | Optional error tracking with [Sentry](https://sentry.io): unhandled exceptions and logged errors. Needs both; see [SECURITY.md](SECURITY.md#error-tracking-optional) for what is sent |
+| `Sentry:Environment` / `Sentry:TracesSampleRate` | environment name / `0` | Sentry environment label; share of requests sent as performance traces (`0` = errors only) |
 
 Everything else — password policy, lockout, session length, e-mail, Git, notifications, report layouts — lives in the app under **Configuration → Settings**.
 
-**Behind a reverse proxy** (nginx, Traefik, IIS, a cloud load balancer): keep `RequireHttpsCookies=true`, set `ForwardedHeaders:Enabled=true` and list the proxy in `KnownProxies` or `KnownNetworks`, and set `App:BaseUrl` to the public `https://` address. In Docker these are `TASKIST_REQUIRE_HTTPS_COOKIES`, `TASKIST_FORWARDED_HEADERS`, `TASKIST_PROXY_NETWORK` and `APP_BASE_URL` in `.env`.
+**Behind a reverse proxy** (nginx, Traefik, IIS, a cloud load balancer): keep `RequireHttpsCookies=true`, set `ForwardedHeaders:Enabled=true` and list the proxy in `KnownProxies` or `KnownNetworks`, and set `App:BaseUrl` to the public `https://` address. In Docker these are `TASKIST_REQUIRE_HTTPS_COOKIES`, `TASKIST_FORWARDED_HEADERS`, `TASKIST_PROXY_NETWORK` and `APP_BASE_URL` in `.env`; Sentry uses `SENTRY_ENABLED`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_TRACES_SAMPLE_RATE`.
 
 
 <a name="database"></a>
