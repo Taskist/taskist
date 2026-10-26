@@ -10,16 +10,19 @@ namespace Taskist.Service.Wiki
 
         protected readonly IRepository<WikiDocument> _wikiDocumentRepository;
         protected readonly IRepository<WikiDocumentVersion> _wikiDocumentVersionRepository;
+        protected readonly IRepository<WikiImage> _wikiImageRepository;
 
         #endregion
 
         #region Ctor
 
         public WikiService(IRepository<WikiDocument> wikiDocumentRepository,
-            IRepository<WikiDocumentVersion> wikiDocumentVersionRepository)
+            IRepository<WikiDocumentVersion> wikiDocumentVersionRepository,
+            IRepository<WikiImage> wikiImageRepository)
         {
             _wikiDocumentRepository = wikiDocumentRepository;
             _wikiDocumentVersionRepository = wikiDocumentVersionRepository;
+            _wikiImageRepository = wikiImageRepository;
         }
 
         #endregion
@@ -138,6 +141,17 @@ namespace Taskist.Service.Wiki
                 .ToListAsync();
 
             return candidates.FirstOrDefault(v => WikiImageReference.References(v.ContentHtml, documentId))?.WikiDocumentId;
+        }
+
+        public async Task InsertImageAsync(WikiImage image)
+        {
+            image.CreatedOn = DateTime.UtcNow;
+            await _wikiImageRepository.InsertAsync(image);
+        }
+
+        public async Task<WikiImage?> GetImageAsync(int documentId)
+        {
+            return documentId <= 0 ? null : await _wikiImageRepository.Table.FirstOrDefaultAsync(x => x.DocumentId == documentId);
         }
 
         #endregion

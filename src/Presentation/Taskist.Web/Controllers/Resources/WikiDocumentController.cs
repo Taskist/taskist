@@ -16,7 +16,6 @@ using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Wiki;
 using Taskist.Web.Helpers.Common;
 using Taskist.Web.Helpers.Wiki;
-using Taskist.Web.Helpers.Extensions;
 
 namespace Taskist.Web.Controllers.Resources;
 
@@ -66,25 +65,6 @@ public class WikiDocumentController : BaseController
     private Task<bool> CanEditAsync(int projectId) => _wikiAccessService.CanEditProjectAsync(projectId);
 
     private Task<bool> CanEditPageAsync(int wikiId) => _wikiAccessService.CanEditPageAsync(wikiId);
-
-    private const string UploadedImagesSessionKey = "Wiki.UploadedImages";
-
-    private const int UploadedImagesSessionLimit = 200;
-
-    private async Task RememberUploadedImageAsync(int documentId)
-    {
-        var uploaded = await HttpContext.Session.GetAsync<List<int>>(UploadedImagesSessionKey) ?? [];
-        uploaded.Add(documentId);
-        if (uploaded.Count > UploadedImagesSessionLimit)
-            uploaded.RemoveRange(0, uploaded.Count - UploadedImagesSessionLimit);
-        await HttpContext.Session.SetAsync(UploadedImagesSessionKey, uploaded);
-    }
-
-    private async Task<bool> UploadedInThisSessionAsync(int documentId)
-    {
-        var uploaded = await HttpContext.Session.GetAsync<List<int>>(UploadedImagesSessionKey);
-        return uploaded != null && uploaded.Contains(documentId);
-    }
 
     private static IActionResult Denied() => new JsonResult(new { success = false, message = "You don't have permission to edit this wiki." });
 
@@ -435,16 +415,26 @@ public class WikiDocumentController : BaseController
 
     [HttpPost]
     [CheckPermission(nameof(PermissionProvider.ManageWiki))]
-    public async Task<IActionResult> UploadImage(IFormFile file)
+    public async Task<IActionResult> UploadImage(IFormFile file, string pageId)
     {
         if (file == null || file.Length == 0)
             return Json(new { error = "No file uploaded." });
+
+        var projectId = WikiNodeId.TryParsePage(pageId, out var wikiId) ? await _wikiAccessService.GetEditablePageProjectAsync(wikiId) : null;
+        if (projectId == null)
+            return Json(new { error = "Open a wiki page you can edit before adding images." });
 
         if (!UploadPolicy.IsAllowedImage(file.FileName, file.Length, UploadPolicy.MaxImageMegabytes))
             return Json(new { error = $"Only PNG, JPEG, GIF, WebP or BMP images up to {UploadPolicy.MaxImageMegabytes} MB can be uploaded." });
 
         var document = await _documentService.InsertAsync(file);
-        await RememberUploadedImageAsync(document.Id);
+        await _wikiService.InsertImageAsync(new WikiImage
+        {
+            DocumentId = document.Id,
+            ProjectId = projectId.Value,
+            WikiDocumentId = wikiId,
+            UploadedById = UserId
+        });
 
         return Json(new { location = Url.Action("Image", "WikiDocument", new { id = document.Id }) });
     }
@@ -453,9 +443,7 @@ public class WikiDocumentController : BaseController
     [CheckPermission(nameof(PermissionProvider.ManageWiki))]
     public async Task<IActionResult> Image(int id)
     {
-        var allowed = await _wikiAccessService.CanViewImageAsync(id)
-            || (await UploadedInThisSessionAsync(id) && !await _documentService.IsTaskAttachmentAsync(id));
-        var document = allowed ? await _documentService.GetByIdAsync(id) : null;
+        var document = await _wikiAccessService.CanViewImageAsync(id) ? await _documentService.GetByIdAsync(id) : null;
         if (document == null)
             return NotFound();
 

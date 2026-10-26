@@ -1964,6 +1964,43 @@ namespace Taskist.Data.Migrations
                     b.ToTable("WikiDocumentVersion", (string)null);
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DocumentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UploadedById")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WikiDocumentId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DocumentId")
+                        .IsUnique();
+
+                    b.HasIndex("ProjectId");
+
+                    b.HasIndex("UploadedById");
+
+                    b.HasIndex("WikiDocumentId");
+
+                    b.ToTable("WikiImage", (string)null);
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Backlog", b =>
                 {
                     b.Property<int>("Id")
@@ -2931,6 +2968,33 @@ namespace Taskist.Data.Migrations
                     b.Navigation("ModifiedBy");
 
                     b.Navigation("WikiDocument");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiImage", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Masters.Document", null)
+                        .WithMany()
+                        .HasForeignKey("DocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Masters.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UploadedById")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Taskist.Core.Domain.Wiki.WikiDocument", null)
+                        .WithMany()
+                        .HasForeignKey("WikiDocumentId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.WorkItems.Backlog", b =>

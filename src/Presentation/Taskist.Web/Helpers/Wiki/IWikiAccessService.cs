@@ -19,4 +19,6 @@ public interface IWikiAccessService
     Task<bool> IsCategoryInProjectAsync(int categoryId, int projectId);
 
     Task<bool> CanViewImageAsync(int documentId);
+
+    Task<int?> GetEditablePageProjectAsync(int wikiId);
 }

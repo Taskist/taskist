@@ -19,5 +19,9 @@ namespace Taskist.Service.Wiki
         Task<bool> RestoreVersionAsync(int wikiId, int versionId, int modifiedBy);
 
         Task<int?> GetImageOwnerPageIdAsync(int documentId);
+
+        Task InsertImageAsync(WikiImage image);
+
+        Task<WikiImage?> GetImageAsync(int documentId);
     }
 }

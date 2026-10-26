@@ -36,7 +36,7 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 ### Security
 
 - Wiki reads (content, tree, history, linked tasks, Word export) are limited to members of the page's project; previously any signed-in user could read any project's pages by id. Restoring a version now requires the version to belong to the page, and pages and folders can no longer be moved into another project or into their own sub-folders.
-- Wiki images are served only to people who can view the page that owns them; previously any user with the Wiki permission could fetch any stored image (including other projects' wiki images, profile photos and unsaved task uploads) by id.
+- Wiki images are recorded against their page's project at upload and served only to the uploader and that project's members; previously any user with the Wiki permission could fetch any stored image (including other projects' wiki images, profile photos and unsaved task uploads) by id.
 - Task attachments are access-checked on download, upload and delete, uploads require the antiforgery token, and files are served as downloads with `nosniff`.
 - Uploads are limited to an allow-list of file types and a size cap; wiki images and profile photos accept raster images only.
 - Files uploaded before a task is saved are linked through a signed, user-bound token instead of a raw document ID.
@@ -68,3 +68,4 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - The schema was re-baselined into a single `InitialCreate` migration. Databases from earlier releases cannot be upgraded in place — see [UPGRADING.md](UPGRADING.md).
 - Environment variables are no longer prefixed: use `ConnectionStrings__AppContext`, not `TASKIST_ConnectionStrings__AppContext`.
 - The Docker `uploads` volume is no longer used; attachments are stored in the database.
+- New additive migration `AddWikiImage` (one new table, `WikiImage`). Docker applies it automatically; manual installs run `dotnet ef database update` or the regenerated `sql-scripts/01_schema.sql`.

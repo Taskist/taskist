@@ -80,6 +80,7 @@
                 return new Promise(function (resolve, reject) {
                     var fd = new FormData();
                     fd.append("file", blobInfo.blob(), blobInfo.filename());
+                    fd.append("pageId", currentPageId || "");
                     fd.append("__RequestVerificationToken", token());
                     $.ajax({
                         url: cfg.uploadImage, type: "POST", data: fd,

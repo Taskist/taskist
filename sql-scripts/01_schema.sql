@@ -1920,3 +1920,68 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026093041_AddWikiImage'
+)
+BEGIN
+    CREATE TABLE [WikiImage] (
+        [Id] int NOT NULL IDENTITY,
+        [DocumentId] int NOT NULL,
+        [ProjectId] int NOT NULL,
+        [WikiDocumentId] int NOT NULL,
+        [UploadedById] int NOT NULL,
+        [CreatedOn] datetime2 NOT NULL,
+        CONSTRAINT [PK_WikiImage] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_WikiImage_Document_DocumentId] FOREIGN KEY ([DocumentId]) REFERENCES [Document] ([Id]),
+        CONSTRAINT [FK_WikiImage_Project_ProjectId] FOREIGN KEY ([ProjectId]) REFERENCES [Project] ([Id]),
+        CONSTRAINT [FK_WikiImage_User_UploadedById] FOREIGN KEY ([UploadedById]) REFERENCES [User] ([Id]),
+        CONSTRAINT [FK_WikiImage_WikiDocument_WikiDocumentId] FOREIGN KEY ([WikiDocumentId]) REFERENCES [WikiDocument] ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026093041_AddWikiImage'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_WikiImage_DocumentId] ON [WikiImage] ([DocumentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026093041_AddWikiImage'
+)
+BEGIN
+    CREATE INDEX [IX_WikiImage_ProjectId] ON [WikiImage] ([ProjectId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026093041_AddWikiImage'
+)
+BEGIN
+    CREATE INDEX [IX_WikiImage_UploadedById] ON [WikiImage] ([UploadedById]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026093041_AddWikiImage'
+)
+BEGIN
+    CREATE INDEX [IX_WikiImage_WikiDocumentId] ON [WikiImage] ([WikiDocumentId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261026093041_AddWikiImage'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261026093041_AddWikiImage', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

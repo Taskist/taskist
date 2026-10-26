@@ -111,8 +111,21 @@ public class WikiAccessService : IWikiAccessService
         if (documentId <= 0 || await _documentService.IsTaskAttachmentAsync(documentId) || await _documentService.IsProfilePhotoAsync(documentId))
             return false;
 
+        var image = await _wikiService.GetImageAsync(documentId);
+        if (image != null)
+        {
+            var user = await _workContext.GetCurrentUserAsync();
+            return (user != null && user.Id == image.UploadedById) || await CanViewProjectAsync(image.ProjectId);
+        }
+
         var ownerPageId = await _wikiService.GetImageOwnerPageIdAsync(documentId);
         return ownerPageId.HasValue && await CanViewPageAsync(ownerPageId.Value);
+    }
+
+    public async Task<int?> GetEditablePageProjectAsync(int wikiId)
+    {
+        var projectId = await ProjectOfPageAsync(wikiId);
+        return projectId.HasValue && await CanEditProjectAsync(projectId.Value) ? projectId : null;
     }
 
     #endregion
