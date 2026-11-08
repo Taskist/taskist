@@ -213,6 +213,7 @@ Before going live: serve over HTTPS, change the seeded admin password, use a lea
 | --- | --- |
 | 🙏 **Questions** | [Discussions → Q&A](https://github.com/Taskist/taskist/discussions/categories/q-a) |
 | 💡 **Ideas** | [Discussions → Ideas](https://github.com/Taskist/taskist/discussions/categories/ideas) |
+| 🗺 **Roadmap** | [ROADMAP.md](ROADMAP.md) — what's planned for 1.1 to 2.0 |
 | 🐛 **Bugs** | [Open an issue](https://github.com/Taskist/taskist/issues/new/choose) |
 | 🛠 **Code** | [CONTRIBUTING.md](CONTRIBUTING.md) — setup, conventions and what CI checks |
 | 📖 **Docs** | [docs.taskist.org](https://docs.taskist.org) · [Git integration](docs/git-integration.md) |
