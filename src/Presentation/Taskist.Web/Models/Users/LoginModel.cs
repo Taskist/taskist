@@ -22,4 +22,6 @@ public class LoginModel
     public bool ShowPasswordForm { get; set; } = true;
 
     public string? SsoErrorCode { get; set; }
+
+    public bool? TwoFactorExpired { get; set; }
 }

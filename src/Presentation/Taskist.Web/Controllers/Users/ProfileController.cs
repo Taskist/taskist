@@ -3,8 +3,11 @@ using Taskist.Core.Common;
 using Taskist.Core.Domain.Settings;
 using Taskist.Core.Enums;
 using Taskist.Service.Authentication;
+using Taskist.Core.Domain.Users;
+using Taskist.Core.Security;
 using Taskist.Service.Git;
 using Taskist.Service.Localization;
+using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Messages;
 using Taskist.Service.Security;
@@ -13,6 +16,8 @@ using Taskist.Web.Controllers.Common;
 using Taskist.Web.Helpers.Appearance;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Helpers.Extensions;
+using Taskist.Web.Helpers.TwoFactor;
+using Taskist.Web.Infrastructure;
 using Taskist.Web.Models.Common;
 using Taskist.Web.Models.Users;
 
@@ -34,6 +39,11 @@ public class ProfileController : BaseController
     protected readonly INotificationService _notificationService;
     protected readonly IAppearanceService _appearanceService;
     protected readonly IExternalLoginService _externalLoginService;
+    protected readonly ITwoFactorService _twoFactorService;
+    protected readonly TwoFactorOptions _twoFactorOptions;
+    protected readonly IAuthenticationService _authenticationService;
+    protected readonly IUserActivityService _activityService;
+    private const string TwoFactorSetupSessionKey = "taskist.2fa.setup";
 
     #endregion
 
@@ -48,8 +58,16 @@ public class ProfileController : BaseController
         IGitRepositoryService gitRepositoryService,
         INotificationService notificationService,
         IAppearanceService appearanceService,
-        IExternalLoginService externalLoginService)
+        IExternalLoginService externalLoginService,
+        ITwoFactorService twoFactorService,
+        TwoFactorOptions twoFactorOptions,
+        IAuthenticationService authenticationService,
+        IUserActivityService activityService)
     {
+        _twoFactorService = twoFactorService;
+        _twoFactorOptions = twoFactorOptions;
+        _authenticationService = authenticationService;
+        _activityService = activityService;
         _appearanceService = appearanceService;
         _externalLoginService = externalLoginService;
         _gitAccountService = gitAccountService;
@@ -94,7 +112,92 @@ public class ProfileController : BaseController
                 .ToList()
         };
 
+        model.HasPassword = await _userService.GetCurrentPasswordAsync(e.Id) != null;
+        model.TwoFactorEnabled = await _twoFactorService.IsEnabledAsync(e.Id);
+        model.RecoveryCodesRemaining = model.TwoFactorEnabled == true ? await _twoFactorService.CountRemainingRecoveryCodesAsync(e.Id) : 0;
+        model.TwoFactorSetupRequired = model.TwoFactorEnabled != true && TwoFactorSetupPolicy.IsSetupRequired(
+            _twoFactorOptions.RequireForAdministrators, IsAdministrator(), User.FindFirst(Taskist.Service.Common.ServiceConstant.AuthMethodClaim)?.Value);
+
         return View(model);
+    }
+
+    [CheckPermission(nameof(PermissionProvider.ManageDashboard))]
+    public async Task<IActionResult> TwoFactorSetup()
+    {
+        var e = await _userService.GetByIdAsync(UserId);
+        var secret = Totp.GenerateSecret();
+        HttpContext.Session.SetString(TwoFactorSetupSessionKey, secret);
+
+        return PartialView(new TwoFactorSetupModel
+        {
+            AccountName = e.Email,
+            ManualKey = Base32.Group(secret),
+            QrCodeDataUri = TwoFactorQrCode.ToPngDataUri(OtpAuthUri.Build("Taskist", e.Email, secret))
+        });
+    }
+
+    [HttpPost]
+    [CheckPermission(nameof(PermissionProvider.ManageDashboard))]
+    public async Task<JsonResponseModel> EnableTwoFactor(string code)
+    {
+        var secret = HttpContext.Session.GetString(TwoFactorSetupSessionKey);
+        if (string.IsNullOrEmpty(secret))
+            return await TwoFactorErrorAsync("Profile.TwoFactor.SetupExpired");
+
+        var codes = await _twoFactorService.EnableAsync(UserId, secret, code);
+        if (codes == null)
+            return await TwoFactorErrorAsync("Profile.TwoFactor.WrongCode");
+
+        HttpContext.Session.Remove(TwoFactorSetupSessionKey);
+        var e = await _userService.GetByIdAsync(UserId);
+        await _activityService.InsertAsync(e, Taskist.Core.Common.ActivityType.TwoFactorEnabled, "Two-factor sign-in turned on");
+        await RefreshSignInAsync(e);
+
+        return new RecoveryCodesResponseModel
+        {
+            Status = HttpStatusCode.Success,
+            Message = await _localizationService.GetResourceAsync("Profile.TwoFactor.Enabled"),
+            Codes = codes
+        };
+    }
+
+    [HttpPost]
+    [CheckPermission(nameof(PermissionProvider.ManageDashboard))]
+    public async Task<JsonResponseModel> RegenerateRecoveryCodes(string code)
+    {
+        if (!await _twoFactorService.VerifyCodeAsync(UserId, code))
+            return await TwoFactorErrorAsync("Profile.TwoFactor.WrongCode");
+
+        var codes = await _twoFactorService.RegenerateRecoveryCodesAsync(UserId);
+        var e = await _userService.GetByIdAsync(UserId);
+        await _activityService.InsertAsync(e, Taskist.Core.Common.ActivityType.TwoFactorEnabled, "New recovery codes generated");
+
+        return new RecoveryCodesResponseModel
+        {
+            Status = HttpStatusCode.Success,
+            Message = await _localizationService.GetResourceAsync("Profile.TwoFactor.CodesRegenerated"),
+            Codes = codes
+        };
+    }
+
+    [HttpPost]
+    [CheckPermission(nameof(PermissionProvider.ManageDashboard))]
+    public async Task<JsonResponseModel> DisableTwoFactor(string code)
+    {
+        var verified = await _twoFactorService.VerifyCodeAsync(UserId, code)
+            || await _twoFactorService.UseRecoveryCodeAsync(UserId, code);
+        if (!verified)
+            return await TwoFactorErrorAsync("Profile.TwoFactor.WrongCode");
+
+        await _twoFactorService.DisableAsync(UserId);
+        var e = await _userService.GetByIdAsync(UserId);
+        await _activityService.InsertAsync(e, Taskist.Core.Common.ActivityType.TwoFactorDisabled, "Two-factor sign-in turned off");
+
+        return new JsonResponseModel
+        {
+            Status = HttpStatusCode.Success,
+            Message = await _localizationService.GetResourceAsync("Profile.TwoFactor.Disabled")
+        };
     }
 
     [HttpPost]
@@ -393,6 +496,24 @@ public class ProfileController : BaseController
     private string CallbackUrl() => Url.Action("GitOAuthCallback", "Profile", null, Request.Scheme)!;
 
     private static string Base64Url(byte[] bytes) => Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+    private bool IsAdministrator() =>
+        User.IsInRole(UserConstant.SystemAdministratorRoleName) || User.IsInRole(UserConstant.AdministratorsRoleName);
+
+    private async Task<JsonResponseModel> TwoFactorErrorAsync(string resourceKey) => new()
+    {
+        Status = HttpStatusCode.ValidationError,
+        Message = await _localizationService.GetResourceAsync(resourceKey)
+    };
+
+    private async Task RefreshSignInAsync(User user)
+    {
+        var current = await Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions.AuthenticateAsync(
+            HttpContext, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+        var persistent = current.Properties?.IsPersistent ?? false;
+
+        await _authenticationService.SignInAsync(user, persistent, AuthMethod.LocalWithCode);
+    }
 
     #endregion
 }

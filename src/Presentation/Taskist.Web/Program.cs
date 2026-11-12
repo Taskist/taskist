@@ -29,6 +29,7 @@ builder.Services
 	.AddPresentation()
 	.AddAppAuthentication()
 	.AddOidcSignIn(builder.Configuration)
+	.AddTwoFactorSignIn(builder.Configuration)
 	.AddProfiling()
 	.AddBackgroundJobs(builder.Configuration, startServer: !builder.Environment.IsDevelopment());
 

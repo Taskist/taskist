@@ -143,6 +143,14 @@
 
         <section class="card profile-section" data-section="security">
             <div class="card-header"><i class="fas fa-lock me-2 text-teal"></i>@Localize("Profile.Security").Text</div>
+            @if (Model.TwoFactorSetupRequired == true)
+            {
+                <div class="card-body pb-0">
+                    <wp-empty-state icon="fas fa-shield-halved" tone="warning" size="compact"
+                                    heading="@Localize("Profile.TwoFactor.RequiredHeading").Text"
+                                    text="@Localize("Profile.TwoFactor.RequiredText").Text"></wp-empty-state>
+                </div>
+            }
             <div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <div>
                     <div class="fw-semibold">@Localize("Profile.ChangePassword").Text</div>
@@ -150,6 +158,55 @@
                 </div>
                 <button type="button" id="btnChangePassword" class="btn btn-sm btn-outline-secondary"><i class="fas fa-key me-1"></i>@Localize("Profile.ChangePassword").Text</button>
             </div>
+            @if (Model.HasPassword == true)
+            {
+                <div class="card-body border-top d-flex justify-content-between align-items-center flex-wrap gap-2" id="twoFactorCard"
+                     data-setup-url="@Url.Action("TwoFactorSetup")"
+                     data-setup-title="@Localize("Profile.TwoFactor.SetupTitle").Text"
+                     data-enable-url="@Url.Action("EnableTwoFactor")"
+                     data-disable-url="@Url.Action("DisableTwoFactor")"
+                     data-regenerate-url="@Url.Action("RegenerateRecoveryCodes")"
+                     data-code-prompt="@Localize("Profile.TwoFactor.CodePrompt").Text"
+                     data-disable-prompt="@Localize("Profile.TwoFactor.DisablePrompt").Text"
+                     data-codes-title="@Localize("Profile.TwoFactor.CodesTitle").Text"
+                     data-codes-intro="@Localize("Profile.TwoFactor.CodesIntro").Text"
+                     data-copy-text="@Localize("Profile.TwoFactor.Copy").Text"
+                     data-copied-text="@Localize("Profile.TwoFactor.Copied").Text"
+                     data-done-text="@Localize("Profile.TwoFactor.SavedThem").Text"
+                     data-cancel-text="@Localize("Button.Cancel").Text">
+                    <div>
+                        <div class="fw-semibold">
+                            @Localize("Profile.TwoFactor.Title").Text
+                            @if (Model.TwoFactorEnabled == true)
+                            {
+                                <span class="badge bg-success ms-1">@Localize("Profile.TwoFactor.On").Text</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary ms-1">@Localize("Profile.TwoFactor.Off").Text</span>
+                            }
+                        </div>
+                        <div class="text-muted small">@Localize("Profile.TwoFactor.Hint").Text</div>
+                        @if (Model.TwoFactorEnabled == true)
+                        {
+                            <div class="small @(Model.RecoveryCodesRemaining <= 2 ? "text-danger" : "text-muted")">
+                                @string.Format(Localize("Profile.TwoFactor.CodesLeft").Text, Model.RecoveryCodesRemaining)
+                            </div>
+                        }
+                    </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        @if (Model.TwoFactorEnabled == true)
+                        {
+                            <button type="button" class="btn btn-sm btn-outline-secondary js-2fa-regenerate"><i class="fas fa-rotate me-1"></i>@Localize("Profile.TwoFactor.NewCodes").Text</button>
+                            <button type="button" class="btn btn-sm btn-outline-danger js-2fa-disable"><i class="fas fa-power-off me-1"></i>@Localize("Profile.TwoFactor.TurnOff").Text</button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-sm btn-primary js-2fa-setup"><i class="fas fa-shield-halved me-1"></i>@Localize("Profile.TwoFactor.TurnOn").Text</button>
+                        }
+                    </div>
+                </div>
+            }
             @if (Model.LinkedSignIns.Any())
             {
                 <div class="card-body border-top" id="linkedSignIns"

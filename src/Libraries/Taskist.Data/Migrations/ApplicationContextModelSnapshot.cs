@@ -1779,6 +1779,35 @@ namespace Taskist.Data.Migrations
                     b.ToTable("UserProjectMap", (string)null);
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserRecoveryCode", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UsedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserRecoveryCode", (string)null);
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserRole", b =>
                 {
                     b.Property<int>("Id")
@@ -1871,6 +1900,35 @@ namespace Taskist.Data.Migrations
                     b.HasIndex("UserRoleId");
 
                     b.ToTable("UserRolePermissionMap", (string)null);
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserTwoFactor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("EnabledOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("LastUsedTimeStep")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Secret")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserTwoFactor", (string)null);
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiCategory", b =>
@@ -2905,6 +2963,15 @@ namespace Taskist.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserRecoveryCode", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserRoleMap", b =>
                 {
                     b.HasOne("Taskist.Core.Domain.Users.User", "User")
@@ -2941,6 +3008,15 @@ namespace Taskist.Data.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("UserRole");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserTwoFactor", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Wiki.WikiCategory", b =>

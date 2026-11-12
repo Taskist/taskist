@@ -9,6 +9,10 @@ public static class ActivityType
 
     public const string Logout = "Logout";
 
+    public const string TwoFactorEnabled = "TwoFactorEnabled";
+
+    public const string TwoFactorDisabled = "TwoFactorDisabled";
+
     public const string AccessDenied = "AccessDenied";
 
     public const string Export = "Export";

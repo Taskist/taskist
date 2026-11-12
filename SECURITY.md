@@ -82,6 +82,19 @@ Secrets are write-only in the UI and are never written to the activity log.
 - The forgot-password endpoint is rate limited per IP address.
 - Change the seeded `admin@taskist.org` password immediately after installation.
 
+### Two-factor sign-in
+
+Users with a password can turn on authenticator-app codes (TOTP, RFC 6238: 6 digits, 30-second steps) under **My profile → Security**. Setup in [docs/two-factor.md](docs/two-factor.md).
+
+- **Secrets** are 160-bit random keys, stored encrypted with Data Protection (like other stored secrets) and never written to the audit log. The QR code is generated on the server; nothing is sent to an outside service.
+- **Codes** are accepted for the current 30-second step ±1 and **only once**: a code, or any older one, can't be replayed after a successful sign-in.
+- **Recovery codes:** ten single-use codes, about 50 bits each, stored as SHA-256 hashes and shown only once. Turning two-factor off or creating new codes requires a current code.
+- **Wrong codes** count towards the same failed-attempt lock-out as wrong passwords, and the counter is only reset after the **second** step succeeds. Each sign-in attempt also allows at most five codes before the user has to start again with their password. The half-finished sign-in lives in a separate, encrypted five-minute cookie, so a correct password alone never creates a session.
+- **"Don't ask again on this device"** (`Authentication:TwoFactor:RememberDeviceDays`, default 30, `0` turns it off) sets an encrypted, HttpOnly, always-*Secure* cookie (so it only works over HTTPS) tied to the user and to when two-factor was last turned on, so it stops working as soon as two-factor is reset or turned off and on again.
+- **Administrators can be required** to use it (`Authentication:TwoFactor:RequireForAdministrators`): until they set it up, administrators who signed in with only a password are limited to their profile page.
+- **Resetting:** an administrator can reset a user's two-factor sign-in from the user's page (recorded in the activity log for both accounts). Keep this in mind for your support process: anyone who can convince an administrator to reset it is back to password-only.
+- Single sign-on users are not asked for a Taskist code; enforce MFA at your identity provider.
+
 ### Single sign-on (optional)
 
 Taskist can sign users in through an OpenID Connect provider (`Authentication:Oidc`, off by default; setup in [docs/sso.md](docs/sso.md)).

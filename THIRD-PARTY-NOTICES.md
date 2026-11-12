@@ -70,6 +70,7 @@ Restored at build time; not stored in this repository.
 | [Microsoft.EntityFrameworkCore.DynamicLinq](https://dynamic-linq.net) | Apache-2.0 |
 | [MiniProfiler](https://miniprofiler.com) | MIT |
 | [Newtonsoft.Json](https://www.newtonsoft.com/json) | MIT |
+| [QRCoder](https://github.com/Shane32/QRCoder) (two-factor setup QR code) | MIT |
 | [RestSharp](https://restsharp.dev) | Apache-2.0 |
 | [ReverseMarkdown](https://github.com/mysticmind/reversemarkdown-net) | MIT |
 | [Riok.Mapperly](https://mapperly.riok.app) | Apache-2.0 |

@@ -22,4 +22,6 @@ public class UserRegistrationModel
     public List<SelectListItem> AvailableRoles { get; set; }
 
     public IList<LinkedSignInModel> LinkedSignIns { get; set; } = [];
+
+    public bool? TwoFactorEnabled { get; set; }
 }

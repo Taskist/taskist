@@ -20,6 +20,8 @@ public static class ServiceConstant
 
     public static string LanguageIdClaim => "wc.bl.languageid";
 
+    public static string AuthMethodClaim => "wc.bl.amr";
+
     #endregion Auth
 
     #region Caching
