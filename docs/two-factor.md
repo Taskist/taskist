@@ -35,7 +35,7 @@ If a code is rejected, check that your phone's clock is set automatically, and u
 | Setting | Default | Description |
 | --- | --- | --- |
 | `Authentication:TwoFactor:RequireForAdministrators` | `false` | Administrators who sign in with a password must set up two-factor sign-in. Until they do, they can only use their profile page. |
-| `Authentication:TwoFactor:RememberDeviceDays` | `30` | How long "Don't ask again on this device" lasts. `0` removes the option, so a code is asked at every sign-in. |
+| `Authentication:TwoFactor:RememberDeviceDays` | `30` | How long "Don't ask again on this device" lasts. `0` removes the option, so a code is asked at every sign-in. The remembered-device cookie is always marked *Secure*, so the option only works when people reach Taskist over HTTPS; on a plain-HTTP install (such as the Docker sample) a code is asked every time. |
 
 In Docker these are `TWO_FACTOR_REQUIRE_FOR_ADMINS` and `TWO_FACTOR_REMEMBER_DEVICE_DAYS` in `.env`.
 

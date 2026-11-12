@@ -23,5 +23,5 @@ public class LoginModel
 
     public string? SsoErrorCode { get; set; }
 
-    public bool TwoFactorExpired { get; set; }
+    public bool? TwoFactorExpired { get; set; }
 }

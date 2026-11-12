@@ -114,8 +114,8 @@ public class ProfileController : BaseController
 
         model.HasPassword = await _userService.GetCurrentPasswordAsync(e.Id) != null;
         model.TwoFactorEnabled = await _twoFactorService.IsEnabledAsync(e.Id);
-        model.RecoveryCodesRemaining = model.TwoFactorEnabled ? await _twoFactorService.CountRemainingRecoveryCodesAsync(e.Id) : 0;
-        model.TwoFactorSetupRequired = !model.TwoFactorEnabled && TwoFactorSetupPolicy.IsSetupRequired(
+        model.RecoveryCodesRemaining = model.TwoFactorEnabled == true ? await _twoFactorService.CountRemainingRecoveryCodesAsync(e.Id) : 0;
+        model.TwoFactorSetupRequired = model.TwoFactorEnabled != true && TwoFactorSetupPolicy.IsSetupRequired(
             _twoFactorOptions.RequireForAdministrators, IsAdministrator(), User.FindFirst(Taskist.Service.Common.ServiceConstant.AuthMethodClaim)?.Value);
 
         return View(model);
@@ -512,7 +512,7 @@ public class ProfileController : BaseController
             HttpContext, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
         var persistent = current.Properties?.IsPersistent ?? false;
 
-        await _authenticationService.SignInAsync(user, persistent, AuthMethod.PasswordAndCode);
+        await _authenticationService.SignInAsync(user, persistent, AuthMethod.LocalWithCode);
     }
 
     #endregion

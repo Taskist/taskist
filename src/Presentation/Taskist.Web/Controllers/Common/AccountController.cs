@@ -225,7 +225,7 @@ public class AccountController : Controller
         var returnUrl = principal.FindFirst(PendingReturnUrlClaim)?.Value;
         model.RememberDeviceDays = _twoFactorOptions.EffectiveRememberDeviceDays;
 
-        var verified = model.UseRecoveryCode
+        var verified = model.IsRecoveryMode
             ? await _twoFactorService.UseRecoveryCodeAsync(user.Id, model.Code)
             : await _twoFactorService.VerifyCodeAsync(user.Id, model.Code);
 
@@ -234,29 +234,29 @@ public class AccountController : Controller
             var attempts = (int.TryParse(principal.FindFirst(PendingAttemptsClaim)?.Value, out var count) ? count : 0) + 1;
             var locked = await RegisterFailedAttemptAsync(user);
             await _activityService.InsertAsync(user, ActivityType.LoginFailed,
-                model.UseRecoveryCode ? "Failed sign-in: wrong recovery code" : "Failed sign-in: wrong two-factor code");
+                model.IsRecoveryMode ? "Failed sign-in: wrong recovery code" : "Failed sign-in: wrong two-factor code");
 
             if (locked || attempts >= TwoFactorOptions.MaxAttempts)
                 return await AbandonTwoFactorAsync();
 
             await SignInPendingAsync(user.Id, rememberMe, returnUrl, attempts);
             model.Code = null;
-            model.ErrorMessage = await ResourceOrDefaultAsync(model.UseRecoveryCode ? "Login.TwoFactor.WrongRecoveryCode" : "Login.TwoFactor.WrongCode",
-                model.UseRecoveryCode ? "That recovery code isn't valid or has already been used." : "That code isn't right. Check your authenticator app and try again.");
+            model.ErrorMessage = await ResourceOrDefaultAsync(model.IsRecoveryMode ? "Login.TwoFactor.WrongRecoveryCode" : "Login.TwoFactor.WrongCode",
+                model.IsRecoveryMode ? "That recovery code isn't valid or has already been used." : "That code isn't right. Check your authenticator app and try again.");
             return View(model);
         }
 
         await AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, TwoFactorOptions.PendingScheme);
         await ResetFailedAttemptsAsync(user);
 
-        if (model.RememberDevice && _twoFactorOptions.CanRememberDevice)
+        if (model.RememberDevice == true && _twoFactorOptions.CanRememberDevice)
             await RememberDeviceAsync(user.Id);
 
-        var note = model.UseRecoveryCode
+        var note = model.IsRecoveryMode
             ? $"Signed in with a recovery code ({await _twoFactorService.CountRemainingRecoveryCodesAsync(user.Id)} left)"
             : "Signed in with a two-factor code";
 
-        return await CompleteSignInAsync(user, rememberMe, note, returnUrl, AuthMethod.PasswordAndCode);
+        return await CompleteSignInAsync(user, rememberMe, note, returnUrl, AuthMethod.LocalWithCode);
     }
 
     public async Task<IActionResult> Logout()
@@ -386,13 +386,13 @@ public class AccountController : Controller
     {
         var twoFactor = await _twoFactorService.GetAsync(user.Id);
         if (twoFactor == null)
-            return await CompleteSignInAsync(user, rememberMe, "Signed in", returnUrl, AuthMethod.Password);
+            return await CompleteSignInAsync(user, rememberMe, "Signed in", returnUrl, AuthMethod.Local);
 
         if (_twoFactorOptions.CanRememberDevice
             && RememberedDeviceToken.IsValid(_deviceProtector, Request.Cookies[TwoFactorOptions.RememberDeviceCookie], user.Id, twoFactor.EnabledOn.Ticks, DateTimeOffset.UtcNow))
         {
             await ResetFailedAttemptsAsync(user);
-            return await CompleteSignInAsync(user, rememberMe, "Signed in (remembered device)", returnUrl, AuthMethod.RememberedDevice);
+            return await CompleteSignInAsync(user, rememberMe, "Signed in (remembered device)", returnUrl, AuthMethod.LocalRememberedDevice);
         }
 
         await SignInPendingAsync(user.Id, rememberMe, SafeReturnUrl(returnUrl), 0);
@@ -458,7 +458,7 @@ public class AccountController : Controller
                 HttpOnly = true,
                 IsEssential = true,
                 SameSite = SameSiteMode.Lax,
-                Secure = Request.IsHttps,
+                Secure = true,
                 Expires = expires
             });
     }

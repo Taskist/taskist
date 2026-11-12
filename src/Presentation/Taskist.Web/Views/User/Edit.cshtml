@@ -15,7 +15,7 @@
     </form>
 </div>
 
-@if (Model.TwoFactorEnabled)
+@if (Model.TwoFactorEnabled == true)
 {
     <div class="card mt-3" id="userTwoFactor"
          data-reset-url="@Url.Action("ResetTwoFactor")"

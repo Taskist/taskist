@@ -143,7 +143,7 @@
 
         <section class="card profile-section" data-section="security">
             <div class="card-header"><i class="fas fa-lock me-2 text-teal"></i>@Localize("Profile.Security").Text</div>
-            @if (Model.TwoFactorSetupRequired)
+            @if (Model.TwoFactorSetupRequired == true)
             {
                 <div class="card-body pb-0">
                     <wp-empty-state icon="fas fa-shield-halved" tone="warning" size="compact"
@@ -158,7 +158,7 @@
                 </div>
                 <button type="button" id="btnChangePassword" class="btn btn-sm btn-outline-secondary"><i class="fas fa-key me-1"></i>@Localize("Profile.ChangePassword").Text</button>
             </div>
-            @if (Model.HasPassword)
+            @if (Model.HasPassword == true)
             {
                 <div class="card-body border-top d-flex justify-content-between align-items-center flex-wrap gap-2" id="twoFactorCard"
                      data-setup-url="@Url.Action("TwoFactorSetup")"
@@ -177,7 +177,7 @@
                     <div>
                         <div class="fw-semibold">
                             @Localize("Profile.TwoFactor.Title").Text
-                            @if (Model.TwoFactorEnabled)
+                            @if (Model.TwoFactorEnabled == true)
                             {
                                 <span class="badge bg-success ms-1">@Localize("Profile.TwoFactor.On").Text</span>
                             }
@@ -187,7 +187,7 @@
                             }
                         </div>
                         <div class="text-muted small">@Localize("Profile.TwoFactor.Hint").Text</div>
-                        @if (Model.TwoFactorEnabled)
+                        @if (Model.TwoFactorEnabled == true)
                         {
                             <div class="small @(Model.RecoveryCodesRemaining <= 2 ? "text-danger" : "text-muted")">
                                 @string.Format(Localize("Profile.TwoFactor.CodesLeft").Text, Model.RecoveryCodesRemaining)
@@ -195,7 +195,7 @@
                         }
                     </div>
                     <div class="d-flex gap-2 flex-wrap">
-                        @if (Model.TwoFactorEnabled)
+                        @if (Model.TwoFactorEnabled == true)
                         {
                             <button type="button" class="btn btn-sm btn-outline-secondary js-2fa-regenerate"><i class="fas fa-rotate me-1"></i>@Localize("Profile.TwoFactor.NewCodes").Text</button>
                             <button type="button" class="btn btn-sm btn-outline-danger js-2fa-disable"><i class="fas fa-power-off me-1"></i>@Localize("Profile.TwoFactor.TurnOff").Text</button>

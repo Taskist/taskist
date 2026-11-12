@@ -24,8 +24,8 @@
 			</div>
 			<div class="login-form-header">
 				<h2>@await TextAsync("Login.TwoFactor.Title", "Two-factor sign-in")</h2>
-				<p class="js-tf-intro-code" hidden="@Model.UseRecoveryCode">@await TextAsync("Login.TwoFactor.Intro", "Enter the 6-digit code from your authenticator app.")</p>
-				<p class="js-tf-intro-recovery" hidden="@(!Model.UseRecoveryCode)">@await TextAsync("Login.TwoFactor.RecoveryIntro", "Enter one of the recovery codes you saved when you set up two-factor sign-in. Each code works once.")</p>
+				<p class="js-tf-intro-code" hidden="@Model.IsRecoveryMode">@await TextAsync("Login.TwoFactor.Intro", "Enter the 6-digit code from your authenticator app.")</p>
+				<p class="js-tf-intro-recovery" hidden="@(!Model.IsRecoveryMode)">@await TextAsync("Login.TwoFactor.RecoveryIntro", "Enter one of the recovery codes you saved when you set up two-factor sign-in. Each code works once.")</p>
 			</div>
 
 			@if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -34,33 +34,33 @@
 			}
 
 			<form asp-action="TwoFactor" method="post" autocomplete="off" id="twoFactorForm">
-				<input type="hidden" asp-for="UseRecoveryCode" class="js-tf-mode" />
+				<input type="hidden" name="UseRecoveryCode" value="@(Model.IsRecoveryMode ? "true" : "false")" class="js-tf-mode" />
 				<div class="mb-3">
 					<label for="Code" class="form-label">
-						<span class="js-tf-intro-code" hidden="@Model.UseRecoveryCode">@await TextAsync("Login.TwoFactor.Code", "Authentication code")</span>
-						<span class="js-tf-intro-recovery" hidden="@(!Model.UseRecoveryCode)">@await TextAsync("Login.TwoFactor.RecoveryCode", "Recovery code")</span>
+						<span class="js-tf-intro-code" hidden="@Model.IsRecoveryMode">@await TextAsync("Login.TwoFactor.Code", "Authentication code")</span>
+						<span class="js-tf-intro-recovery" hidden="@(!Model.IsRecoveryMode)">@await TextAsync("Login.TwoFactor.RecoveryCode", "Recovery code")</span>
 					</label>
 					<div class="login-input">
 						<i class="fas fa-shield-halved login-input-icon"></i>
 						<input asp-for="Code" type="text" class="form-control login-code-input" autocomplete="one-time-code"
-							   inputmode="@(Model.UseRecoveryCode ? "text" : "numeric")" maxlength="20" required autofocus
-							   placeholder="@(Model.UseRecoveryCode ? "xxxxx-xxxxx" : "123456")" />
+							   inputmode="@(Model.IsRecoveryMode ? "text" : "numeric")" maxlength="20" required
+							   placeholder="@(Model.IsRecoveryMode ? "xxxxx-xxxxx" : "123456")" />
 					</div>
 				</div>
 
 				@if (Model.RememberDeviceDays > 0)
 				{
 					<div class="form-check mb-3">
-						<input class="form-check-input" asp-for="RememberDevice" type="checkbox" />
-						<label class="form-check-label" asp-for="RememberDevice">@string.Format(await TextAsync("Login.TwoFactor.RememberDevice", "Don't ask again on this device for {0} days"), Model.RememberDeviceDays)</label>
+						<input class="form-check-input" id="RememberDevice" name="RememberDevice" type="checkbox" value="true" checked="@(Model.RememberDevice == true)" />
+						<label class="form-check-label" for="RememberDevice">@string.Format(await TextAsync("Login.TwoFactor.RememberDevice", "Don't ask again on this device for {0} days"), Model.RememberDeviceDays)</label>
 					</div>
 				}
 
 				<button type="submit" class="btn btn-primary login-submit">@await TextAsync("Login.TwoFactor.Verify", "Verify")</button>
 
 				<p class="login-local-link">
-					<a href="#" class="js-tf-toggle js-tf-intro-code" hidden="@Model.UseRecoveryCode">@await TextAsync("Login.TwoFactor.UseRecovery", "Can't use your app? Use a recovery code")</a>
-					<a href="#" class="js-tf-toggle js-tf-intro-recovery" hidden="@(!Model.UseRecoveryCode)">@await TextAsync("Login.TwoFactor.UseApp", "Use your authenticator app instead")</a>
+					<a href="#" class="js-tf-toggle js-tf-intro-code" hidden="@Model.IsRecoveryMode">@await TextAsync("Login.TwoFactor.UseRecovery", "Can't use your app? Use a recovery code")</a>
+					<a href="#" class="js-tf-toggle js-tf-intro-recovery" hidden="@(!Model.IsRecoveryMode)">@await TextAsync("Login.TwoFactor.UseApp", "Use your authenticator app instead")</a>
 				</p>
 				<p class="login-local-link"><a asp-action="Login">@await TextAsync("Login.TwoFactor.Cancel", "Cancel and sign in again")</a></p>
 			</form>

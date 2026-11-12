@@ -23,5 +23,5 @@ public class UserRegistrationModel
 
     public IList<LinkedSignInModel> LinkedSignIns { get; set; } = [];
 
-    public bool TwoFactorEnabled { get; set; }
+    public bool? TwoFactorEnabled { get; set; }
 }

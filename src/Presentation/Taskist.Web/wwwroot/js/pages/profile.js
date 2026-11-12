@@ -260,11 +260,12 @@ function profileSaved(response) {
             denyButtonColor: "#6c757d",
             confirmButtonText: $c.data("done-text"),
             preDeny: function () {
-                if (navigator.clipboard) navigator.clipboard.writeText(codes.join("\n"));
-                Swal.showValidationMessage($c.data("copied-text"));
-                return false;
+                if (!navigator.clipboard) return false;
+                return navigator.clipboard.writeText(codes.join("\n"))
+                    .then(function () { Swal.showValidationMessage($c.data("copied-text")); return false; })
+                    .catch(function () { return false; });
             }
-        }).then(reloadSecurity);
+        }).then(reloadSecurity, reloadSecurity);
     }
 
     function post(url, data, onSuccess, onError) {
