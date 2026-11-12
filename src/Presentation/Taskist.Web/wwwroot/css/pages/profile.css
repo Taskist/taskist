@@ -147,3 +147,12 @@
     .profile-nav::-webkit-scrollbar { display: none; }
     .profile-nav__link { flex: 0 0 auto; white-space: nowrap; }
 }
+
+/* Two-factor setup dialog. The QR image carries its own white quiet zone, so it stays scannable in dark mode. */
+.twofactor-setup__steps { padding-left: 1.25rem; margin: 0; }
+.twofactor-setup__steps > li { margin-bottom: 1.25rem; }
+.twofactor-setup__qr { display: block; border-radius: .5rem; image-rendering: pixelated; }
+.twofactor-setup__key { display: inline-block; font-size: .95rem; letter-spacing: .05em; word-break: break-all; }
+.twofactor-setup__code { max-width: 10rem; font-size: 1.15rem; letter-spacing: .2em; }
+.twofactor-codes { columns: 2; list-style: none; padding: 0; margin: 1rem 0; font-family: var(--cui-font-monospace, monospace); font-size: 1rem; }
+.twofactor-codes li { padding: .15rem 0; }

@@ -1,7 +1,32 @@
-/* User edit page: an administrator removes a user's linked single sign-on account. The user can sign in with
-   single sign-on again afterwards; if their e-mail still matches, the account is linked again. */
+/* User edit page: an administrator removes a user's linked single sign-on account (the user can sign in with
+   single sign-on again afterwards; if their e-mail still matches, the account is linked again), or resets the
+   user's two-factor sign-in when they have lost their authenticator and recovery codes. */
 (function () {
     "use strict";
+
+    $(document).on("click", ".js-reset-two-factor", function () {
+        var $btn = $(this);
+        var $root = $("#userTwoFactor");
+
+        JSManager.confirm($root.data("reset-confirm"), function () {
+            $btn.prop("disabled", true);
+            $.ajax({
+                type: "POST",
+                url: $root.data("reset-url"),
+                data: JSManager.addAntiForgeryToken({ userId: $root.data("user-id") }),
+                success: function (r) {
+                    if (r && r.status === 2000) {
+                        JSManager.showSuccess(r.message);
+                        setTimeout(function () { window.location.reload(); }, 700);
+                    } else {
+                        JSManager.showSwal((r && r.message) || "Could not reset two-factor sign-in.", "error");
+                    }
+                },
+                error: function (xhr) { JSManager.showSwal("Request failed (" + xhr.status + ").", "error"); },
+                complete: function () { $btn.prop("disabled", false); }
+            });
+        });
+    });
 
     $(document).on("click", ".js-remove-signin", function () {
         var $btn = $(this);

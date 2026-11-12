@@ -43,6 +43,14 @@ public class ProfileModel
 
     public IList<LinkedSignInModel> LinkedSignIns { get; set; } = [];
 
+    public bool HasPassword { get; set; }
+
+    public bool TwoFactorEnabled { get; set; }
+
+    public int RecoveryCodesRemaining { get; set; }
+
+    public bool TwoFactorSetupRequired { get; set; }
+
     [Display(Name = "Gender")]
     public int? Gender { get; set; }
 

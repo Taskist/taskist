@@ -29,6 +29,7 @@ public class UserService : IUserService
     protected readonly IRepository<UserRoleMap> _userRoleMapRepository;
     protected readonly IRepository<UserRolePermissionMap> _permissionMapRepository;
     protected readonly IRepository<UserProjectMap> _userProjectMapRepository;
+    protected readonly IRepository<UserTwoFactor> _twoFactorRepository;
     protected readonly IAddressService _addressService;
     protected readonly IMessageService _messageService;
     protected readonly IEncryptionService _encryptionService;
@@ -47,6 +48,7 @@ public class UserService : IUserService
             IRepository<UserRoleMap> userRoleMapRepository,
             IRepository<UserRolePermissionMap> permissionMapRepository,
             IRepository<UserProjectMap> userProjectMapRepository,
+            IRepository<UserTwoFactor> twoFactorRepository,
             IEncryptionService encryptionService,
             ISettingService settingsService,
             IAddressService addressService,
@@ -61,6 +63,7 @@ public class UserService : IUserService
         _userRoleMapRepository = userRoleMapRepository;
         _permissionMapRepository = permissionMapRepository;
         _userProjectMapRepository = userProjectMapRepository;
+        _twoFactorRepository = twoFactorRepository;
         _encryptionService = encryptionService;
         _settingsService = settingsService;
         _addressService = addressService;
@@ -579,7 +582,7 @@ public class UserService : IUserService
         if (!await IsRegisteredAsync(entity))
             return LoginResult.NotRegistered;
 
-        if (entity.FailedLoginAttempts != 0)
+        if (entity.FailedLoginAttempts != 0 && !await _twoFactorRepository.Table.AnyAsync(x => x.UserId == entity.Id))
         {
             entity.FailedLoginAttempts = 0;
             await _userRepository.UpdateAsync(entity);

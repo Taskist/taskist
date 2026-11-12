@@ -80,7 +80,7 @@ Taskist is a self-hosted **task, change request and bug tracker** built with ASP
     <td width="50%" valign="top">
 
 **⚙️ Administration**
-- Users, roles and fine-grained permissions; optional single sign-on with any OpenID Connect provider
+- Users, roles and fine-grained permissions; two-factor sign-in with an authenticator app; optional single sign-on with any OpenID Connect provider
 - Masters for clients, projects, modules, statuses, task types, severities, tags and reporters — shared or per project
 - Database-driven translations, e-mail templates and settings
 - Light, dark and system themes with an accent colour per user; activity log; background-jobs dashboard
@@ -177,10 +177,12 @@ Taskist reads `appsettings.json`, `appsettings.{Environment}.json`, user-secrets
 | `Authentication:Oidc:AutoProvision` | `false` | Create a Taskist account (*Registered* role only) on first sign-in. Off = only existing users can sign in |
 | `Authentication:Oidc:RoleClaim` / `RoleMappings` | — | Optional: add Taskist roles from provider groups, e.g. `{"taskist-leads": "TeamLead"}`. Only adds roles, never removes them |
 | `Authentication:Oidc:DisableLocalLogin` | `false` | Hide the password form. Administrators can still sign in with a password at `/Login?local=1` |
+| `Authentication:TwoFactor:RequireForAdministrators` | `false` | Administrators who sign in with a password must turn on two-factor sign-in before using Taskist; see [docs/two-factor.md](docs/two-factor.md) |
+| `Authentication:TwoFactor:RememberDeviceDays` | `30` | How long "Don't ask again on this device" lasts after a two-factor sign-in; `0` turns the option off |
 
 Everything else — password policy, lockout, session length, e-mail, Git, notifications, report layouts — lives in the app under **Configuration → Settings**.
 
-**Behind a reverse proxy** (nginx, Traefik, IIS, a cloud load balancer): keep `RequireHttpsCookies=true`, set `ForwardedHeaders:Enabled=true` and list the proxy in `KnownProxies` or `KnownNetworks`, and set `App:BaseUrl` to the public `https://` address. In Docker these are `TASKIST_REQUIRE_HTTPS_COOKIES`, `TASKIST_FORWARDED_HEADERS`, `TASKIST_PROXY_NETWORK` and `APP_BASE_URL` in `.env`; Sentry uses `SENTRY_ENABLED`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_TRACES_SAMPLE_RATE`; single sign-on uses the `SSO_*` variables.
+**Behind a reverse proxy** (nginx, Traefik, IIS, a cloud load balancer): keep `RequireHttpsCookies=true`, set `ForwardedHeaders:Enabled=true` and list the proxy in `KnownProxies` or `KnownNetworks`, and set `App:BaseUrl` to the public `https://` address. In Docker these are `TASKIST_REQUIRE_HTTPS_COOKIES`, `TASKIST_FORWARDED_HEADERS`, `TASKIST_PROXY_NETWORK` and `APP_BASE_URL` in `.env`; Sentry uses `SENTRY_ENABLED`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_TRACES_SAMPLE_RATE`; single sign-on uses the `SSO_*` variables and two-factor sign-in the `TWO_FACTOR_*` ones.
 
 
 <a name="database"></a>

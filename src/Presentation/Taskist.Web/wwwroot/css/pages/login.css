@@ -372,6 +372,22 @@
     text-decoration: underline;
 }
 
+/* Two-factor step: single-column card and a wide, spaced code field */
+.login-card--narrow {
+    max-width: 460px;
+    min-height: auto;
+}
+
+.login-card--narrow .login-form {
+    flex: 1;
+}
+
+.login-code-input {
+    font-size: 1.25rem;
+    letter-spacing: 0.25em;
+    font-variant-numeric: tabular-nums;
+}
+
 /* Responsive: single column, brand panel hidden (handled by d-none/d-lg-flex) */
 @media (max-width: 991.98px) {
     .login-card {

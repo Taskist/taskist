@@ -42,7 +42,9 @@ public class AuthenticationService : IAuthenticationService
 
     #region Methods
 
-    public async Task SignInAsync(User entity, bool isPersistent)
+    public Task SignInAsync(User entity, bool isPersistent) => SignInAsync(entity, isPersistent, null);
+
+    public async Task SignInAsync(User entity, bool isPersistent, string authMethod)
     {
         if (entity == null)
             throw new ArgumentNullException(nameof(entity));
@@ -62,6 +64,9 @@ public class AuthenticationService : IAuthenticationService
 
             var isAdmin = roles.Any(r => r.SystemName == UserConstant.AdministratorsRoleName);
             claims.Add(new Claim(ServiceConstant.IsAdminClaim, isAdmin.ToString(), ClaimValueTypes.Boolean, ServiceConstant.ClaimsIssuer));
+
+            if (!string.IsNullOrWhiteSpace(authMethod))
+                claims.Add(new Claim(ServiceConstant.AuthMethodClaim, authMethod, ClaimValueTypes.String, ServiceConstant.ClaimsIssuer));
         }
 
         var userIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

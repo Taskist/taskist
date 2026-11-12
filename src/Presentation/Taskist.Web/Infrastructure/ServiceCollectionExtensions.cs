@@ -214,6 +214,7 @@ public static class ServiceCollectionExtensions
         services.AddMvcCore(options =>
                 {
                     options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                    options.Filters.Add<Helpers.TwoFactor.TwoFactorSetupRequiredFilter>();
                     options.ModelMetadataDetailsProviders.Add(new MetadataProvider());
                 }).AddNewtonsoftJson(options =>
                 {

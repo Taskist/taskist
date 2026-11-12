@@ -65,6 +65,9 @@ services:
       Authentication__Oidc__ClientSecret: ${SSO_CLIENT_SECRET:-}
       Authentication__Oidc__AutoProvision: ${SSO_AUTO_PROVISION:-false}
       Authentication__Oidc__DisableLocalLogin: ${SSO_DISABLE_LOCAL_LOGIN:-false}
+      # two-factor sign-in; see TWO_FACTOR_* in .env.example and docs/two-factor.md
+      Authentication__TwoFactor__RequireForAdministrators: ${TWO_FACTOR_REQUIRE_FOR_ADMINS:-false}
+      Authentication__TwoFactor__RememberDeviceDays: ${TWO_FACTOR_REMEMBER_DEVICE_DAYS:-30}
     ports:
       - "${TASKIST_PORT:-8080}:8080"
     volumes:

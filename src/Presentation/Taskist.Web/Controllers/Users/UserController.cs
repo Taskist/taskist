@@ -34,6 +34,8 @@ public class UserController : BaseController
     protected readonly UsersMapper _usersMapper;
     protected readonly MastersMapper _mastersMapper;
     protected readonly IExternalLoginService _externalLoginService;
+    protected readonly ITwoFactorService _twoFactorService;
+    protected readonly Service.Logging.IUserActivityService _activityService;
 
     #endregion
 
@@ -47,9 +49,13 @@ public class UserController : BaseController
         IWorkContext workContext,
         UsersMapper usersMapper,
         MastersMapper mastersMapper,
-        IExternalLoginService externalLoginService)
+        IExternalLoginService externalLoginService,
+        ITwoFactorService twoFactorService,
+        Service.Logging.IUserActivityService activityService)
     {
         _externalLoginService = externalLoginService;
+        _twoFactorService = twoFactorService;
+        _activityService = activityService;
         _userService = userService;
         _documentService = documentService;
         _languageService = languageService;
@@ -241,6 +247,26 @@ public class UserController : BaseController
         });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> ResetTwoFactor(int userId)
+    {
+        var target = await _userService.GetByIdAsync(userId);
+        var reset = target != null && await _twoFactorService.DisableAsync(userId);
+
+        if (reset)
+        {
+            var admin = await _workContext.GetCurrentUserAsync();
+            await _activityService.InsertAsync(admin, ActivityType.TwoFactorDisabled, $"Reset two-factor sign-in for {target!.Email}");
+            await _activityService.InsertAsync(target, ActivityType.TwoFactorDisabled, $"Two-factor sign-in reset by {admin.Email}");
+        }
+
+        return Json(new JsonResponseModel
+        {
+            Status = reset ? HttpStatusCode.Success : HttpStatusCode.NoData,
+            Message = await _localizationService.GetResourceAsync(reset ? "UserPage.TwoFactor.ResetDone" : "FormNoData.Description")
+        });
+    }
+
     #endregion
 
     #region Data
@@ -301,6 +327,7 @@ public class UserController : BaseController
 
         if (model.User.Id > 0)
         {
+            model.TwoFactorEnabled = await _twoFactorService.IsEnabledAsync(model.User.Id);
             model.LinkedSignIns = (await _externalLoginService.GetForUserAsync(model.User.Id))
                 .Select(l => new LinkedSignInModel
                 {

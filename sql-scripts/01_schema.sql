@@ -2032,3 +2032,64 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261112183742_AddUserTwoFactor'
+)
+BEGIN
+    CREATE TABLE [UserRecoveryCode] (
+        [Id] int NOT NULL IDENTITY,
+        [UserId] int NOT NULL,
+        [CodeHash] nvarchar(64) NOT NULL,
+        [CreatedOn] datetime2 NOT NULL,
+        [UsedOn] datetime2 NULL,
+        CONSTRAINT [PK_UserRecoveryCode] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_UserRecoveryCode_User_UserId] FOREIGN KEY ([UserId]) REFERENCES [User] ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261112183742_AddUserTwoFactor'
+)
+BEGIN
+    CREATE TABLE [UserTwoFactor] (
+        [Id] int NOT NULL IDENTITY,
+        [UserId] int NOT NULL,
+        [Secret] nvarchar(max) NOT NULL,
+        [EnabledOn] datetime2 NOT NULL,
+        [LastUsedTimeStep] bigint NOT NULL,
+        CONSTRAINT [PK_UserTwoFactor] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_UserTwoFactor_User_UserId] FOREIGN KEY ([UserId]) REFERENCES [User] ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261112183742_AddUserTwoFactor'
+)
+BEGIN
+    CREATE INDEX [IX_UserRecoveryCode_UserId] ON [UserRecoveryCode] ([UserId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261112183742_AddUserTwoFactor'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_UserTwoFactor_UserId] ON [UserTwoFactor] ([UserId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261112183742_AddUserTwoFactor'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261112183742_AddUserTwoFactor', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

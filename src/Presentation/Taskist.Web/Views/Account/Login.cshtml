@@ -66,6 +66,11 @@
 				<p>Sign in to continue to Taskist.</p>
 			</div>
 
+			@if (Model.TwoFactorExpired)
+			{
+				<div class="login-error" role="alert">@await TextAsync("Login.TwoFactor.Expired", "Your sign-in timed out or had too many wrong codes. Sign in again.")</div>
+			}
+
 			@if (!string.IsNullOrEmpty(Model.SsoErrorCode))
 			{
 				<div class="login-error" role="alert">@await TextAsync(Taskist.Web.Helpers.Sso.SsoErrorCode.ResourceKey(Model.SsoErrorCode), "Single sign-on didn't work. Try again, or contact your administrator.")</div>

@@ -229,6 +229,118 @@ function profileSaved(response) {
 })();
 
 
+/* Two-factor sign-in (Security section): set up from a QR dialog, then show the one-time recovery codes;
+   turning it off or getting new codes asks for a current code first. */
+(function () {
+    "use strict";
+
+    function $card() { return $("#twoFactorCard"); }
+
+    function escapeHtml(text) {
+        return String(text).replace(/[&<>"']/g, function (c) {
+            return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+    }
+
+    function reloadSecurity() {
+        window.location.hash = "security";
+        window.location.reload();
+    }
+
+    function showCodes(codes) {
+        var $c = $card();
+        var list = "<ul class='twofactor-codes'>" + codes.map(function (c) { return "<li>" + escapeHtml(c) + "</li>"; }).join("") + "</ul>";
+        Swal.fire({
+            title: $c.data("codes-title"),
+            html: "<p class='text-start'>" + escapeHtml($c.data("codes-intro")) + "</p>" + list,
+            icon: "success",
+            allowOutsideClick: false,
+            showDenyButton: true,
+            denyButtonText: $c.data("copy-text"),
+            denyButtonColor: "#6c757d",
+            confirmButtonText: $c.data("done-text"),
+            preDeny: function () {
+                if (navigator.clipboard) navigator.clipboard.writeText(codes.join("\n"));
+                Swal.showValidationMessage($c.data("copied-text"));
+                return false;
+            }
+        }).then(reloadSecurity);
+    }
+
+    function post(url, data, onSuccess, onError) {
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: JSManager.addAntiForgeryToken(data),
+            success: function (r) {
+                if (r && r.status === 2000) onSuccess(r);
+                else onError((r && r.message) || "Request failed.");
+            },
+            error: function (xhr) { onError("Request failed (" + xhr.status + ")."); }
+        });
+    }
+
+    function askForCode(promptText, url, onSuccess) {
+        var $c = $card();
+        Swal.fire({
+            text: promptText,
+            input: "text",
+            inputAttributes: { autocomplete: "one-time-code", maxlength: 20 },
+            showCancelButton: true,
+            cancelButtonText: $c.data("cancel-text"),
+            showLoaderOnConfirm: true,
+            preConfirm: function (code) {
+                return new Promise(function (resolve) {
+                    post(url, { code: code }, function (r) { resolve(r); }, function (message) {
+                        Swal.showValidationMessage(message);
+                        resolve(false);
+                    });
+                });
+            }
+        }).then(function (result) {
+            if (result.isConfirmed && result.value) onSuccess(result.value);
+        });
+    }
+
+    $(document)
+        .on("click", ".js-2fa-setup", function () {
+            var $c = $card();
+            JSManager.openForm($c.data("setup-url"), $c.data("setup-title"), "col-md-6");
+        })
+        .on("click", ".js-2fa-enable", function () {
+            var $root = $(this).closest(".twofactor-setup");
+            var $btn = $(this);
+            var $error = $root.find(".js-2fa-setup-error");
+            var code = $.trim($root.find(".js-2fa-setup-code").val() || "");
+            if (!code) { $root.find(".js-2fa-setup-code").trigger("focus"); return; }
+
+            $btn.prop("disabled", true);
+            $error.prop("hidden", true);
+            post($card().data("enable-url"), { code: code }, function (r) {
+                JSManager.closeForm();
+                showCodes(r.codes || []);
+            }, function (message) {
+                $error.text(message).prop("hidden", false);
+                $btn.prop("disabled", false);
+            });
+        })
+        .on("keydown", ".js-2fa-setup-code", function (e) {
+            if (e.key !== "Enter") return;
+            e.preventDefault();
+            $(this).closest(".twofactor-setup").find(".js-2fa-enable").trigger("click");
+        })
+        .on("click", ".js-2fa-regenerate", function () {
+            askForCode($card().data("code-prompt"), $card().data("regenerate-url"), function (r) { showCodes(r.codes || []); });
+        })
+        .on("click", ".js-2fa-disable", function () {
+            askForCode($card().data("disable-prompt"), $card().data("disable-url"), function (r) {
+                JSManager.showSuccess(r.message);
+                setTimeout(reloadSecurity, 700);
+            });
+        });
+})();
+
+
 /* Linked single sign-on accounts (Security section): unlink one after confirmation, then reload on #security. */
 (function () {
     "use strict";
