@@ -28,6 +28,7 @@ builder.Services
 	.AddAssetPipeline()
 	.AddPresentation()
 	.AddAppAuthentication()
+	.AddOidcSignIn(builder.Configuration)
 	.AddProfiling()
 	.AddBackgroundJobs(builder.Configuration, startServer: !builder.Environment.IsDevelopment());
 
@@ -37,6 +38,7 @@ var app = builder.Build();
 
 app.LogSecurityWarnings();
 app.LogErrorTrackingStatus();
+app.LogSingleSignOnStatus();
 
 await GitStartup.UpgradeLegacySettingsAsync(app.Services);
 

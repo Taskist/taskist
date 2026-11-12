@@ -1985,3 +1985,50 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261110190700_AddUserExternalLogin'
+)
+BEGIN
+    CREATE TABLE [UserExternalLogin] (
+        [Id] int NOT NULL IDENTITY,
+        [UserId] int NOT NULL,
+        [Provider] nvarchar(255) NOT NULL,
+        [Subject] nvarchar(255) NOT NULL,
+        [Email] nvarchar(150) NULL,
+        [CreatedOn] datetime2 NOT NULL,
+        [LastUsedOn] datetime2 NULL,
+        CONSTRAINT [PK_UserExternalLogin] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_UserExternalLogin_User_UserId] FOREIGN KEY ([UserId]) REFERENCES [User] ([Id])
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261110190700_AddUserExternalLogin'
+)
+BEGIN
+    CREATE UNIQUE INDEX [IX_UserExternalLogin_Provider_Subject] ON [UserExternalLogin] ([Provider], [Subject]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261110190700_AddUserExternalLogin'
+)
+BEGIN
+    CREATE INDEX [IX_UserExternalLogin_UserId] ON [UserExternalLogin] ([UserId]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261110190700_AddUserExternalLogin'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261110190700_AddUserExternalLogin', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

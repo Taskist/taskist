@@ -41,6 +41,8 @@ public class ProfileModel
 
     public IList<Taskist.Core.Dtos.Git.GitAccountStatusDto> GitConnections { get; set; } = [];
 
+    public IList<LinkedSignInModel> LinkedSignIns { get; set; } = [];
+
     [Display(Name = "Gender")]
     public int? Gender { get; set; }
 

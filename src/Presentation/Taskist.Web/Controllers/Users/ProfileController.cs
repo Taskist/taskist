@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Settings;
 using Taskist.Core.Enums;
+using Taskist.Service.Authentication;
 using Taskist.Service.Git;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
@@ -32,6 +33,7 @@ public class ProfileController : BaseController
     protected readonly IGitRepositoryService _gitRepositoryService;
     protected readonly INotificationService _notificationService;
     protected readonly IAppearanceService _appearanceService;
+    protected readonly IExternalLoginService _externalLoginService;
 
     #endregion
 
@@ -45,9 +47,11 @@ public class ProfileController : BaseController
         IGitAccountService gitAccountService,
         IGitRepositoryService gitRepositoryService,
         INotificationService notificationService,
-        IAppearanceService appearanceService)
+        IAppearanceService appearanceService,
+        IExternalLoginService externalLoginService)
     {
         _appearanceService = appearanceService;
+        _externalLoginService = externalLoginService;
         _gitAccountService = gitAccountService;
         _gitRepositoryService = gitRepositoryService;
         _notificationService = notificationService;
@@ -77,10 +81,45 @@ public class ProfileController : BaseController
             Email = e.Email,
             HasPhoto = e.PhotoDocumentId.HasValue,
             GitConnections = await _gitAccountService.GetStatusesAsync(e),
-            Appearance = await _appearanceService.GetForUserAsync(e)
+            Appearance = await _appearanceService.GetForUserAsync(e),
+            LinkedSignIns = (await _externalLoginService.GetForUserAsync(e.Id))
+                .Select(l => new LinkedSignInModel
+                {
+                    Id = l.Id,
+                    ProviderName = LinkedSignInModel.ProviderNameFrom(l.Provider),
+                    Email = l.Email,
+                    CreatedOn = l.CreatedOn,
+                    LastUsedOn = l.LastUsedOn
+                })
+                .ToList()
         };
 
         return View(model);
+    }
+
+    [HttpPost]
+    [CheckPermission(nameof(PermissionProvider.ManageDashboard))]
+    public async Task<JsonResponseModel> UnlinkSignIn(int id)
+    {
+        var hasPassword = await _userService.GetCurrentPasswordAsync(UserId) != null;
+        var linkCount = await _externalLoginService.CountForUserAsync(UserId);
+
+        if (!hasPassword && linkCount <= 1)
+        {
+            return new JsonResponseModel
+            {
+                Status = HttpStatusCode.ValidationError,
+                Message = await _localizationService.GetResourceAsync("Profile.SignIns.LastMethod")
+            };
+        }
+
+        var removed = await _externalLoginService.DeleteAsync(id, UserId);
+
+        return new JsonResponseModel
+        {
+            Status = removed ? HttpStatusCode.Success : HttpStatusCode.ValidationError,
+            Message = await _localizationService.GetResourceAsync(removed ? "Profile.SignIns.Unlinked" : "Profile.SignIns.NotFound")
+        };
     }
 
     [CheckPermission(nameof(PermissionProvider.ManageDashboard))]
