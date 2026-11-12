@@ -1,6 +1,14 @@
 @model LoginModel
 @inject Taskist.Service.Masters.ISettingService SettingService
 @inject Taskist.Core.Configuration.IAppInfoProvider AppInfo
+@inject Taskist.Service.Localization.ILocalizationService LocalizationService
+@functions {
+	private async Task<string> TextAsync(string key, string fallback)
+	{
+		var value = await LocalizationService.GetResourceAsync(key);
+		return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.OrdinalIgnoreCase) ? fallback : value;
+	}
+}
 @{
 	ViewData["Title"] = "Login";
 	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
@@ -58,7 +66,34 @@
 				<p>Sign in to continue to Taskist.</p>
 			</div>
 
+			@if (!string.IsNullOrEmpty(Model.SsoErrorCode))
+			{
+				<div class="login-error" role="alert">@await TextAsync(Taskist.Web.Helpers.Sso.SsoErrorCode.ResourceKey(Model.SsoErrorCode), "Single sign-on didn't work. Try again, or contact your administrator.")</div>
+			}
+
+			@if (Model.SsoEnabled)
+			{
+				<form asp-action="ExternalLogin" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="login-sso">
+					<button type="submit" class="btn btn-outline-secondary login-sso-button">
+						<i class="fas fa-right-to-bracket me-2"></i>@await TextAsync("Login.Sso.SignInWith", "Sign in with") @Model.SsoDisplayName
+					</button>
+				</form>
+
+				@if (Model.ShowPasswordForm)
+				{
+					<div class="login-divider"><span>@await TextAsync("Login.Sso.Or", "or")</span></div>
+				}
+			}
+
+			@if (!Model.ShowPasswordForm)
+			{
+				<p class="login-local-link"><a asp-action="Login" asp-route-local="true" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]">@await TextAsync("Login.Sso.AdministratorSignIn", "Administrator sign-in")</a></p>
+				<p class="login-copy">&copy; @DateTime.Now.Year Taskist &middot; Somaraj</p>
+			}
+			else
+			{
 			<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off" id="loginForm" class="no-auto-ladda">
+				<input type="hidden" asp-for="LocalLogin" />
 				<div asp-validation-summary="ModelOnly" class="login-error"></div>
 				<div class="mb-3">
 					<label asp-for="Email" class="form-label"></label>
@@ -94,6 +129,7 @@
 
 				<p class="login-copy">&copy; @DateTime.Now.Year Taskist &middot; Somaraj</p>
 			</form>
+			}
 		</div>
 	</div>
 </div>

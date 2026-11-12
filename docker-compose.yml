@@ -57,6 +57,14 @@ services:
       Sentry__Dsn: ${SENTRY_DSN:-}
       Sentry__Environment: ${SENTRY_ENVIRONMENT:-}
       Sentry__TracesSampleRate: ${SENTRY_TRACES_SAMPLE_RATE:-0}
+      # optional single sign-on; see SSO_* in .env.example and docs/sso.md
+      Authentication__Oidc__Enabled: ${SSO_ENABLED:-false}
+      Authentication__Oidc__DisplayName: ${SSO_DISPLAY_NAME:-}
+      Authentication__Oidc__Authority: ${SSO_AUTHORITY:-}
+      Authentication__Oidc__ClientId: ${SSO_CLIENT_ID:-}
+      Authentication__Oidc__ClientSecret: ${SSO_CLIENT_SECRET:-}
+      Authentication__Oidc__AutoProvision: ${SSO_AUTO_PROVISION:-false}
+      Authentication__Oidc__DisableLocalLogin: ${SSO_DISABLE_LOCAL_LOGIN:-false}
     ports:
       - "${TASKIST_PORT:-8080}:8080"
     volumes:

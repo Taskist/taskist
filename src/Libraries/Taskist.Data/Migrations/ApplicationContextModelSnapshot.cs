@@ -1595,6 +1595,47 @@ namespace Taskist.Data.Migrations
                     b.ToTable("User", (string)null);
                 });
 
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserExternalLogin", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime?>("LastUsedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("Provider", "Subject")
+                        .IsUnique();
+
+                    b.ToTable("UserExternalLogin", (string)null);
+                });
+
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserNotification", b =>
                 {
                     b.Property<int>("Id")
@@ -2812,6 +2853,15 @@ namespace Taskist.Data.Migrations
                     b.Navigation("Address");
 
                     b.Navigation("Language");
+                });
+
+            modelBuilder.Entity("Taskist.Core.Domain.Users.UserExternalLogin", b =>
+                {
+                    b.HasOne("Taskist.Core.Domain.Users.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Taskist.Core.Domain.Users.UserNotification", b =>

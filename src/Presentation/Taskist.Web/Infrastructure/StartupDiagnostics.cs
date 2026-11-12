@@ -33,4 +33,28 @@ public static class StartupDiagnostics
         else if (errorTracking.IsActive)
             logger.LogInformation("Error tracking is on: unhandled exceptions and errors are sent to Sentry (traces sample rate {Rate}).", errorTracking.EffectiveTracesSampleRate);
     }
+
+    public static void LogSingleSignOnStatus(this WebApplication app)
+    {
+        var logger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger(nameof(StartupDiagnostics));
+        var oidc = app.Services.GetRequiredService<OidcOptions>();
+
+        if (oidc.IsMisconfigured)
+        {
+            logger.LogWarning("Authentication:Oidc:Enabled is true but Authority or ClientId is missing or invalid, so single sign-on is off. Authority must be an https URL (http only with RequireHttpsMetadata false).");
+            return;
+        }
+
+        if (!oidc.IsActive)
+            return;
+
+        logger.LogInformation("Single sign-on is on ({DisplayName}, {Authority}). Auto-provisioning: {AutoProvision}. Password sign-in limited to administrators: {Restricted}.",
+            oidc.EffectiveDisplayName, oidc.Authority, oidc.AutoProvision, oidc.LocalLoginRestricted);
+
+        if (!oidc.RequireHttpsMetadata)
+            logger.LogWarning("Authentication:Oidc:RequireHttpsMetadata is false. Only use this for local testing; in production the identity provider must be reached over HTTPS.");
+
+        if (!oidc.RequireVerifiedEmail)
+            logger.LogWarning("Authentication:Oidc:RequireVerifiedEmail is false, so an SSO sign-in can be linked to an existing Taskist account by e-mail even when the identity provider has not verified that address. Only use this with a provider whose e-mail addresses you control.");
+    }
 }

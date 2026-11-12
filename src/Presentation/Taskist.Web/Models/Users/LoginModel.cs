@@ -12,4 +12,14 @@ public class LoginModel
 
     [Display(Name = "Remember Me")]
     public bool RememberMe { get; set; } = true;
+
+    public bool LocalLogin { get; set; }
+
+    public bool SsoEnabled { get; set; }
+
+    public string? SsoDisplayName { get; set; }
+
+    public bool ShowPasswordForm { get; set; } = true;
+
+    public string? SsoErrorCode { get; set; }
 }

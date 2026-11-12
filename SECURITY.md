@@ -82,6 +82,19 @@ Secrets are write-only in the UI and are never written to the activity log.
 - The forgot-password endpoint is rate limited per IP address.
 - Change the seeded `admin@taskist.org` password immediately after installation.
 
+### Single sign-on (optional)
+
+Taskist can sign users in through an OpenID Connect provider (`Authentication:Oidc`, off by default; setup in [docs/sso.md](docs/sso.md)).
+
+- **Protocol:** authorization code flow with PKCE; state and nonce are checked, and the provider's signing keys and issuer are taken from its discovery document over HTTPS (`RequireHttpsMetadata`, on by default). Provider tokens are not stored.
+- **Client secret** comes from configuration or environment variables only and is never stored in the database or shown in the UI.
+- **Matching users:** a sign-in is tied to the provider's issuer and subject ID. On the first sign-in it is linked to an existing Taskist account only when the provider reports the e-mail address as **verified** (`RequireVerifiedEmail`, on by default), and never to an account already linked to a different identity at the same provider.
+- **New accounts** are created only when `AutoProvision` is on, and get the *Registered* role only — no project access until an administrator grants it.
+- **Role mapping** (`RoleClaim` + `RoleMappings`) only adds the roles listed in the mapping; it never removes roles and cannot grant a role that isn't listed. Mapping a group to `SystemAdministrator` makes that group's membership at the provider equivalent to admin rights in Taskist — do so deliberately.
+- **Account status still applies:** locked, inactive and deleted users are refused, and existing sessions are re-checked every 15 minutes as before.
+- **SSO-only mode** (`DisableLocalLogin`) hides the password form and refuses password sign-in for everyone except system administrators, who keep it at `/Login?local=1` so a broken identity provider can't lock you out. Keep at least one administrator with a strong password.
+- Signing out of Taskist does not sign the user out of the identity provider.
+
 ### Wiki access
 
 - A project's wiki — page content, tree, history, linked tasks and Word export — is visible only to members of that project who also hold the *Wiki* permission. Requests for pages in other projects get an empty or "not found" response that does not reveal whether the page exists.

@@ -15,6 +15,37 @@
     </form>
 </div>
 
+@if (Model.LinkedSignIns.Any())
+{
+    <div class="card mt-3" id="userSignIns"
+         data-remove-url="@Url.Action("RemoveSignIn")"
+         data-user-id="@Model.User.Id"
+         data-remove-confirm="@Localize("UserPage.SignIns.RemoveConfirm").Text">
+        <div class="card-header"><i class="fas fa-right-to-bracket me-2"></i>@Localize("Profile.SignIns.Title").Text</div>
+        <div class="card-body">
+            <div class="text-muted small mb-2">@Localize("UserPage.SignIns.Intro").Text</div>
+            @foreach (var link in Model.LinkedSignIns)
+            {
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 py-2">
+                    <div>
+                        @link.ProviderName
+                        @if (!string.IsNullOrEmpty(link.Email))
+                        {
+                            <span class="text-muted">&middot; @link.Email</span>
+                        }
+                        <div class="text-muted small">
+                            @Localize("Profile.SignIns.LastUsed").Text:
+                            @(link.LastUsedOn.HasValue ? link.LastUsedOn.Value.ToLocalTime().ToString("g") : Localize("Profile.SignIns.Never").Text)
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger js-remove-signin" data-id="@link.Id"><i class="fas fa-link-slash me-1"></i>@Localize("Profile.SignIns.Unlink").Text</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
 @section PageScripts {
     <script src="~/js/pages/masters/remote-select.js" asp-append-version="true"></script>
+    <script src="~/js/pages/user-signins.js" asp-append-version="true"></script>
 }

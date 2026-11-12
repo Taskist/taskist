@@ -1,8 +1,12 @@
+using AuthenticationProperties = Microsoft.AspNetCore.Authentication.AuthenticationProperties;
+using AuthenticationHttpContextExtensions = Microsoft.AspNetCore.Authentication.AuthenticationHttpContextExtensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Taskist.Core.Common;
+using Taskist.Core.Domain.Users;
 using Taskist.Core.Enums;
 using Taskist.Service.Authentication;
+using Taskist.Service.Localization;
 using Taskist.Service.Logging;
 using Taskist.Service.Masters;
 using Taskist.Service.Messages;
@@ -12,6 +16,8 @@ using Taskist.Web.Helpers.Extensions;
 using Taskist.Web.Models.Users;
 
 using Taskist.Web.Helpers.Appearance;
+using Taskist.Web.Helpers.Sso;
+using Taskist.Web.Infrastructure;
 
 namespace Taskist.Web.Controllers.Common;
 
@@ -27,6 +33,10 @@ public class AccountController : Controller
     protected readonly IMessageService _messageService;
     protected readonly IUserActivityService _activityService;
     protected readonly IAppearanceService _appearanceService;
+    protected readonly ILocalizationService _localizationService;
+    protected readonly ISsoSignInService _ssoSignInService;
+    protected readonly OidcOptions _oidcOptions;
+    protected readonly ILogger<AccountController> _logger;
 
     #endregion
 
@@ -39,9 +49,17 @@ public class AccountController : Controller
         IEncryptionService encryptionService,
         IMessageService messageService,
         IUserActivityService activityService,
-        IAppearanceService appearanceService)
+        IAppearanceService appearanceService,
+        ILocalizationService localizationService,
+        ISsoSignInService ssoSignInService,
+        OidcOptions oidcOptions,
+        ILogger<AccountController> logger)
     {
+        _logger = logger;
         _appearanceService = appearanceService;
+        _localizationService = localizationService;
+        _ssoSignInService = ssoSignInService;
+        _oidcOptions = oidcOptions;
         _userService = userService;
         _systemService = systemService;
         _genericAttributeService = genericAttributeService;
@@ -55,9 +73,13 @@ public class AccountController : Controller
 
     #region Actions
 
-    public async Task<IActionResult> Login()
+    public IActionResult Login(string sso, string local)
     {
-        return View(new LoginModel());
+        var model = new LoginModel { LocalLogin = LocalLoginSwitch.IsOn(local) };
+        PrepareLoginModel(model);
+        model.SsoErrorCode = SsoErrorCode.Normalize(sso);
+
+        return View(model);
     }
 
     [HttpPost]
@@ -72,16 +94,16 @@ public class AccountController : Controller
                 case LoginResult.Successful:
                     {
                         var user = await _userService.GetByEmailAsync(model.Email);
-                        await _authenticationService.SignInAsync(user, model.RememberMe);
-                        await _appearanceService.SyncCookieAsync(user);
+                        if (_oidcOptions.LocalLoginRestricted && !await IsAdministratorAsync(user))
+                        {
+                            ModelState.AddModelError(string.Empty, await ResourceOrDefaultAsync("Login.Sso.PasswordSignInDisabled",
+                                $"Password sign-in is turned off. Use \"Sign in with {_oidcOptions.EffectiveDisplayName}\" instead."));
+                            await _activityService.InsertAsync(user, ActivityType.LoginFailed, "Failed sign-in: password sign-in is limited to administrators while single sign-on is required");
+                            PrepareLoginModel(model);
+                            return View(model);
+                        }
 
-                        await _activityService.InsertAsync(user, ActivityType.Login, "Signed in");
-
-                        await _systemService.ResetCacheAsync();
-
-                        if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
-                            return RedirectToAction("Index", "Home");
-                        return Redirect(returnUrl);
+                        return await CompleteSignInAsync(user, model.RememberMe, "Signed in", returnUrl);
                     }
                 case LoginResult.NotExist:
                     ModelState.AddModelError(string.Empty, "User doesn't exists");
@@ -108,7 +130,49 @@ public class AccountController : Controller
                 ActivityType.LoginFailed, $"Failed sign-in: {loginResult}");
         }
 
+        PrepareLoginModel(model);
         return View(model);
+    }
+
+    [HttpPost]
+    public IActionResult ExternalLogin(string returnUrl)
+    {
+        if (!_oidcOptions.IsActive)
+            return NotFound();
+
+        var callback = Url.Action(nameof(ExternalCallback), "Account", new { returnUrl = SafeReturnUrl(returnUrl) });
+        var properties = new AuthenticationProperties { RedirectUri = callback };
+
+        return Challenge(properties, OidcOptions.SchemeName);
+    }
+
+    public async Task<IActionResult> ExternalCallback(string returnUrl)
+    {
+        if (!_oidcOptions.IsActive)
+            return NotFound();
+
+        var external = await AuthenticationHttpContextExtensions.AuthenticateAsync(HttpContext, OidcOptions.ExternalCookieScheme);
+        await AuthenticationHttpContextExtensions.SignOutAsync(HttpContext, OidcOptions.ExternalCookieScheme);
+
+        if (!external.Succeeded || external.Principal == null)
+            return RedirectToAction(nameof(Login), new { sso = SsoErrorCode.Failed });
+
+        var identity = ExternalIdentityReader.Read(external.Principal.Claims, _oidcOptions.EffectiveRoleClaim);
+        var result = await _ssoSignInService.ResolveAsync(identity);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Single sign-on refused ({Reason}) for an identity from {Issuer}.", result.ErrorCode, identity.Issuer);
+            return RedirectToAction(nameof(Login), new { sso = result.ErrorCode });
+        }
+
+        var note = result.Provisioned ? "Signed in with single sign-on (account created)"
+            : result.Linked ? "Signed in with single sign-on (account linked)"
+            : "Signed in with single sign-on";
+        if (result.RolesAdded.Count > 0)
+            note += $"; roles added: {string.Join(", ", result.RolesAdded)}";
+
+        return await CompleteSignInAsync(result.User!, false, note, returnUrl);
     }
 
     public async Task<IActionResult> Logout()
@@ -203,6 +267,50 @@ public class AccountController : Controller
         }
 
         return View(model);
+    }
+
+    #endregion
+
+    #region Utilities
+
+    private void PrepareLoginModel(LoginModel model)
+    {
+        model.SsoEnabled = _oidcOptions.IsActive;
+        model.SsoDisplayName = _oidcOptions.EffectiveDisplayName;
+        model.ShowPasswordForm = !_oidcOptions.LocalLoginRestricted || model.LocalLogin;
+    }
+
+    private async Task<bool> IsAdministratorAsync(User user)
+    {
+        if (user == null)
+            return false;
+
+        return await _userService.IsInUserRoleAsync(user, UserConstant.SystemAdministratorRoleName)
+            || await _userService.IsAdminAsync(user);
+    }
+
+    private async Task<string> ResourceOrDefaultAsync(string key, string fallback)
+    {
+        var value = await _localizationService.GetResourceAsync(key);
+        return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.OrdinalIgnoreCase) ? fallback : value;
+    }
+
+    private string SafeReturnUrl(string returnUrl) =>
+        !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : null;
+
+    private async Task<IActionResult> CompleteSignInAsync(User user, bool isPersistent, string note, string returnUrl)
+    {
+        await _authenticationService.SignInAsync(user, isPersistent);
+        await _appearanceService.SyncCookieAsync(user);
+
+        await _activityService.InsertAsync(user, ActivityType.Login, note);
+
+        await _systemService.ResetCacheAsync();
+
+        var target = SafeReturnUrl(returnUrl);
+        if (target == null)
+            return RedirectToAction("Index", "Home");
+        return Redirect(target);
     }
 
     #endregion

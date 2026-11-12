@@ -229,6 +229,36 @@ function profileSaved(response) {
 })();
 
 
+/* Linked single sign-on accounts (Security section): unlink one after confirmation, then reload on #security. */
+(function () {
+    "use strict";
+
+    $(document).on("click", ".js-unlink-signin", function () {
+        var $btn = $(this);
+        var $root = $("#linkedSignIns");
+
+        JSManager.confirm($root.data("unlink-confirm"), function () {
+            $btn.prop("disabled", true);
+            $.ajax({
+                type: "POST",
+                url: $root.data("unlink-url"),
+                data: JSManager.addAntiForgeryToken({ id: $btn.data("id") }),
+                success: function (r) {
+                    if (r && r.status === 2000) {
+                        JSManager.showSuccess(r.message);
+                        setTimeout(function () { window.location.hash = "security"; window.location.reload(); }, 700);
+                    } else {
+                        JSManager.showSwal((r && r.message) || "Could not unlink this sign-in.", "error");
+                    }
+                },
+                error: function (xhr) { JSManager.showSwal("Request failed (" + xhr.status + ").", "error"); },
+                complete: function () { $btn.prop("disabled", false); }
+            });
+        });
+    });
+})();
+
+
 /* Settings-style sections: the left list shows one section at a time, addressed by the URL hash
    (#details, #appearance, #security, #git) so Back works and other pages can deep-link. Links are handled here
    because the layout's <base href> would otherwise resolve "#x" against the site root. Hidden sections keep

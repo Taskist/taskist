@@ -16,6 +16,7 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - **Appearance**: light, dark or system theme and an accent colour per user.
 - **Per-user export column layouts** on top of the administrator's default.
 - **Tags** for the backlog, with inline create and merge.
+- **Single sign-on with OpenID Connect** (`Authentication:Oidc`, off by default): Keycloak, Authentik, Entra ID, Google, Okta and other providers. Existing users are linked by verified e-mail; optional account creation on first sign-in (*Registered* role only), optional group → role mapping (adds roles only), and an SSO-only mode that keeps password sign-in for administrators at `/Login?local=1`. Linked sign-ins are listed under My profile → Security and on the user's admin page. See [docs/sso.md](docs/sso.md). ([#11](https://github.com/Taskist/taskist/issues/11))
 - **Optional Sentry error tracking** (`Sentry:Enabled` + `Sentry:Dsn`, off by default): unhandled exceptions and logged errors, with request bodies, cookies, query strings, auth headers and personal data filtered out.
 - `Security:RequireHttpsCookies` and `Security:ForwardedHeaders:*` settings for plain-HTTP and reverse-proxy deployments.
 - Startup checks: the Data Protection key folder must be writable; Production logs warnings for plain-HTTP cookies and an unprotected key ring.

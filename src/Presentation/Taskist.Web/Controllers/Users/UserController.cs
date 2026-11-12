@@ -4,6 +4,7 @@ using System.Data;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
 using Taskist.Core.Enums;
+using Taskist.Service.Authentication;
 using Taskist.Service.Git;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
@@ -32,6 +33,7 @@ public class UserController : BaseController
     protected readonly IWorkContext _workContext;
     protected readonly UsersMapper _usersMapper;
     protected readonly MastersMapper _mastersMapper;
+    protected readonly IExternalLoginService _externalLoginService;
 
     #endregion
 
@@ -44,8 +46,10 @@ public class UserController : BaseController
         IGitRepositoryService gitRepositoryService,
         IWorkContext workContext,
         UsersMapper usersMapper,
-        MastersMapper mastersMapper)
+        MastersMapper mastersMapper,
+        IExternalLoginService externalLoginService)
     {
+        _externalLoginService = externalLoginService;
         _userService = userService;
         _documentService = documentService;
         _languageService = languageService;
@@ -225,6 +229,18 @@ public class UserController : BaseController
         });
     }
 
+    [HttpPost]
+    public async Task<IActionResult> RemoveSignIn(int userId, int id)
+    {
+        var removed = await _externalLoginService.DeleteAsync(id, userId);
+
+        return Json(new JsonResponseModel
+        {
+            Status = removed ? HttpStatusCode.Success : HttpStatusCode.NoData,
+            Message = await _localizationService.GetResourceAsync(removed ? "Profile.SignIns.Unlinked" : "Profile.SignIns.NotFound")
+        });
+    }
+
     #endregion
 
     #region Data
@@ -282,6 +298,20 @@ public class UserController : BaseController
     private async Task InitModelAsync(UserRegistrationModel model)
     {
         model.User.GitLabConfigured = await _gitRepositoryService.GetDefaultConnectionAsync() != null;
+
+        if (model.User.Id > 0)
+        {
+            model.LinkedSignIns = (await _externalLoginService.GetForUserAsync(model.User.Id))
+                .Select(l => new LinkedSignInModel
+                {
+                    Id = l.Id,
+                    ProviderName = LinkedSignInModel.ProviderNameFrom(l.Provider),
+                    Email = l.Email,
+                    CreatedOn = l.CreatedOn,
+                    LastUsedOn = l.LastUsedOn
+                })
+                .ToList();
+        }
 
         var languages = await _languageService.GetAllActiveAsync();
         var userRoles = await _userService.GetAllUserRolesAsync();
