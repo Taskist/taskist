@@ -48,8 +48,9 @@
 <div class="row">
     <div class="col-md-12">
         <div class="mb-3">
-            <wc-label asp-for="Slot" />
-            <select class="form-control select2" data-style="btn-default" asp-for="Slot" asp-items="Model.AvailableSlots"></select>
+            <label class="form-label" for="Slot">@Localize("CustomFieldModel.Slot")</label>
+            <select class="form-control select2" data-style="btn-default" id="Slot" asp-for="Slot" asp-items="Model.AvailableSlots" aria-describedby="SlotHint"></select>
+            <div class="form-text" id="SlotHint">@Localize("CustomFieldModel.Slot.Hint")</div>
             <span asp-validation-for="Slot" class="text-danger"></span>
         </div>
     </div>

@@ -10,7 +10,7 @@ namespace Taskist.Web.Models.Masters
             Fields = [];
         }
 
-        public bool CanUpdate { get; set; }
+        public bool? CanUpdate { get; set; }
 
         public List<CustomFieldRenderModel> Fields { get; set; }
 
@@ -19,7 +19,7 @@ namespace Taskist.Web.Models.Masters
             return new CustomFieldsViewModel
             {
                 InsideRow = CustomFieldLayout.RendersInsideStatusRow(slot),
-                CanUpdate = CanUpdate,
+                CanUpdate = CanUpdate == true,
                 CustomFields = Fields.Where(x => x.ResolvedSlot == (int)slot).ToList()
             };
         }

@@ -6,7 +6,7 @@
     var config = function () {
         var $cfg = $("#backlog-form-config");
         return {
-            id: parseInt($cfg.data("id"), 10) || 0,
+            id: Number.parseInt($cfg.data("id"), 10) || 0,
             url: $cfg.data("custom-field-url")
         };
     };
@@ -54,7 +54,7 @@
                 hide_min_max: true,
                 onFinish: function (data) {
                     if (!$input.hasClass(UPDATE_CLASS)) return;
-                    save(parseInt($input.data("reference"), 10), data.from);
+                    save(Number.parseInt($input.data("reference"), 10), data.from);
                 }
             });
         });
@@ -64,7 +64,7 @@
         var $input = $(this);
         if (!isValid($input)) return;
 
-        save(parseInt($input.data("reference"), 10), valueOf($input));
+        save(Number.parseInt($input.data("reference"), 10), valueOf($input));
     });
 
     $(function () { initSliders(document); });

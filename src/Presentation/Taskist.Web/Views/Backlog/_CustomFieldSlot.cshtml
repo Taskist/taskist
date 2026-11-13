@@ -53,8 +53,8 @@
                 }
                 else if (field.FieldType == (int)FieldType.Radio)
                 {
-                    <div class="mb-3">
-                        <label class="form-label d-block">@label</label>
+                    <fieldset class="mb-3">
+                        <legend class="form-label fs-6 mb-2">@label</legend>
                         @for (var o = 0; o < options.Length; o++)
                         {
                             var option = options[o];
@@ -64,7 +64,7 @@
                             </div>
                         }
                         <span class="text-danger field-validation-valid d-block" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
-                    </div>
+                    </fieldset>
                 }
                 else if (field.FieldType == (int)FieldType.RangeSlider)
                 {
