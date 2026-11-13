@@ -5,15 +5,12 @@ namespace Taskist.Web.Models.Masters
         public CustomFieldsViewModel()
         {
             CustomFields = [];
-            Values = [];
         }
 
-        public int Index { get; set; }
+        public bool InsideRow { get; set; }
 
-        public int BacklogId { get; set; }
+        public bool CanUpdate { get; set; }
 
         public List<CustomFieldRenderModel> CustomFields { get; set; }
-
-        public List<CustomFieldValueModel> Values { get; set; }
     }
 }

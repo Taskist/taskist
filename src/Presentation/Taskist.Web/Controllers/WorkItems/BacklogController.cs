@@ -305,7 +305,7 @@ public class BacklogController : BaseController
         if (!fieldValuesErrors)
             ModelState.AddModelError(string.Empty, await _localizationService.GetResourceAsync("Error.UnableToCreateTask"));
 
-        await InitModelAsync(model, model.ProjectId);
+        await InitModelAsync(model, model.ProjectId, fieldValues);
 
         return View(model);
     }
@@ -1389,8 +1389,16 @@ public class BacklogController : BaseController
     }
 
     [HttpPatch]
+    [CheckPermission(nameof(PermissionProvider.ManageBacklog))]
     public async Task<JsonResponseModel> UpdateCustomField(int id, int reference, string value)
     {
+        if (!await _backlogItemService.CanEditTaskAsync(id))
+            return new JsonResponseModel
+            {
+                Status = HttpStatusCode.InternalServerError,
+                Message = "You are not allowed to edit this task."
+            };
+
         var message = await _backlogItemService.InsertFieldValueAsync(id, reference, value);
 
         return new JsonResponseModel
@@ -1735,7 +1743,8 @@ public class BacklogController : BaseController
         };
     }
 
-    private async Task InitModelAsync(BacklogModel model, int projectId)
+    private async Task InitModelAsync(BacklogModel model, int projectId,
+        IList<CustomFieldValueModel>? postedFieldValues = null)
     {
         var loggedUser = await _workContext.GetCurrentUserAsync();
         var projectAccess = await GetProjectAccess(projectId);
@@ -1977,6 +1986,35 @@ public class BacklogController : BaseController
                     });
             }
         }
+
+        model.CustomFieldLayout = await BuildCustomFieldLayoutAsync(model, postedFieldValues);
+    }
+
+    private async Task<CustomFieldLayoutModel> BuildCustomFieldLayoutAsync(BacklogModel model,
+        IList<CustomFieldValueModel>? postedFieldValues)
+    {
+        var fields = CustomFieldLayout.Order(await _customFieldService.GetAllAsync(model.ProjectId));
+
+        IList<CustomFieldValueModel> values = [];
+        if (postedFieldValues != null)
+            values = postedFieldValues.Where(x => x != null).ToList();
+        else if (model.Id > 0)
+            values = (await _backlogItemService.GetAllCustomFieldValuesAsync(model.Id))
+                .Select(x => _workItemsMapper.ToModel(x))
+                .ToList();
+
+        var layout = new CustomFieldLayoutModel { CanUpdate = model.Id > 0 && model.CanEdit };
+        for (var i = 0; i < fields.Count; i++)
+        {
+            var field = fields[i];
+            var render = _mastersMapper.ToRenderModel(field);
+            render.Index = i;
+            render.ResolvedSlot = (int)CustomFieldLayout.ResolveSlot(field.Slot, field.Placement);
+            render.Value = values.FirstOrDefault(x => x.CustomFieldId == field.Id)?.Value ?? "";
+            layout.Fields.Add(render);
+        }
+
+        return layout;
     }
 
     private async Task InitBatchUpdateModelAsync(BacklogBatchUpdateModel model, List<int> projectIds)

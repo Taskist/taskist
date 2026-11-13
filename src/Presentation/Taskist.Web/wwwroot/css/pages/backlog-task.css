@@ -1251,3 +1251,7 @@
 .task-issue-link--off {
     opacity: 0.6;
 }
+
+.custom-field-slot--inline {
+    display: contents;
+}

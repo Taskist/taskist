@@ -2093,3 +2093,32 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261113050423_AddCustomFieldSlot'
+)
+BEGIN
+    ALTER TABLE [CustomField] ADD [DisplayOrder] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261113050423_AddCustomFieldSlot'
+)
+BEGIN
+    ALTER TABLE [CustomField] ADD [Slot] int NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261113050423_AddCustomFieldSlot'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261113050423_AddCustomFieldSlot', N'10.0.13');
+END;
+
+COMMIT;
+GO
+

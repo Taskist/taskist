@@ -68,6 +68,9 @@ public partial class MastersMapper
     [MapperIgnoreTarget(nameof(CustomField.Project))]
     public partial void Update(CustomFieldModel source, CustomField target);
 
+    [MapperIgnoreTarget(nameof(CustomFieldRenderModel.ResolvedSlot))]
+    [MapperIgnoreTarget(nameof(CustomFieldRenderModel.Index))]
+    [MapperIgnoreTarget(nameof(CustomFieldRenderModel.Value))]
     public partial CustomFieldRenderModel ToRenderModel(CustomField source);
 
     public partial TagModel ToModel(Tag source);

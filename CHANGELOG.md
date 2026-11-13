@@ -16,6 +16,7 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - **Appearance**: light, dark or system theme and an accent colour per user.
 - **Per-user export column layouts** on top of the administrator's default.
 - **Tags** for the backlog, with inline create and merge.
+- **Custom field positions**: a project's custom fields can be placed anywhere on the task form (after Title, Description, Attachments, or after any field in the right panel, such as Status, Module or Developer), with an order number within each position. Existing fields stay at the bottom of their section until moved.
 - **Two-factor sign-in** with any authenticator app (TOTP), turned on per user under My profile → Security: QR-code setup, ten one-time recovery codes, an optional "don't ask again on this device" (`Authentication:TwoFactor:RememberDeviceDays`, default 30), and administrator reset on the user's page. `Authentication:TwoFactor:RequireForAdministrators` (off by default) makes it mandatory for administrators who sign in with a password. Single sign-on users are not asked, since their identity provider handles it. See [docs/two-factor.md](docs/two-factor.md). ([#12](https://github.com/Taskist/taskist/issues/12))
 - **Single sign-on with OpenID Connect** (`Authentication:Oidc`, off by default): Keycloak, Authentik, Entra ID, Google, Okta and other providers. Existing users are linked by verified e-mail; optional account creation on first sign-in (*Registered* role only), optional group → role mapping (adds roles only), and an SSO-only mode that keeps password sign-in for administrators at `/Login?local=1`. Linked sign-ins are listed under My profile → Security and on the user's admin page. See [docs/sso.md](docs/sso.md). ([#11](https://github.com/Taskist/taskist/issues/11))
 - **Optional Sentry error tracking** (`Sentry:Enabled` + `Sentry:Dsn`, off by default): unhandled exceptions and logged errors, with request bodies, cookies, query strings, auth headers and personal data filtered out.
@@ -34,9 +35,11 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - Seed data moved from the install wizard to four idempotent scripts in `sql-scripts/`: schema, defaults, translations and optional sample data. A fresh install now also gets the email templates, using an inactive placeholder email account.
 - Docker images target .NET 10; the migrate container runs `sql-scripts/02`–`04`.
 - E-mails fill `%company%` from **Configuration → Settings → Company name** (falls back to "Taskist").
+- Custom fields: checkbox and radio fields now have a label and save on the edit page, every field saves when changed (previously only mandatory ones did), dropdowns start empty instead of preselecting the first option, a field without a translation shows its label instead of its resource key, and values typed on Create are kept when the form returns with an error.
 
 ### Security
 
+- Saving a single custom field value (`Backlog/UpdateCustomField`) now requires edit rights on the task, like the rest of the task form.
 - Wiki reads (content, tree, history, linked tasks, Word export) are limited to members of the page's project; previously any signed-in user could read any project's pages by id. Restoring a version now requires the version to belong to the page, and pages and folders can no longer be moved into another project or into their own sub-folders.
 - Wiki images are recorded against their page's project at upload and served only to the uploader and that project's members; previously any user with the Wiki permission could fetch any stored image (including other projects' wiki images, profile photos and unsaved task uploads) by id.
 - Task attachments are access-checked on download, upload and delete, uploads require the antiforgery token, and files are served as downloads with `nosniff`.

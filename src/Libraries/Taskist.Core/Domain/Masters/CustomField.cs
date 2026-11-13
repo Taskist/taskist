@@ -20,6 +20,10 @@ namespace Taskist.Core.Domain.Masters
 
         public int Placement { get; set; }
 
+        public int? Slot { get; set; }
+
+        public int? DisplayOrder { get; set; }
+
         public virtual Project Project { get; set; }
     }
 }

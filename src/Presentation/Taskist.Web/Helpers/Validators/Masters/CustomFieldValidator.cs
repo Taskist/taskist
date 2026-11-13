@@ -1,3 +1,4 @@
+using Taskist.Core.Enums;
 using Taskist.Service.Localization;
 using Taskist.Service.Masters;
 using Taskist.Web.Helpers.Extensions;
@@ -34,7 +35,13 @@ public class CustomFieldValidator : AbstractValidator<CustomFieldModel>
 		RuleFor(r => r.ColumnClass)
 			.NotEmpty().WithMessage(localizationService.GetResource("CustomFieldModel.ColumnClass.RequiredMsg"));
 
-		RuleFor(r => r.Placement)
-			.NotEmpty().WithMessage(localizationService.GetResource("CustomFieldModel.Placement.RequiredMsg"));
+		RuleFor(r => r.Slot)
+			.NotNull().WithMessage(localizationService.GetResource("CustomFieldModel.Slot.RequiredMsg"))
+			.Must(x => x.HasValue && Enum.IsDefined(typeof(BacklogFormSlot), x.Value))
+			.WithMessage(localizationService.GetResource("CustomFieldModel.Slot.RequiredMsg"));
+
+		RuleFor(r => r.DisplayOrder)
+			.InclusiveBetween(0, 9999).When(x => x.DisplayOrder.HasValue)
+			.WithMessage(localizationService.GetResource("CustomFieldModel.DisplayOrder.RangeMsg"));
 	}
 }

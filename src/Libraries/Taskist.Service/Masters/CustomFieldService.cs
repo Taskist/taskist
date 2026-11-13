@@ -1,3 +1,4 @@
+using Taskist.Core.Enums;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
@@ -34,7 +35,12 @@ public class CustomFieldService : ICustomFieldService
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.ResourceKey.Contains(search));
 
-            return query;
+            return query
+                .OrderBy(x => x.Slot ?? (x.Placement == (int)CustomFieldPlacement.StatusSection
+                    ? (int)BacklogFormSlot.StatusBottom
+                    : (int)BacklogFormSlot.MainBottom))
+                .ThenBy(x => x.DisplayOrder ?? int.MaxValue)
+                .ThenBy(x => x.Id);
         }, pageIndex, pageSize);
     }
 
