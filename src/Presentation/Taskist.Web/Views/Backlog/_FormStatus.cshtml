@@ -17,6 +17,7 @@
             <span asp-validation-for="ProjectId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterProject)" />
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="StatusId" />
@@ -24,6 +25,7 @@
             <span asp-validation-for="StatusId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterStatus)" />
     <div class="col-xl-6">
         <div class="mb-3">
             <wc-label asp-for="ModuleId" />
@@ -31,6 +33,7 @@
             <span asp-validation-for="ModuleId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterModule)" />
     <div class="col-xl-6">
         <div class="mb-3">
             <wc-label asp-for="SubModuleId" />
@@ -38,6 +41,7 @@
             <span asp-validation-for="SubModuleId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterSubModule)" />
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="TaskTypeId" />
@@ -45,6 +49,7 @@
             <span asp-validation-for="TaskTypeId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterTaskType)" />
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="SeverityId" />
@@ -52,6 +57,7 @@
             <span asp-validation-for="SeverityId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterPriority)" />
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="ReporterId" />
@@ -59,6 +65,7 @@
             <span asp-validation-for="ReporterId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterReporter)" />
     <div class="col-xl-6">
         <div class="mb-3">
             <wc-label asp-for="AssigneeId" />
@@ -67,6 +74,7 @@
             <div class="wp-avail" data-avail-for="AssigneeId"></div>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterDeveloper)" />
     <div class="col-xl-6">
         <div class="mb-3">
             <wc-label asp-for="TesterId" />
@@ -75,6 +83,7 @@
             <div class="wp-avail" data-avail-for="TesterId"></div>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterTester)" />
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="PlannedStartDate" />
@@ -82,6 +91,7 @@
             <span asp-validation-for="PlannedStartDate" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterStartDate)" />
     <div class="col-md-6">
         <div class="mb-3">
             <wc-label asp-for="DueDate" />
@@ -89,6 +99,7 @@
             <span asp-validation-for="DueDate" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterDueDate)" />
     <div class="col-md-12">
         <div class="mb-3">
             <wc-label asp-for="ReleaseId" />
@@ -96,6 +107,7 @@
             <span asp-validation-for="ReleaseId" class="text-danger"></span>
         </div>
     </div>
+    <partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusAfterRelease)" />
 </div>
 
 <div class="closing-checklist @(Model.Id > 0 && Model.ShowRootCauseTab ? "" : "d-none")" id="closingChecklist">
@@ -116,5 +128,4 @@
     </div>
 </div>
 
-
-@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacement.StatusSection, projectId = Model.ProjectId })
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.StatusBottom)" />

@@ -1,0 +1,88 @@
+@model CustomFieldsViewModel
+
+@if (Model.CustomFields.Count > 0)
+{
+    var updateCssClassName = Model.CanUpdate ? "ajax-update-custom-field" : "";
+
+    <div class="@(Model.InsideRow ? "custom-field-slot custom-field-slot--inline" : "custom-field-slot row")">
+        @foreach (var field in Model.CustomFields)
+        {
+            var i = field.Index;
+            var fieldValue = field.Value ?? "";
+            var mandatory = field.Mandatory.ToString().ToLower();
+            var label = Localize(field.ResourceKey).Text;
+            if (string.IsNullOrWhiteSpace(label) || string.Equals(label, field.ResourceKey, StringComparison.OrdinalIgnoreCase))
+                label = field.Label;
+            var requiredMsg = Localize($"{field.ResourceKey}.RequiredMsg").Text;
+            if (string.IsNullOrWhiteSpace(requiredMsg) || string.Equals(requiredMsg, $"{field.ResourceKey}.RequiredMsg", StringComparison.OrdinalIgnoreCase))
+                requiredMsg = $"{field.Label} is required";
+            var options = (field.Options ?? "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            <div class="col-md-@field.ColumnClass custom-field" data-custom-field="@field.Id">
+                <input type="hidden" name="fieldValues[@i].CustomFieldId" value="@field.Id" />
+                @if (field.FieldType == (int)FieldType.TextBox)
+                {
+                    <div class="mb-3">
+                        <label class="form-label" for="textbox_@field.Id">@label</label>
+                        <input type="text" class="form-control @updateCssClassName" data-reference="@field.Id" name="fieldValues[@i].Value" id="textbox_@field.Id" value="@fieldValue" data-val="@mandatory" data-val-required="@requiredMsg" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.Dropdown)
+                {
+                    <div class="mb-3">
+                        <label class="form-label" for="select_@field.Id">@label</label>
+                        <select class="form-control select2 @updateCssClassName" name="fieldValues[@i].Value" id="select_@field.Id" data-reference="@field.Id" data-val="@mandatory" data-val-required="@requiredMsg">
+                            <option value="">Select</option>
+                            @foreach (var option in options)
+                            {
+                                <option value="@option" selected="@(fieldValue == option ? "selected" : null)">@option</option>
+                            }
+                        </select>
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.Checkbox)
+                {
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input @updateCssClassName" name="fieldValues[@i].Value" id="checkbox_@field.Id" value="true" data-reference="@field.Id" checked="@(fieldValue == "true" ? "checked" : null)" />
+                            <label class="form-check-label" for="checkbox_@field.Id">@label</label>
+                        </div>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.Radio)
+                {
+                    <div class="mb-3">
+                        <label class="form-label d-block">@label</label>
+                        @for (var o = 0; o < options.Length; o++)
+                        {
+                            var option = options[o];
+                            <div class="form-check form-check-inline">
+                                <input type="radio" class="form-check-input @updateCssClassName" name="fieldValues[@i].Value" id="radio_@(field.Id)_@o" value="@option" data-reference="@field.Id" data-val="@mandatory" data-val-required="@requiredMsg" checked="@(fieldValue == option ? "checked" : null)" />
+                                <label class="form-check-label" for="radio_@(field.Id)_@o">@option</label>
+                            </div>
+                        }
+                        <span class="text-danger field-validation-valid d-block" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.RangeSlider)
+                {
+                    <div class="mb-3">
+                        <label class="form-label" for="rangeslider_@field.Id">@label</label>
+                        <input type="text" class="js-range-slider @updateCssClassName" name="fieldValues[@i].Value" id="rangeslider_@field.Id" value="@fieldValue" data-reference="@field.Id" data-val="@mandatory" data-val-required="@requiredMsg" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+                else if (field.FieldType == (int)FieldType.DatePicker)
+                {
+                    <div class="mb-3">
+                        <label class="form-label" for="datepicker_@field.Id">@label</label>
+                        <input type="text" class="form-control datepicker @updateCssClassName" name="fieldValues[@i].Value" id="datepicker_@field.Id" value="@fieldValue" data-reference="@field.Id" autocomplete="off" data-val="@mandatory" data-val-required="@requiredMsg" />
+                        <span class="text-danger field-validation-valid" data-valmsg-for="fieldValues[@i].Value" data-valmsg-replace="true"></span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}

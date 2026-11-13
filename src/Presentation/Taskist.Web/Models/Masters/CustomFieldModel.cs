@@ -37,28 +37,20 @@ namespace Taskist.Web.Models.Masters
         [LocalizedDisplayName("CustomFieldModel.ColumnClass")]
         public int ColumnClass { get; set; }
 
-        [LocalizedDisplayName("CustomFieldModel.Placement")]
         public int Placement { get; set; }
+
+        [LocalizedDisplayName("CustomFieldModel.Slot")]
+        public int? Slot { get; set; }
+
+        [LocalizedDisplayName("CustomFieldModel.DisplayOrder")]
+        public int? DisplayOrder { get; set; }
 
         public int ProjectId { get; set; }
 
         public string ProjectName { get; set; }
 
         public IList<SelectListItem> AvailableColumnClasses { get; set; }
-    }
 
-    public class CustomFieldGridModel : BaseModel
-    {
-        public string Label { get; set; }
-
-        public string ResourceKey { get; set; }
-
-        public string FieldType { get; set; }
-
-        public bool Mandatory { get; set; }
-
-        public string ColumnClass { get; set; }
-
-        public string Placement { get; set; }
+        public IList<SelectListItem> AvailableSlots { get; set; } = [];
     }
 }

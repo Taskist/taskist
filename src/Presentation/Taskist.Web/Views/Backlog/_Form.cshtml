@@ -20,6 +20,7 @@
         </div>
     </div>
 </div>
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainAfterTitle)" />
 <div class="row">
     <div class="col-md-12">
         <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
@@ -97,6 +98,7 @@
         </div>
     </div>
 </div>
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainAfterDescription)" />
 <div id="thumbnail-zone"></div>
 <div class="row">
     <div class="col-md-12">
@@ -107,6 +109,7 @@
         </div>
     </div>
 </div>
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainAfterAttachments)" />
 <div class="row">
     <div class="col-lg-6">
         <div class="mb-3">
@@ -124,7 +127,7 @@
     </div>
 </div>
 
-@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacement.MainSection, projectId = Model.ProjectId })
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainBottom)" />
 
 <div id="backlog-form-config" class="d-none"
      data-id="@Model.Id"
@@ -145,4 +148,5 @@
      data-reload-url="@Url.Action("ReloadForProject")"
      data-bug-task-type-ids="@Model.BugTaskTypeIds"
      data-rca-clear-msg="@Localize("Backlog.RcaClearOnTypeChangeMsg")"
-     data-similar-url="@Url.Action("SimilarTasks")"></div>
+     data-similar-url="@Url.Action("SimilarTasks")"
+     data-custom-field-url="@Url.Action("UpdateCustomField")"></div>

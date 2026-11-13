@@ -17,5 +17,11 @@ namespace Taskist.Web.Models.Masters
         public int ColumnClass { get; set; }
 
         public int Placement { get; set; }
+
+        public int ResolvedSlot { get; set; }
+
+        public int Index { get; set; }
+
+        public string Value { get; set; } = "";
     }
 }

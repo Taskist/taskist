@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using Taskist.Web.Helpers.Attributes;
@@ -132,6 +133,9 @@ public class BacklogModel : BaseModel
 	public IList<StageDurationChipModel> StageDurations { get; set; } = [];
 
 	public CustomFieldValueModel CustomFieldValue { get; set; }
+
+	[BindNever]
+	public CustomFieldLayoutModel CustomFieldLayout { get; set; } = new();
 
 	public IList<SelectListItem> AvailableProjects { get; set; }
 

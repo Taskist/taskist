@@ -816,6 +816,9 @@ namespace Taskist.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("int");
 
+                    b.Property<int?>("DisplayOrder")
+                        .HasColumnType("int");
+
                     b.Property<int>("FieldType")
                         .HasColumnType("int");
 
@@ -839,6 +842,9 @@ namespace Taskist.Data.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("Slot")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 

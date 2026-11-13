@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
 using Taskist.Core.Enums;
 using Taskist.Core.Extensions;
@@ -299,8 +300,10 @@ public class ProjectController : BaseController
         var model = new CustomFieldModel
         {
             ProjectId = projectId,
-            ProjectName = project.Name
+            ProjectName = project.Name,
+            Slot = (int)BacklogFormSlot.StatusBottom
         };
+        await PrepareCustomFieldSlotsAsync(model);
 
         return PartialView(model);
     }
@@ -310,6 +313,7 @@ public class ProjectController : BaseController
     {
         if (ModelState.IsValid)
         {
+            model.Placement = (int)CustomFieldLayout.SectionOf((BacklogFormSlot)model.Slot!.Value);
             var entity = _mastersMapper.ToEntity(model);
             await _customFieldService.InsertAsync(entity);
 
@@ -335,6 +339,8 @@ public class ProjectController : BaseController
             return NoDataPartial();
 
         var model = _mastersMapper.ToModel(entity);
+        model.Slot = (int)CustomFieldLayout.ResolveSlot(entity.Slot, entity.Placement);
+        await PrepareCustomFieldSlotsAsync(model);
 
         return PartialView(model);
     }
@@ -345,6 +351,15 @@ public class ProjectController : BaseController
         if (ModelState.IsValid)
         {
             var entity = await _customFieldService.GetByIdAsync(model.Id);
+            if (entity == null)
+                return Json(new JsonResponseModel
+                {
+                    Status = HttpStatusCode.NoData,
+                    Message = await _localizationService.GetResourceAsync("FormNoData.Description")
+                });
+
+            model.ProjectId = entity.ProjectId;
+            model.Placement = (int)CustomFieldLayout.SectionOf((BacklogFormSlot)model.Slot!.Value);
             _mastersMapper.Update(model, entity);
 
             await _customFieldService.UpdateAsync(entity);
@@ -442,6 +457,7 @@ public class ProjectController : BaseController
     {
         var data = await _customFieldService.GetPagedListAsync(projectId, request.SearchValue, request.Start,
             request.Length);
+        var slotNames = await GetCustomFieldSlotNamesAsync();
 
         return Json(new
         {
@@ -454,7 +470,8 @@ public class ProjectController : BaseController
                 FieldType = x.FieldType.ToString<FieldType>(),
                 Mandatory = x.Mandatory,
                 ColumnClass = $"{x.ColumnClass} column",
-                Placement = x.Placement.ToString<CustomFieldPlacement>()
+                Placement = slotNames[CustomFieldLayout.ResolveSlot(x.Slot, x.Placement)],
+                DisplayOrder = x.DisplayOrder?.ToString() ?? ""
             }),
             recordsFiltered = data.TotalCount,
             recordsTotal = data.TotalCount
@@ -464,6 +481,36 @@ public class ProjectController : BaseController
     #endregion
 
     #region Helper
+
+    private async Task<Dictionary<BacklogFormSlot, string>> GetCustomFieldSlotNamesAsync()
+    {
+        var names = new Dictionary<BacklogFormSlot, string>();
+        foreach (var slot in Enum.GetValues<BacklogFormSlot>())
+            names[slot] = await _localizationService.GetResourceAsync($"BacklogFormSlot.{slot}");
+
+        return names;
+    }
+
+    private async Task PrepareCustomFieldSlotsAsync(CustomFieldModel model)
+    {
+        var names = await GetCustomFieldSlotNamesAsync();
+        var groups = new Dictionary<CustomFieldPlacement, SelectListGroup>
+        {
+            [CustomFieldPlacement.MainSection] = new() { Name = await _localizationService.GetResourceAsync("BacklogFormSlot.Group.Main") },
+            [CustomFieldPlacement.StatusSection] = new() { Name = await _localizationService.GetResourceAsync("BacklogFormSlot.Group.Status") }
+        };
+
+        model.AvailableSlots = [];
+        foreach (var section in groups.Keys)
+            foreach (var slot in CustomFieldLayout.SlotsIn(section))
+                model.AvailableSlots.Add(new SelectListItem
+                {
+                    Text = names[slot],
+                    Value = ((int)slot).ToString(),
+                    Group = groups[section],
+                    Selected = model.Slot == (int)slot
+                });
+    }
 
     [HttpGet]
     public async Task<IActionResult> ReleaseVersionPreview(int id, string? format, int? fullIncrement)
