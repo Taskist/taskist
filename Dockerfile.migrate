@@ -33,7 +33,7 @@ RUN dotnet ef migrations bundle \
     --output /migrate/efbundle
 
 # ----- runtime -----
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0 AS runtime
 WORKDIR /migrate
 
 # mssql-tools18 provides sqlcmd for the seed scripts; the repository follows the base image's distro
