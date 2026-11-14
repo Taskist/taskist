@@ -3,7 +3,7 @@
 # Applies EF Core migrations and the seed scripts, then exits.
 # Run as an init step before the application container starts.
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /source
 
 RUN dotnet tool install --global dotnet-ef --version 10.*
