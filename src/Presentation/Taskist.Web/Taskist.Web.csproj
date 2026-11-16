@@ -6,7 +6,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Copyright>Copyright © Somaraj N</Copyright>
 		<Authors>Somaraj N</Authors>
-		<Version>1.0</Version>
+		<Version>1.1.0</Version>
 	  <UserSecretsId>01199bcb-272d-480d-bb8e-edc84c23487d</UserSecretsId>
   </PropertyGroup>
 

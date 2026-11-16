@@ -6,6 +6,10 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-16
+
+The first tagged release of Taskist as an open-source project, including single sign-on and two-factor sign-in from the 1.1 roadmap.
+
 ### Added
 
 - **GitHub support** alongside GitLab: multiple Git connections, several repositories per project, webhooks per repository, user accounts connected by token or OAuth, and two-way issue sync. See [docs/git-integration.md](docs/git-integration.md).
@@ -73,4 +77,13 @@ Each release lists **Upgrade notes** when an install needs action beyond the ste
 - The schema was re-baselined into a single `InitialCreate` migration. Databases from earlier releases cannot be upgraded in place — see [UPGRADING.md](UPGRADING.md).
 - Environment variables are no longer prefixed: use `ConnectionStrings__AppContext`, not `TASKIST_ConnectionStrings__AppContext`.
 - The Docker `uploads` volume is no longer used; attachments are stored in the database.
-- New additive migration `AddWikiImage` (one new table, `WikiImage`). Docker applies it automatically; manual installs run `dotnet ef database update` or the regenerated `sql-scripts/01_schema.sql`.
+- New additive migrations, all applied automatically by Docker; manual installs run `dotnet ef database update` or the regenerated `sql-scripts/01_schema.sql`:
+  - `AddWikiImage`: new table `WikiImage`.
+  - `AddUserExternalLogin`: new table `UserExternalLogin` (single sign-on links).
+  - `AddUserTwoFactor`: new tables `UserTwoFactor` and `UserRecoveryCode`.
+  - `AddCustomFieldSlot`: two nullable columns on `CustomField` (`Slot`, `DisplayOrder`); existing values are not changed.
+- Re-run `sql-scripts/03_locale.sql` (Docker does this when `SEED_DATA` is on) so the new sign-in, two-factor and custom field labels appear.
+- Single sign-on, two-factor enforcement for administrators and Sentry are all off until configured.
+
+[Unreleased]: https://github.com/Taskist/taskist/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Taskist/taskist/releases/tag/v1.1.0

@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 		<Copyright>Copyright © Somaraj</Copyright>
 		<Authors>Somaraj N</Authors>
-		<Version>1.0</Version>
+		<Version>1.1.0</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
