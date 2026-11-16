@@ -1,14 +1,12 @@
-﻿namespace Taskist.Core.Common;
+namespace Taskist.Core.Common;
 
 public static class Constant
 {
     #region App
 
-    public static string Prefix => ".WC.BL";
+    public static string Prefix => ".Taskist";
 
-    public static string IsPostBeingDoneRequestItem => "WC.BL.IsPOSTBeingDone";
-
-    public static string CompanyName => "Wise Coders";
+    public static string IsPostBeingDoneRequestItem => "Taskist.IsPOSTBeingDone";
 
     public static string SessionCookie => ".Session";
 
@@ -16,7 +14,7 @@ public static class Constant
 
     #endregion
 
-    #region System employee roles
+    #region System user roles
 
     public static string AdministratorRoleName => "SystemAdministrator";
 
@@ -25,6 +23,8 @@ public static class Constant
     public static string DeveloperRoleName => "Developer";
 
     public static string RepoterRoleName => "Reporter";
+
+    public static string QualityAssuranceRoleName => "QualityAssurance";
 
     public static string LastVisitedPageAttribute => "LastVisitedPage";
 
@@ -44,7 +44,11 @@ public static class Constant
 
     #region Session
 
-    public static string ActiveProjectSession => "ActiveProjectSession";
+    public static string BacklogFilterPresets => "BacklogFilterPresets";
+
+    public static string BacklogVisibleColumns => "BacklogVisibleColumns";
+
+    public static string BacklogGroupByParent => "BacklogGroupByParent";
 
     #endregion
 }

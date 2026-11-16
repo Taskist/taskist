@@ -1,23 +1,7 @@
-﻿@{
-    ViewData["Title"] = Localize("PageNotFound.Title");
-Layout = "~/Views/Shared/_LayoutError.cshtml";
+@{
+    ViewData["Title"] = Localize("EmptyState.NotFound.Title");
+    Layout = "~/Views/Shared/_LayoutError.cshtml";
 }
-
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="clearfix">
-            <div class="text-center mb-3">
-                <img src="~/images/error-404.png" alt="Backlog" class="img-fluid" />
-            </div>
-            <p class="text-body-secondary text-center">
-                @Localize("PageNotFound.Description")
-            </p>
-            <div class="text-center">
-                <a href="~/" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i>
-                    @Localize("Home.Menu")
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+<wp-empty-state icon="fas fa-map-signs" size="page" tone="info" heading="@Localize("EmptyState.NotFound.Title").Text" text="@Localize("EmptyState.NotFound.Text").Text"
+    action-text="@Localize("EmptyState.GoDashboard").Text" action-icon="fas fa-house" action-url="@Url.Content("~/")"
+    secondary-text="@Localize("EmptyState.GoBack").Text" secondary-class="js-history-back"></wp-empty-state>

@@ -1,0 +1,31 @@
+@model BoardColumnsModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+<form id="boardColumnsForm" asp-action="SaveColumns" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">
+    <input type="hidden" name="project" value="@Model.ProjectId" />
+
+    <p class="text-muted small">@Localize("Board.ColumnsHint").Text</p>
+
+    <label class="form-check border-bottom pb-2 mb-2">
+        <input class="form-check-input" type="checkbox" id="boardColsAll" />
+        <span class="form-check-label fw-semibold">@Localize("Board.SelectAll").Text</span>
+    </label>
+
+    <div class="mb-3">
+        @foreach (var option in Model.Options)
+        {
+            <label class="form-check">
+                <input class="form-check-input board-col-opt" type="checkbox" name="statusIds" value="@option.StatusId" checked="@option.Selected" />
+                <span class="form-check-label">@option.Name</span>
+            </label>
+        }
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary no-ladda"><i class="fas fa-save me-1"></i>@Localize("Button.Save")</button>
+        <button type="button" id="btnBoardShowAll" class="btn btn-outline-secondary no-ladda"><i class="fas fa-list me-1"></i>@Localize("Board.ShowAll").Text</button>
+        <button type="button" class="btn btn-secondary no-ladda" data-bs-dismiss="offcanvas"><i class="fas fa-ban me-1"></i>@Localize("Button.Cancel").Text</button>
+    </div>
+</form>

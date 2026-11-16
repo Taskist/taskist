@@ -1,0 +1,142 @@
+@using Taskist.Core.Dtos.Git
+@model MyCodeViewModel
+@{
+	var code = Model.Code;
+	var now = DateTime.UtcNow;
+
+	string StatusLabel(string s) => s switch
+	{
+		ReviewMergeStatus.Mergeable => Localize("ReviewStatus.Mergeable").Text,
+		ReviewMergeStatus.Conflict => Localize("ReviewStatus.Conflict").Text,
+		ReviewMergeStatus.Draft => Localize("ReviewStatus.Draft").Text,
+		ReviewMergeStatus.NeedsRebase => Localize("ReviewStatus.NeedsRebase").Text,
+		ReviewMergeStatus.Checking => Localize("ReviewStatus.Checking").Text,
+		ReviewMergeStatus.NotChecked => Localize("ReviewStatus.NotChecked").Text,
+		ReviewMergeStatus.Blocked => Localize("ReviewStatus.Blocked").Text,
+		_ => Localize("ReviewStatus.Other").Text
+	};
+	string Age(DateTime utc)
+	{
+		var span = now - DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+		if (span.TotalMinutes < 0) span = TimeSpan.Zero;
+		return span.TotalHours < 1 ? $"{Math.Max(1, (int)span.TotalMinutes)}m"
+			: span.TotalDays < 1 ? $"{(int)span.TotalHours}h"
+			: $"{(int)span.TotalDays}d";
+	}
+}
+
+@if (code.State == MyCodeState.NotConfigured)
+{
+	<wp-empty-state icon="fas fa-code-branch" size="compact" text="@Localize("EmptyState.Git.ShortText").Text"
+		action-text="@Localize("EmptyState.Git.Action").Text" action-url="@Url.Action("Index", "GitConnection")" action-permission="ManageGitConnections"
+		no-permission-text="@Localize("EmptyState.Git.AskAdmin").Text"></wp-empty-state>
+}
+else if (code.State == MyCodeState.NotConnected)
+{
+	<wp-empty-state icon="fas fa-plug" size="compact" text="@Localize("EmptyState.Git.ConnectText").Text"
+		action-text="@Localize("ReviewPage.Connect.Button").Text" action-icon="fas fa-plug" action-url="@Url.Action("Index", "Profile", null, null, null, "git")"></wp-empty-state>
+}
+else if (code.State == MyCodeState.Unreachable)
+{
+	<wp-empty-state icon="fas fa-triangle-exclamation" size="compact" tone="danger" text="@(code.Error ?? Localize("EmptyState.Git.Unreachable").Text)"></wp-empty-state>
+}
+else if (code.IsEmpty)
+{
+	<wp-empty-state icon="fas fa-mug-hot" size="compact" heading="@Localize("EmptyState.Reviews.Empty.Title").Text" text="@Localize("MyCode.Empty").Text"></wp-empty-state>
+}
+else
+{
+	<div class="my-code__cols">
+		<section class="my-code__col">
+			<div class="my-code__label">@Localize("MyCode.Authored") <span class="my-code__count">@code.Authored.Count</span></div>
+			@if (!code.Authored.Any())
+			{
+				<div class="my-code__none">@Localize("MyCode.NoAuthored")</div>
+			}
+			@foreach (var mr in code.Authored)
+			{
+				<div class="my-code__row">
+					<span class="my-code__status my-code__status--@mr.Status" title="@StatusLabel(mr.Status)"></span>
+					<div class="my-code__main">
+						<a class="my-code__title" href="@mr.WebUrl" target="_blank" rel="noopener" title="@mr.Title">@mr.Title</a>
+						<div class="my-code__meta">
+							<span>@(mr.RefPrefix)@mr.Iid</span>
+							<span>@StatusLabel(mr.Status)</span>
+							<span>@(mr.ReviewerNames.Any() ? string.Join(", ", mr.ReviewerNames) : Localize("MyCode.NoReviewer").Text)</span>
+							@if (mr.NotesCount > 0)
+							{
+								<span><i class="far fa-comment me-1"></i>@mr.NotesCount</span>
+							}
+							<span>@Age(mr.UpdatedAt)</span>
+						</div>
+					</div>
+					@foreach (var id in mr.TaskIds.Take(2))
+					{
+						<a class="my-code__task" href="@Url.Action("Edit", "Backlog", new { id })">#@id</a>
+					}
+				</div>
+			}
+		</section>
+
+		<section class="my-code__col">
+			<div class="my-code__label">
+				@Localize("MyCode.Reviewing") <span class="my-code__count">@code.Reviewing.Count</span>
+				@if (Model.CanReview)
+				{
+					<a class="my-code__more" href="@Url.Action("Index", "Review")">@Localize("MyCode.OpenQueue") <i class="fas fa-arrow-right ms-1"></i></a>
+				}
+			</div>
+			@if (!code.Reviewing.Any())
+			{
+				<div class="my-code__none">@Localize("MyCode.NoReviewing")</div>
+			}
+			@foreach (var mr in code.Reviewing)
+			{
+				<div class="my-code__row">
+					<span class="my-code__status my-code__status--@mr.Status" title="@StatusLabel(mr.Status)"></span>
+					<div class="my-code__main">
+						<a class="my-code__title" href="@mr.WebUrl" target="_blank" rel="noopener" title="@mr.Title">@mr.Title</a>
+						<div class="my-code__meta">
+							<span>@(mr.RefPrefix)@mr.Iid</span>
+							<span>@mr.AuthorName</span>
+							<span>@StatusLabel(mr.Status)</span>
+							<span>@Age(mr.UpdatedAt)</span>
+						</div>
+					</div>
+					@foreach (var id in mr.TaskIds.Take(2))
+					{
+						<a class="my-code__task" href="@Url.Action("Edit", "Backlog", new { id })">#@id</a>
+					}
+				</div>
+			}
+		</section>
+
+		@if (code.Branches.Any())
+		{
+			<section class="my-code__col">
+				<div class="my-code__label">@Localize("MyCode.Branches") <span class="my-code__count">@code.Branches.Count</span></div>
+				@foreach (var b in code.Branches)
+				{
+					<div class="my-code__row">
+						<span class="my-code__status my-code__status--branch"></span>
+						<div class="my-code__main">
+							<span class="my-code__title my-code__title--branch" title="@b.Name">@b.Name</span>
+							<div class="my-code__meta">
+								<span>@b.ProjectName</span>
+								<a href="@Url.Action("Edit", "Backlog", new { id = b.TaskId })">#@b.TaskId@(b.TaskCount > 1 ? $" +{b.TaskCount - 1}" : "")</a>
+								<span>@Age(b.CreatedOn)</span>
+							</div>
+						</div>
+						<button type="button" class="btn btn-sm my-code__create-mr" data-task-id="@b.TaskId" data-branch-id="@b.BranchId">
+							<i class="fas fa-code-pull-request me-1"></i>@Localize("Backlog.Mr.Create")
+						</button>
+					</div>
+				}
+			</section>
+		}
+	</div>
+}
+@if (code.State == MyCodeState.Ok)
+{
+	<div class="my-code__foot">@string.Format(Localize("MyCode.LoadedAt").Text, code.LoadedOn.ToLocalTime().ToString("HH:mm"))</div>
+}

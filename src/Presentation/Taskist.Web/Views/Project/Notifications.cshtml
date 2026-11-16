@@ -1,0 +1,68 @@
+@model ProjectModel
+
+<div class="alert alert-info small py-2">
+    <i class="fas fa-circle-info me-1"></i>@Localize("ProjectNotificationChannelModel.Intro")
+</div>
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "ProjectNotificationGrid",
+    Title = $"{Localize("ProjectNotificationChannelModel.Title").Text} · {Model.Name}",
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("DataReadNotification", new { projectId = Model.Id }),
+    Sorting = false,
+    AddButtonToHeader = true,
+    HeaderActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.AddNew").Text,
+            Url = Url.Action("AddNotification", new { projectId = Model.Id }),
+            Text = Localize("Button.AddNew").Text,
+            Icon = "fas fa-plus",
+            HyperLinkType = HyperLinkType.BUTTON_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-6 col-md-8 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.Edit").Text,
+            Url = Url.Action("EditNotification"),
+            Text = Localize("Button.Edit").Text,
+            Icon = "far fa-edit",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-6 col-md-8 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("Button.Delete").Text,
+            Url = Url.Action("DeleteNotification"),
+            Text = Localize("Button.Delete").Text,
+            AuxText = Localize("Button.Cancel").Text,
+            Icon = "fas fa-trash",
+            ReferenceParameter = "Id",
+            DeleteConfirmBox = true,
+            DeleteConfirmBoxMsg = Localize("Confirmation.Delete").Text,
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("ProjectNotificationGrid.Channel").Text, DataColumn = "Channel" },
+        new ColumnModel { Title = Localize("ProjectNotificationGrid.Type").Text, DataColumn = "Type" },
+        new ColumnModel { Title = Localize("ProjectNotificationGrid.Events").Text, DataColumn = "Events" },
+        new ColumnModel { Title = Localize("ProjectNotificationGrid.Active").Text, DataColumn = "Active", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+        }}
+    }
+})

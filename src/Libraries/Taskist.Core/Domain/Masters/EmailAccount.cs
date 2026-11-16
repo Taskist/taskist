@@ -2,7 +2,7 @@ using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Masters;
 
-public class EmailAccount : BaseEntity
+public class EmailAccount : BaseEntity, IAuditableEntity
 {
 	public string Name { get; set; }
 
@@ -14,6 +14,8 @@ public class EmailAccount : BaseEntity
 
 	public int Port { get; set; }
 
+	[NotAudited]
+	[Encrypted]
 	public string Password { get; set; }
 
 	public bool EnableSsl { get; set; }

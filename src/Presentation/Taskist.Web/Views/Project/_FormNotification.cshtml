@@ -1,0 +1,32 @@
+@model ProjectNotificationChannelModel
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="ProjectId" />
+<div class="validation-errors"></div>
+@if (!Model.AvailableChannels.Any())
+{
+    <div class="alert alert-warning small py-2"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("ProjectNotificationChannelModel.NoChannels")</div>
+}
+<div class="mb-3">
+    <wc-label asp-for="NotificationChannelId" />
+    <select asp-for="NotificationChannelId" asp-items="Model.AvailableChannels" class="form-control">
+        <option value="0">@Localize("ProjectNotificationChannelModel.SelectChannel")</option>
+    </select>
+    <span asp-validation-for="NotificationChannelId" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <wc-label asp-for="Events" />
+    @foreach (var item in Model.AvailableEvents)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="Events" value="@item.Value" id="event_@item.Value" checked="@item.Selected" />
+            <label class="form-check-label" for="event_@item.Value">@item.Text</label>
+        </div>
+    }
+    <span asp-validation-for="Events" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <label class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="Active" />
+        <wc-label asp-for="Active" />
+    </label>
+</div>

@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
 using Taskist.Web.Helpers.Attributes;
 using Taskist.Web.Models.Common;
+using System.ComponentModel.DataAnnotations;
 
 namespace Taskist.Web.Models.Masters;
 
@@ -20,7 +20,7 @@ public class EmailAccountModel : BaseModel
 	[LocalizedDisplayName("EmailAccountModel.UserName")]
 	public string UserName { get; set; }
 
-	[DataType(DataType.Password)]
+	[DataType(System.ComponentModel.DataAnnotations.DataType.Password)]
 	[LocalizedDisplayName("EmailAccountModel.Password")]
 	public string Password { get; set; }
 
@@ -33,7 +33,7 @@ public class EmailAccountModel : BaseModel
 	[LocalizedDisplayName("EmailAccountModel.EnableSsl")]
 	public bool EnableSsl { get; set; }
 
-	[DataType(DataType.EmailAddress)]
+	[DataType(System.ComponentModel.DataAnnotations.DataType.EmailAddress)]
 	[LocalizedDisplayName("EmailAccountModel.FromEmail")]
 	public string FromEmail { get; set; }
 

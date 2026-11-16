@@ -1,6 +1,10 @@
-﻿@model CustomFieldModel
+@model CustomFieldModel
 @{
     Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/pages/masters/custom-field-form.js" asp-append-version="true"></script>
 }
 
 <form asp-action="EditCustomField" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete">

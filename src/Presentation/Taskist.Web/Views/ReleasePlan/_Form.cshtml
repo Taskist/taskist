@@ -1,0 +1,101 @@
+@model ReleaseModel
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="mb-3 release-version-field" data-check-url="@Url.Action("CheckVersion", "ReleasePlan")"
+             data-mismatch-text="@Localize("ReleaseModel.Name.FormatMismatch").Text"
+             data-exists-text="@Localize("ReleaseModel.Name.UniqueScopeMsg").Text">
+            <wc-label asp-for="Name" />
+            @if (Model.Id > 0)
+            {
+                <input asp-for="Name" class="form-control form-control-maxlength release-version-input" autocomplete="off" maxlength="100" />
+            }
+            else
+            {
+                <input type="hidden" asp-for="VersionAuto" value="@(Model.VersionAuto ? "true" : "false")" />
+                <div class="input-group release-version @(Model.VersionAuto ? "is-auto" : "")"
+                     data-next-url="@Url.Action("NextVersion", "ReleasePlan")"
+                     data-auto-text="@Localize("ReleaseModel.Name.AutoHint").Text"
+                     data-manual-text="@Localize("ReleaseModel.Name.ManualHint").Text"
+                     data-project-text="@Localize("ReleaseModel.Name.ProjectFormat").Text"
+                     data-default-text="@Localize("ReleaseModel.Name.DefaultFormat").Text">
+                    <input asp-for="Name" class="form-control release-version-input" autocomplete="off" maxlength="100" />
+                    <button type="button" class="btn btn-outline-secondary release-version-auto" title="@Localize("ReleaseModel.Name.AutoTooltip").Text"
+                            aria-label="@Localize("ReleaseModel.Name.AutoTooltip").Text">
+                        <i class="fas fa-wand-magic-sparkles"></i>
+                    </button>
+                </div>
+                <div class="form-text release-version-hint">
+                    <span class="release-version-mode">@(Model.VersionAuto ? Localize("ReleaseModel.Name.AutoHint").Text : Localize("ReleaseModel.Name.ManualHint").Text)</span>
+                    · <span class="release-version-scope">@Localize("ReleaseModel.Name.DefaultFormat").Text</span>
+                    <code class="release-version-format">@Model.VersionFormat</code>
+                </div>
+            }
+            <div class="release-version-warning small mt-1" hidden></div>
+            <span asp-validation-for="Name" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="ReleaseType" />
+            <select asp-for="ReleaseType" asp-items="Html.GetEnumSelectList<ReleaseType>()" class="form-control select2"></select>
+            <span asp-validation-for="ReleaseType" class="text-danger"></span>
+        </div>
+    </div>
+    @if (Model.Id <= 0)
+    {
+        <div class="col-md-12 release-patch-base" data-patch-type="@((int)ReleaseType.Patch)" hidden="@(Model.ReleaseType != (int)ReleaseType.Patch)">
+            <div class="mb-3">
+                <wc-label asp-for="BaseReleaseId" />
+                <select asp-for="BaseReleaseId" asp-items="Model.AvailableBaseReleases" class="form-control select2" data-width="100%">
+                    <option value="">@Localize("ReleaseModel.BaseReleaseId.Latest").Text</option>
+                </select>
+            </div>
+        </div>
+    }
+    <div class="col-md-12">
+        <div class="mb-3">
+            <wc-label asp-for="Description" />
+            <input asp-for="Description" class="form-control form-control-maxlength" autocomplete="off" maxlength="250" />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-12">
+        <div class="mb-3 release-project-scope">
+            <wc-label asp-for="AllProjects" />
+            <div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="AllProjects" id="AllProjectsYes" value="true" checked="@Model.AllProjects" />
+                    <label class="form-check-label" for="AllProjectsYes">@Localize("ReleaseModel.ProjectScope.All")</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="AllProjects" id="AllProjectsNo" value="false" checked="@(!Model.AllProjects)" />
+                    <label class="form-check-label" for="AllProjectsNo">@Localize("ReleaseModel.ProjectScope.Specific")</label>
+                </div>
+            </div>
+        </div>
+        <div class="mb-3 release-project-picker @(Model.AllProjects ? "d-none" : "")">
+            <wc-label asp-for="SelectedProjectIds" />
+            <select asp-for="SelectedProjectIds" asp-items="Model.AvailableProjects" class="form-control select2" multiple="multiple"
+                    data-width="100%" data-placeholder="@Localize("ReleaseModel.SelectedProjectIds")"></select>
+            <span asp-validation-for="SelectedProjectIds" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="ReleaseDate" />
+            <input asp-for="ReleaseDate" class="form-control datepicker-from" autocomplete="off" />
+            <span asp-validation-for="ReleaseDate" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="Status" />
+            <select asp-for="Status" asp-items="Html.GetEnumSelectList<ReleaseStatus>()" class="form-control select2"></select>
+            <span asp-validation-for="Status" class="text-danger"></span>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,129 @@
+@model ReviewIndexModel
+@{
+	ViewData["Title"] = Localize("ReviewPage.Title");
+}
+
+@section PageStyles {
+	<link rel="stylesheet" href="~/css/pages/review.css" asp-append-version="true" />
+}
+
+@section PageScripts {
+	<script src="~/js/pages/review/review-queue.js" asp-append-version="true"></script>
+	<script src="~/js/pages/review/review-drawer.js" asp-append-version="true"></script>
+	<script src="~/js/pages/review/branch-cleanup.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="review-page" id="reviewPage"
+	 data-queue-url="@Url.Action("Queue")"
+	 data-detail-url="@Url.Action("Detail")"
+	 data-label-all-projects="@Localize("ReviewPage.Filter.AllProjects").Text"
+	 data-label-all-targets="@Localize("ReviewPage.Filter.AllTargets").Text"
+	 data-label-all-authors="@Localize("ReviewPage.Filter.AllAuthors").Text"
+	 data-label-group-open="@Localize("ReviewPage.Group.Open").Text"
+	 data-label-group-ready="@Localize("ReviewPage.Group.Ready").Text"
+	 data-label-group-conflict="@Localize("ReviewPage.Group.Conflict").Text"
+	 data-label-group-unassigned="@Localize("ReviewPage.Group.NoReviewer").Text"
+	 data-label-expand-all="@Localize("ReviewPage.Group.ExpandAll").Text"
+	 data-label-collapse-all="@Localize("ReviewPage.Group.CollapseAll").Text"
+	 data-label-review="@Localize("ReviewPage.Action.Review").Text">
+
+	@if (!Model.GitConfigured)
+	{
+		<wp-empty-state icon="fas fa-code-branch" heading="@Localize("EmptyState.Git.Title").Text" text="@Localize("EmptyState.Git.Text").Text"
+			action-text="@Localize("EmptyState.Git.Action").Text" action-url="@Url.Action("Index", "GitConnection")" action-permission="ManageGitConnections"
+			no-permission-text="@Localize("EmptyState.Git.AskAdmin").Text">
+			<ol class="wp-empty__steps">
+				<li>@Localize("EmptyState.Git.Step1").Text</li>
+				<li>@Localize("EmptyState.Git.Step2").Text</li>
+				<li>@Localize("EmptyState.Git.Step3").Text</li>
+			</ol>
+		</wp-empty-state>
+	}
+	else
+	{
+		foreach (var c in Model.Connections.Where(x => !x.Connected || x.Expired))
+		{
+			<div class="review-connect-banner">
+				<i class="fab @(c.ProviderType == (int)Taskist.Core.Enums.GitProviderType.GitHub ? "fa-github" : "fa-gitlab")"></i>
+				<div class="flex-grow-1">
+					<div class="fw-semibold">@(c.Expired ? Localize("ReviewPage.Connect.ExpiredTitle").Text : Localize("ReviewPage.Connect.Title").Text) · @c.ConnectionName</div>
+					<div class="small">@Localize("ReviewPage.Connect.Text")</div>
+				</div>
+				<a href="@Url.Action("Index", "Profile", null, null, null, "git")" class="btn btn-sm btn-primary"><i class="fas fa-plug me-1"></i>@Localize("ReviewPage.Connect.Button")</a>
+			</div>
+		}
+		foreach (var c in Model.Connections.Where(x => x.Connected && !x.Expired && x.ExpiringSoon))
+		{
+			<div class="alert alert-warning py-2 small"><i class="fas fa-hourglass-half me-1"></i>@c.ConnectionName: @Localize("ReviewPage.Connect.ExpiringSoon") @c.ExpiresOn?.ToString("dd-MMM-yyyy")</div>
+		}
+	}
+
+	@if (Model.GitConfigured && Model.ProjectCount == 0)
+	{
+		<wp-empty-state icon="fas fa-user-check" heading="@Localize("EmptyState.Reviews.NoProjects.Title").Text" text="@Localize("ReviewPage.NoProjects").Text"></wp-empty-state>
+	}
+	else if (Model.GitConfigured)
+	{
+		<div class="review-tiles">
+			<button type="button" class="review-tile review-tile--waiting" data-tile="waiting">
+				<span class="review-tile__count" data-count="waiting">–</span>
+				<span class="review-tile__label"><i class="fas fa-hourglass-half me-1"></i>@Localize("ReviewPage.Tile.Waiting")</span>
+			</button>
+			<button type="button" class="review-tile review-tile--ready" data-tile="mergeable">
+				<span class="review-tile__count" data-count="mergeable">–</span>
+				<span class="review-tile__label"><i class="fas fa-circle-check me-1"></i>@Localize("ReviewPage.Tile.Ready")</span>
+			</button>
+			<button type="button" class="review-tile review-tile--conflict" data-tile="conflict">
+				<span class="review-tile__count" data-count="conflict">–</span>
+				<span class="review-tile__label"><i class="fas fa-code-compare me-1"></i>@Localize("ReviewPage.Tile.Conflicts")</span>
+			</button>
+			<button type="button" class="review-tile review-tile--stale" data-tile="stale">
+				<span class="review-tile__count" data-count="stale">–</span>
+				<span class="review-tile__label"><i class="fas fa-clock-rotate-left me-1"></i>@Localize("ReviewPage.Tile.Stale")</span>
+			</button>
+		</div>
+
+		<div class="card">
+			<div class="card-header review-toolbar">
+				<div class="btn-group btn-group-sm review-views" role="group">
+					<button type="button" class="btn btn-outline-primary active" data-view="mine">@Localize("ReviewPage.View.Mine")</button>
+					<button type="button" class="btn btn-outline-primary" data-view="lead">@Localize("ReviewPage.View.Lead")</button>
+					<button type="button" class="btn btn-outline-primary" data-view="all">@Localize("ReviewPage.View.All")</button>
+				</div>
+				<select class="form-select form-select-sm review-filter" data-filter="project"></select>
+				<select class="form-select form-select-sm review-filter" data-filter="target"></select>
+				<select class="form-select form-select-sm review-filter" data-filter="author"></select>
+				<button type="button" class="btn btn-sm review-chip-toggle" data-toggle-filter="unassigned"><i class="fas fa-user-slash me-1"></i>@Localize("ReviewPage.Filter.NoReviewer")</button>
+				<input type="search" class="form-control form-control-sm review-search" placeholder="@Localize("ReviewPage.Search").Text" />
+				<span class="review-tile-filter d-none"><span class="review-tile-filter__text"></span> <button type="button" class="btn-close btn-close-sm" aria-label="Clear"></button></span>
+				<button type="button" class="btn btn-link btn-sm review-clear-filters d-none"><i class="fas fa-filter-circle-xmark me-1"></i>@Localize("ReviewPage.ClearFilters") (<span class="review-clear-count">0</span>)</button>
+				<div class="ms-auto d-flex align-items-center gap-2">
+					<select class="form-select form-select-sm review-sort" title="@Localize("ReviewPage.Sort").Text">
+						<option value="updated">@Localize("ReviewPage.Sort.Updated")</option>
+						<option value="oldest">@Localize("ReviewPage.Sort.Oldest")</option>
+						<option value="project">@Localize("ReviewPage.Sort.Project")</option>
+					</select>
+					<button type="button" class="btn btn-sm btn-outline-secondary review-group-expand d-none"><i class="fas fa-angles-up"></i></button>
+					<button type="button" class="btn btn-sm btn-outline-secondary review-group-toggle" title="@Localize("ReviewPage.GroupByProject").Text" aria-pressed="false"><i class="fas fa-layer-group"></i></button>
+					@if (Model.UnlinkedBranchCount > 0)
+					{
+						<button type="button" class="btn btn-sm btn-outline-warning js-branch-panel" data-url="@Url.Action("UnlinkedBranches")" data-loading="@Localize("Backlog.UnlinkedBranches.Loading").Text" data-title="@Localize("Backlog.UnlinkedBranches.Title").Text" title="@Localize("Backlog.UnlinkedBranches.Title").Text"><i class="fas fa-code-branch me-1"></i><span class="d-none d-lg-inline">@Localize("Backlog.UnlinkedBranches.Button") </span><span class="badge bg-warning text-dark">@Model.UnlinkedBranchCount</span></button>
+					}
+					@if (Model.CanCleanupBranches)
+					{
+						<button type="button" class="btn btn-sm btn-outline-secondary js-branch-panel" data-url="@Url.Action("BranchCleanup")" data-loading="@Localize("Backlog.Cleanup.Loading").Text" data-title="@Localize("Backlog.Cleanup.Title").Text" title="@Localize("Backlog.Cleanup.Title").Text"><i class="fas fa-broom me-1"></i><span class="d-none d-lg-inline">@Localize("Backlog.Cleanup.Button")</span></button>
+					}
+					<button type="button" class="btn btn-sm btn-outline-danger review-check-conflicts" data-url="@Url.Action("CheckConflicts")" data-result="@Localize("ReviewPage.CheckConflicts.Result").Text" title="@Localize("ReviewPage.CheckConflicts.Hint").Text"><i class="fas fa-code-compare me-1"></i><span class="d-none d-lg-inline">@Localize("ReviewPage.CheckConflicts")</span></button>
+					<button type="button" class="btn btn-sm btn-secondary review-refresh" title="@Localize("ReviewPage.Refresh").Text"><i class="fas fa-rotate-right"></i></button>
+				</div>
+			</div>
+			<div class="card-body p-0">
+				<div id="reviewQueue" class="review-queue">
+					<div class="review-loading"><i class="fas fa-spinner fa-spin me-1"></i>@Localize("ReviewPage.Loading")</div>
+				</div>
+			</div>
+		</div>
+	}
+</div>

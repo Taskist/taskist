@@ -1,24 +1,42 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Masters;
 
-public class Status : BaseEntity, ISoftDeletedEntity
+public class Status : BaseEntity, ISoftDeletedEntity, IAuditableEntity
 {
-    public string Name { get; set; }
+	public string Name { get; set; }
 
-    public string? Description { get; set; }
+	public string? Description { get; set; }
 
-    public int GroupId { get; set; }
+	public int GroupId { get; set; }
 
-    public string? TextColor { get; set; }
+	public int? ProjectId { get; set; }
 
-    public string? BackgroundColor { get; set; }
+	public string? TextColor { get; set; }
 
-    public string? IconClass { get; set; }
+	public string? BackgroundColor { get; set; }
 
-    public bool SystemDefined { get; set; }
+	public string? IconClass { get; set; }
 
-    public bool Active { get; set; }
+	public bool RequiredRootCauseForBug { get; set; }
 
-    public bool Deleted { get; set; }
+	public bool RequiredRootCauseForCr { get; set; }
+
+	public bool RequiredResolutionForBug { get; set; }
+
+	public bool RequiredResolutionForCr { get; set; }
+
+	public bool RequiredMrNumberForBug { get; set; }
+
+	public bool RequiredMrNumberForCr { get; set; }
+
+	public bool SystemDefined { get; set; }
+
+	public bool ExternalUse { get; set; }
+
+	public bool Active { get; set; }
+
+	public bool Deleted { get; set; }
+
+	public virtual Project Project { get; set; }
 }

@@ -1,0 +1,46 @@
+@using Taskist.Web.Models.Logging
+@model AuditDetailModel
+
+<div class="audit-detail">
+    <div class="audit-detail-head">
+        <div><span class="audit-detail-action">@Model.Action</span> <strong>@Model.Entity@(Model.EntityId.HasValue ? " #" + Model.EntityId : "")</strong></div>
+        <div class="text-muted small">@Model.User · @Model.When.ToString("dd-MMM-yyyy HH:mm:ss")@(string.IsNullOrWhiteSpace(Model.Ip) ? "" : " · " + Model.Ip)</div>
+    </div>
+
+    @if (!Model.Changes.Any())
+    {
+        <div class="text-muted py-3">@Localize("Log.NoChanges").Text</div>
+    }
+    else
+    {
+        <div class="table-responsive mt-2">
+            <table class="table table-sm align-middle audit-diff">
+                <thead>
+                    <tr>
+                        <th>@Localize("Log.Field").Text</th>
+                        <th>@Localize("Log.OldValue").Text</th>
+                        <th>@Localize("Log.NewValue").Text</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Changes)
+                    {
+                        <tr class="@(c.Changed ? "audit-diff--changed" : "")">
+                            <td class="audit-diff-field">@c.Field</td>
+                            <td class="audit-diff-old">@(string.IsNullOrEmpty(c.Old) ? "—" : c.Old)</td>
+                            <td class="audit-diff-new">@(string.IsNullOrEmpty(c.New) ? "—" : c.New)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <details class="audit-raw mt-2">
+        <summary class="text-primary">@Localize("Log.ViewRaw").Text</summary>
+        <div class="text-muted small mt-1">@Localize("Log.OldValue").Text</div>
+        <pre>@Model.OldRaw</pre>
+        <div class="text-muted small">@Localize("Log.NewValue").Text</div>
+        <pre>@Model.NewRaw</pre>
+    </details>
+</div>

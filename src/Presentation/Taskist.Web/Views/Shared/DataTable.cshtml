@@ -1,7 +1,6 @@
 @using System.Text
-@using Taskist.Web.Helpers.Razor
-@using Taskist.Web.Models.Datatable
 @model DataTableModel
+@inject GeneralSettings GeneralSettings
 @{
 
     var sbActions = new StringBuilder();
@@ -11,6 +10,17 @@
     var headerJson = Json.Serialize(Model.HeaderActions);
     var filterParameters = Json.Serialize(Model.FilterParameters);
     var buttonElement = Model.AddButtonToHeader ? $"header_{@gridName}" : "pageButtons";
+    var selectButtonElement = $"selectHeader_{gridName}";
+
+    var pageLength = GeneralSettings.ItemsPerPage > 0 ? GeneralSettings.ItemsPerPage : 10;
+    var defaultSortIndex = string.IsNullOrEmpty(Model.DefaultSortColumn) ? -1 : Model.Columns.ToList().FindIndex(c => c.DataColumn == Model.DefaultSortColumn);
+    if (defaultSortIndex >= 0 && Model.Selectable)
+        defaultSortIndex++;
+    var defaultSortDirection = string.Equals(Model.DefaultSortDirection, "asc", StringComparison.OrdinalIgnoreCase) ? "asc" : "desc";
+    var lengthOptions = new List<int> { 10, 25, 50, 100 };
+    if (!lengthOptions.Contains(pageLength))
+        lengthOptions.Add(pageLength);
+    lengthOptions = lengthOptions.Distinct().OrderBy(x => x).ToList();
 }
 
 @if (!Model.RenderOnlyTable)
@@ -18,6 +28,9 @@
     <div class="card card-datatable">
         @if (Model.AddButtonToHeader) {
             <div class="card-header text-end" id="header_@gridName"></div>
+        }
+        @if (Model.Selectable) {
+            <div class="card-header text-start" id="@selectButtonElement"></div>
         }
         <div class="card-body">
             <table class="table table-sm table-bordered text-nowrap" style="width:100%" id="@gridName"></table>
@@ -33,41 +46,47 @@
             if (!string.IsNullOrEmpty(action.Url))
             {
                 var url = action.Url;
-                if (action.NavigationType != NavigationTypeEnum.STANDARD)
+                if (action.NavigationType == NavigationType.MODAL)
+                {
+                    url = string.IsNullOrEmpty(action.ModalSize)
+                        ? $"javascript:JSManager.openForm('{url}','{Model.Title}');"
+                        : $"javascript:JSManager.openForm('{url}','{Model.Title}','{action.ModalSize}');";
+                }
+                else if (action.NavigationType == NavigationType.OFFCANVAS)
                 {
                     url = $"javascript:JSManager.openOffCanvas('{url}','{Model.Title}');";
                 }
-                if (action.HyperLinkType == HyperLinkTypeEnum.BUTTON_ICON)
+                if (action.HyperLinkType == HyperLinkType.BUTTON_ICON)
                 {
                     <script>
                         $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"btn @btnClass me-2\"><i class=\"@action.Icon\"></i></a>');
                     </script>
                 }
-                else if (action.HyperLinkType == HyperLinkTypeEnum.BUTTON_TEXT)
+                else if (action.HyperLinkType == HyperLinkType.BUTTON_TEXT)
                 {
                     <script>
                         $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"btn @btnClass me-2\">@action.Text</a>');
                     </script>
                 }
-                else if (action.HyperLinkType == HyperLinkTypeEnum.BUTTON_TEXT_ICON)
+                else if (action.HyperLinkType == HyperLinkType.BUTTON_TEXT_ICON)
                 {
                     <script>
                         $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"btn @btnClass me-2\"><i class=\"@action.Icon\ me-1"></i>@action.Text</a>');
                     </script>
                 }
-                else if (action.HyperLinkType == HyperLinkTypeEnum.HYPERLINK_TEXT)
+                else if (action.HyperLinkType == HyperLinkType.HYPERLINK_TEXT)
                 {
                     <script>
                         $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\">@action.Text</a>');
                     </script>
                 }
-                else if (action.HyperLinkType == HyperLinkTypeEnum.HYPERLINK_ICON)
+                else if (action.HyperLinkType == HyperLinkType.HYPERLINK_ICON)
                 {
                     <script>
                         $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\"><i class=\"@action.Icon\"></i></a>');
                     </script>
                 }
-                else if (action.HyperLinkType == HyperLinkTypeEnum.HYPERLINK_TEXT_ICON)
+                else if (action.HyperLinkType == HyperLinkType.HYPERLINK_TEXT_ICON)
                 {
                     <script>
                         $('#@buttonElement').append('<a id="@action.Id" href=\"@url\" class=\"me-2\"><i class=\"@action.Icon me-1\"></i>@action.Text</a>');
@@ -98,9 +117,14 @@ else
             autoWidth: false,
             filter: false,
             lengthChange: @Model.LengthChange.ToString().ToLower(),
-            pageLength: 10,
+            pageLength: @pageLength,
+            lengthMenu: [@string.Join(", ", lengthOptions)],
             searching: @Model.Searching.ToString().ToLower(),
             ordering: @Model.Sorting.ToString().ToLower(),
+            @if (defaultSortIndex >= 0)
+            {
+                @Html.Raw($"order: [[{defaultSortIndex}, '{defaultSortDirection}']],")
+            }
             initComplete: function (settings, json) {
                 var jsonArr = JSON.parse('@Html.Raw(headerJson)');
                 for (var i = 0; i < jsonArr.length; i++) {
@@ -145,9 +169,17 @@ else
                 }
             },
             columns: [
+                @if (Model.Selectable)
+                {
+                    @Html.Raw($"{{title:'<input type=\"checkbox\" class=\"form-check-input\" id=\"selectAll_{gridName}\" />',orderable: false,searchable: false,className:'text-center',render: function(data, type, row) {{return DataTable.RenderSelect(row,'{Model.SelectionKey}','{Model.SelectionActableKey}');}}}},")
+                }
                 @foreach (var column in Model.Columns)
                 {
-                    if (column.Conditions.Any())
+                    if (column.IsDayCount)
+                    {
+                        @Html.Raw($"{{title:'{column.Title}',sortable: {column.Sorting.ToString().ToLower()},data:'{column.DataColumn}',render: function(data, type, row) {{return DataTable.RenderDayCount(data, row);}}}},")
+                    }
+                    else if (column.Conditions.Any())
                     {
                         @Html.Raw($"{{title:'{column.Title}',sortable: {column.Sorting.ToString().ToLower()},data: '{column.DataColumn}',render: function(data, type, row) {{return DataTable.RenderCondition(data,{Html.Raw(Json.Serialize(column.Conditions))},{column.Capitalize.ToString().ToLower()},{column.MaxLength},{column.IsDate.ToString().ToLower()},{column.IsRating.ToString().ToLower()},{column.IsColor.ToString().ToLower()},{column.IsIconClass.ToString().ToLower()});}}}},")
                     }
@@ -163,9 +195,18 @@ else
                 }
             ]
         });
-        $('#@gridName').on('draw.dt', function (e, settings, len) {
-            //
-        });
         $("#@gridName").closest('div').addClass("table-responsive");
+        @if (Model.Selectable)
+        {
+            <text>
+            $('#@selectButtonElement').html('<a id="bulkAction_@gridName" href="javascript:void(0)" class="btn btn-sm btn-primary"><i class="fas fa-check-double me-1"></i>@Model.SelectionActionText</a>');
+            DataTableSelect.Init('@gridName', {
+                ButtonId: 'bulkAction_@gridName',
+                Url: '@Model.SelectionActionUrl',
+                ConfirmMsg: '@Html.Raw(Model.SelectionConfirmMsg)',
+                NoneMsg: '@Html.Raw(Model.SelectionNoneMsg)'
+            });
+            </text>
+        }
     });
 </script>

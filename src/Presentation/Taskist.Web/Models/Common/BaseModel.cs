@@ -1,4 +1,4 @@
-﻿
+
 namespace Taskist.Web.Models.Common;
 
 public class BaseModel

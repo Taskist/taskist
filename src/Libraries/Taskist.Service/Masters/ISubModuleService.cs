@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 
 namespace Taskist.Service.Masters;
@@ -14,9 +14,15 @@ public interface ISubModuleService
 
     Task<IList<SubModule>> GetAllActiveByModuleAsync(int moduleId);
 
+    Task<IList<SubModule>> GetAllActiveByModuleAsync(List<int> moduleIds);
+
+
     Task<SubModule> GetByIdAsync(int id);
 
     Task<SubModule> GetByNameAsync(string name);
+
+    Task<SubModule> GetByNameAsync(string name, int moduleId);
+
 
     Task InsertAsync(SubModule entity);
 

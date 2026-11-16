@@ -1,4 +1,5 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Enums;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Logging;
 using Taskist.Core.Domain.Users;
 

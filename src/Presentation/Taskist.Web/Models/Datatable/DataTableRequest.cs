@@ -1,4 +1,4 @@
-﻿namespace Taskist.Web.Models.Datatable;
+namespace Taskist.Web.Models.Datatable;
 
 public class DataTableRequest
 {
@@ -6,6 +6,7 @@ public class DataTableRequest
     {
         Search = new SearchData();
         Order = [];
+        Columns = [];
     }
 
     public int Draw { get; set; }
@@ -28,8 +29,12 @@ public class DataTableRequest
         {
             var columName = string.Empty;
 
-            if (Order != null && Order.Count > 0)
-                columName = Columns[Order[0].Column].Data;
+            if (Order != null && Order.Count > 0 && Columns != null)
+            {
+                var index = Order[0].Column;
+                if (index >= 0 && index < Columns.Count)
+                    columName = Columns[index].Data;
+            }
 
             return columName;
         }

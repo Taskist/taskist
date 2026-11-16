@@ -1,0 +1,88 @@
+@{
+    ViewData["Title"] = Localize("GitConnectionPage.Title");
+}
+
+@section PageScripts {
+    <script src="~/js/pages/masters/git-connection.js" asp-append-version="true"></script>
+}
+
+@Html.AntiForgeryToken()
+<div class="alert alert-info small">
+    <i class="fas fa-shield-halved me-1"></i>@Localize("GitConnectionPage.SecurityNote")
+    <button type="button" class="btn btn-sm btn-outline-secondary ms-2 js-git-reencrypt" data-url="@Url.Action("ReEncrypt")" data-confirm="@Localize("GitConnectionPage.ReEncryptConfirm").Text">
+        <i class="fas fa-key me-1"></i>@Localize("GitConnectionPage.ReEncrypt")
+    </button>
+</div>
+
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "GitConnectionGrid",
+    Title = Localize("GitConnectionPage.Title").Text,
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("DataRead"),
+    Sorting = false,
+    HeaderActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.AddNew").Text,
+            Url = Url.Action("Create"),
+            Text = Localize("Button.AddNew").Text,
+            Icon = "fas fa-plus",
+            HyperLinkType = HyperLinkType.BUTTON_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-8 col-md-10 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("Button.Edit").Text,
+            Url = Url.Action("Edit"),
+            Text = Localize("Button.Edit").Text,
+            Icon = "far fa-edit",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationType.MODAL,
+            ModalSize = "col-lg-8 col-md-10 jc-form-scroll",
+            ButtonColor = ButtonColor.PRIMARY
+        },
+        new ActionModel {
+            Title = Localize("Button.Delete").Text,
+            Url = Url.Action("Delete"),
+            Text = Localize("Button.Delete").Text,
+            AuxText = Localize("Button.Cancel").Text,
+            Icon = "fas fa-trash",
+            ReferenceParameter = "Id",
+            DeleteConfirmBox = true,
+            DeleteConfirmBoxMsg = Localize("Confirmation.Delete").Text,
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("GitConnectionGrid.Name").Text, DataColumn = "Name" },
+        new ColumnModel { Title = Localize("GitConnectionGrid.Provider").Text, DataColumn = "Provider" },
+        new ColumnModel { Title = Localize("GitConnectionGrid.BaseUrl").Text, DataColumn = "BaseUrl" },
+        new ColumnModel { Title = Localize("GitConnectionGrid.AuthMode").Text, DataColumn = "AuthMode" },
+        new ColumnModel { Title = Localize("GitConnectionGrid.ServiceAccount").Text, DataColumn = "ServiceAccount" },
+        new ColumnModel { Title = Localize("GitConnectionGrid.OAuth").Text, DataColumn = "OAuth", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-minus", TextColor = "#8a93a2" }
+        }},
+        new ColumnModel { Title = Localize("GitConnectionGrid.IsDefault").Text, DataColumn = "IsDefault", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-star", TextColor = "#f9b115" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-minus", TextColor = "#8a93a2" }
+        }},
+        new ColumnModel { Title = Localize("GitConnectionGrid.Active").Text, DataColumn = "Active", Conditions = new List<ColumnConditionModel>{
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+        }}
+    }
+})

@@ -1,0 +1,339 @@
+@using Taskist.Core.Dtos.Git
+@model ReviewDetailViewModel
+@{
+	Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+	var mr = Model.Detail.MergeRequest;
+	var opened = mr.State == "opened";
+	var canMergePermission = Model.CanMergePermission;
+	var canMerge = canMergePermission && Model.Detail.CanMergeNow;
+	var mergeReason = !canMergePermission ? Localize("ReviewDrawer.NoMergePermission").Text : Model.Detail.MergeBlockedReason;
+	var behind = mr.DivergedCommitsCount ?? 0;
+	var conflict = mr.HasConflicts || Model.Detail.Status == ReviewMergeStatus.Conflict;
+	var canRebase = canMergePermission && Model.Detail.Connected && Model.Detail.Scope.CanMerge && Model.Detail.Scope.CanRebase && opened && !conflict
+		&& (behind > 0 || Model.Detail.Status == ReviewMergeStatus.NeedsRebase);
+	var isGitHub = Model.Detail.Scope.ProviderType == (int)Taskist.Core.Enums.GitProviderType.GitHub;
+	var providerIcon = isGitHub ? "fa-github" : "fa-gitlab";
+	var refLabel = $"{Model.Detail.Scope.RefPrefix}{mr.Iid}";
+	var primaryTask = Model.Detail.TitleIsTaskReference ? Model.Detail.Tasks.FirstOrDefault() : null;
+	var displayTitle = primaryTask != null ? $"#{primaryTask.Id} {primaryTask.Title}" : mr.Title;
+	var descriptionTask = Model.Detail.Tasks.FirstOrDefault(t => !string.IsNullOrWhiteSpace(t.Description));
+	string StatusLabel(string s) => s switch
+	{
+		ReviewMergeStatus.Mergeable => Localize("ReviewStatus.Mergeable").Text,
+		ReviewMergeStatus.Conflict => Localize("ReviewStatus.Conflict").Text,
+		ReviewMergeStatus.Draft => Localize("ReviewStatus.Draft").Text,
+		ReviewMergeStatus.NeedsRebase => Localize("ReviewStatus.NeedsRebase").Text,
+		ReviewMergeStatus.Checking => Localize("ReviewStatus.Checking").Text,
+		ReviewMergeStatus.NotChecked => Localize("ReviewStatus.NotChecked").Text,
+		ReviewMergeStatus.Blocked => Localize("ReviewStatus.Blocked").Text,
+		_ => Localize("ReviewStatus.Other").Text
+	};
+	string TypeCss(int group) => group switch { 3 => "bug", 2 => "cr", 1 => "todo", _ => "other" };
+	var gitLabSteps = new List<(string Label, string? Commands, string? Link)>
+	{
+		(Localize("ReviewDrawer.Local.GitLab.Step1").Text, $"git fetch origin\ngit checkout -b '{mr.SourceBranch}' 'origin/{mr.SourceBranch}'", null),
+		(Localize("ReviewDrawer.Local.GitLab.Step2").Text, null, null),
+		(Localize("ReviewDrawer.Local.GitLab.Step3").Text, $"git fetch origin\ngit checkout '{mr.TargetBranch}'\ngit merge --no-ff '{mr.SourceBranch}'", "https://docs.gitlab.com/user/project/merge_requests/conflicts/"),
+		(Localize("ReviewDrawer.Local.GitLab.Step4").Text, $"git push origin '{mr.TargetBranch}'", null)
+	};
+}
+
+<link rel="stylesheet" href="~/css/pages/review.css" asp-append-version="true" />
+
+@section Scripts {
+	<script src="~/js/pages/review/review-drawer.js" asp-append-version="true"></script>
+}
+
+<div class="review-drawer" id="reviewDrawer"
+	 data-repository-id="@Model.Detail.Scope.RepositoryId" data-iid="@mr.Iid" data-sha="@mr.Sha"
+	 data-detail-url="@Url.Action("Detail", "Review", new { repositoryId = Model.Detail.Scope.RepositoryId, iid = mr.Iid })"
+	 data-changes-url="@Url.Action("Changes", "Review", new { repositoryId = Model.Detail.Scope.RepositoryId, iid = mr.Iid })"
+	 data-approve-url="@Url.Action("Approve", "Review")"
+	 data-comment-url="@Url.Action("Comment", "Review")"
+	 data-reject-url="@Url.Action("Reject", "Review")"
+	 data-request-changes-url="@Url.Action("RequestChanges", "Review")"
+	 data-label-changes-title="@Localize("ReviewDrawer.RequestChanges.Title").Text"
+	 data-label-changes-prompt="@Localize("ReviewDrawer.RequestChanges.Prompt").Text"
+	 data-label-changes-button="@Localize("ReviewDrawer.RequestChanges.Send").Text"
+	 data-label-changes-required="@Localize("ReviewDrawer.RequestChanges.Required").Text"
+	 data-merge-url="@Url.Action("Merge", "Review")"
+	 data-rebase-url="@Url.Action("Rebase", "Review")"
+	 data-label-reject-title="@Localize("ReviewDrawer.Reject.Title").Text"
+	 data-label-reject-prompt="@Localize("ReviewDrawer.Reject.Prompt").Text"
+	 data-label-reject-button="@Localize("ReviewDrawer.Reject").Text"
+	 data-label-merge-title="@Localize("ReviewDrawer.Merge.Title").Text"
+	 data-label-merge-confirm="@(string.Format(Localize("ReviewDrawer.Merge.Confirm").Text, refLabel, mr.SourceBranch, mr.TargetBranch))"
+	 data-label-merge-button="@Localize("ReviewDrawer.Merge").Text"
+	 data-label-rebase-confirm="@Localize("ReviewDrawer.Rebase.Confirm").Text"
+	 data-label-required="@Localize("ReviewDrawer.Reject.Required").Text"
+	 data-label-copied="@Localize("ReviewDrawer.Copied").Text">
+
+	<header class="review-head">
+		<div class="review-head__titles">
+			<h5 class="review-head__title"><span class="review-iid">@refLabel</span> @displayTitle</h5>
+			@if (primaryTask != null && !string.IsNullOrWhiteSpace(mr.Title))
+			{
+				<div class="review-head__mrtitle">@Localize("ReviewDrawer.MrTitle"): @mr.Title</div>
+			}
+		</div>
+		<div class="review-actions">
+			@if (Model.Detail.CanAct)
+			{
+				@if (Model.Detail.UserHasApproved)
+				{
+					@if (Model.Detail.CanUnapprove)
+					{
+						<button type="button" class="btn btn-sm btn-outline-success review-act" data-act="unapprove"><i class="fas fa-rotate-left me-1"></i>@Localize("ReviewDrawer.Unapprove")</button>
+					}
+				}
+				else
+				{
+					<button type="button" class="btn btn-sm btn-success text-white review-act" data-act="approve"><i class="fas fa-thumbs-up me-1"></i>@Localize("ReviewDrawer.Approve")</button>
+				}
+				<button type="button" class="btn btn-sm btn-outline-secondary review-act" data-act="comment"><i class="far fa-comment me-1"></i>@Localize("ReviewDrawer.Comment")</button>
+				<button type="button" class="btn btn-sm btn-outline-warning review-act" data-act="request-changes"><i class="fas fa-pen-to-square me-1"></i>@Localize("ReviewDrawer.RequestChanges")</button>
+				<button type="button" class="btn btn-sm btn-outline-danger review-act" data-act="reject"><i class="fas fa-ban me-1"></i>@Localize("ReviewDrawer.Reject")</button>
+			}
+			<a href="@mr.WebUrl" target="_blank" rel="noopener" class="btn btn-sm btn-link ms-auto"><i class="fab @providerIcon me-1"></i>@Localize("ReviewDrawer.OpenInGitLab")</a>
+		</div>
+	</header>
+
+	@if (!Model.Detail.Connected)
+	{
+		<div class="review-connect-banner review-connect-banner--compact">
+			<i class="fab @providerIcon"></i>
+			<div class="flex-grow-1 small">@Localize("ReviewDrawer.ConnectToAct")</div>
+			<a href="@Url.Action("Index", "Profile", new { connect = Model.Detail.Scope.ConnectionId }, null, null, "git")" class="btn btn-sm btn-primary">@Localize("ReviewPage.Connect.Button")</a>
+		</div>
+	}
+	else if (Model.Detail.IsOwn)
+	{
+		<div class="alert alert-info py-2 small mb-2"><i class="fas fa-circle-info me-1"></i>@Localize("ReviewDrawer.OwnMr")</div>
+	}
+
+	<div class="alert alert-danger py-2 small review-drawer-error d-none" role="alert"></div>
+
+	<div class="review-layout">
+		<div class="review-main">
+			<ul class="nav nav-tabs review-tabs" role="tablist">
+				<li class="nav-item"><button class="nav-link active review-tab-changes" data-bs-toggle="tab" data-bs-target="#reviewTabChanges" type="button"><i class="fas fa-code me-1"></i>@Localize("ReviewDrawer.Tab.Changes") <span class="badge rounded-pill bg-light text-dark">@(mr.ChangesCount ?? "?")</span></button></li>
+				<li class="nav-item"><button class="nav-link review-tab-discussion" data-bs-toggle="tab" data-bs-target="#reviewTabDiscussion" type="button"><i class="far fa-comments me-1"></i>@Localize("ReviewDrawer.Tab.Discussion") <span class="badge rounded-pill bg-light text-dark">@Model.Detail.Notes.Count</span></button></li>
+				<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviewTabCommits" type="button"><i class="fas fa-code-commit me-1"></i>@Localize("ReviewDrawer.Tab.Commits") <span class="badge rounded-pill bg-light text-dark">@Model.Detail.Commits.Count</span></button></li>
+				<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviewTabOverview" type="button"><i class="far fa-file-lines me-1"></i>@Localize("ReviewDrawer.Tab.Overview")</button></li>
+			</ul>
+			<div class="tab-content review-tab-content">
+				<div class="tab-pane fade show active" id="reviewTabChanges">
+					<div class="review-changes" data-loaded="false">
+						<div class="review-loading"><i class="fas fa-spinner fa-spin me-1"></i>@Localize("ReviewPage.Loading")</div>
+					</div>
+				</div>
+				<div class="tab-pane fade" id="reviewTabDiscussion">
+					@if (Model.Detail.Notes.Any())
+					{
+						<div class="review-notes">
+							@foreach (var n in Model.Detail.Notes)
+							{
+								<div class="review-note">
+									<div class="review-note__head"><strong>@n.Author?.Name</strong> <span class="review-time text-muted" data-time="@DateTime.SpecifyKind(n.CreatedAt, DateTimeKind.Utc).ToString("o")"></span></div>
+									<div class="review-note__body">@n.Body</div>
+								</div>
+							}
+						</div>
+					}
+					else
+					{
+						<div class="text-muted small mb-2">@Localize("ReviewDrawer.NoComments")</div>
+					}
+					@if (Model.Detail.CanAct)
+					{
+						<div class="review-comment-box">
+							<textarea class="form-control review-comment-text" rows="3" placeholder="@Localize("ReviewDrawer.CommentPlaceholder").Text"></textarea>
+							<div class="text-end mt-2">
+								<button type="button" class="btn btn-sm btn-primary review-act" data-act="post-comment"><i class="far fa-paper-plane me-1"></i>@Localize("ReviewDrawer.PostComment")</button>
+							</div>
+						</div>
+					}
+				</div>
+				<div class="tab-pane fade" id="reviewTabCommits">
+					@if (Model.Detail.Commits.Any())
+					{
+						<ul class="review-commits">
+							@foreach (var c in Model.Detail.Commits)
+							{
+								<li>
+									<a href="@c.WebUrl" target="_blank" rel="noopener"><code>@c.ShortId</code></a>
+									<span class="review-commits__title">@c.Title</span>
+									<span class="review-commits__meta">@c.AuthorName · <span class="review-time" data-time="@DateTime.SpecifyKind(c.CreatedAt, DateTimeKind.Utc).ToString("o")"></span></span>
+								</li>
+							}
+						</ul>
+					}
+					else
+					{
+						<div class="text-muted small">@Localize("ReviewDrawer.NoCommits")</div>
+					}
+				</div>
+				<div class="tab-pane fade" id="reviewTabOverview">
+					@if (!string.IsNullOrWhiteSpace(mr.Description))
+					{
+						<div class="review-section-label">@Localize("ReviewDrawer.MrDescription")</div>
+						<div class="review-description">@mr.Description</div>
+					}
+					else if (descriptionTask != null)
+					{
+						<div class="review-section-label">@Localize("ReviewDrawer.TaskDescription") <a href="@Url.Action("Edit", "Backlog", new { id = descriptionTask.Id })" target="_blank">#@descriptionTask.Id</a></div>
+						<div class="review-description review-rich" data-html="@descriptionTask.Description"></div>
+					}
+					else
+					{
+						<div class="text-muted small">@Localize("ReviewDrawer.NoDescription")</div>
+					}
+				</div>
+			</div>
+		</div>
+
+		<aside class="review-side">
+			<section class="review-ready review-ready--@(conflict ? "conflict" : canMerge ? "ok" : opened ? "wait" : "closed")">
+				<div class="review-side__title">
+					<i class="fas fa-code-merge me-1"></i>@Localize("ReviewDrawer.Readiness")
+					<span class="review-status review-status--@Model.Detail.Status ms-auto">@StatusLabel(Model.Detail.Status)</span>
+				</div>
+				@if (!opened)
+				{
+					<div class="small text-muted">@Localize("ReviewDrawer.NotOpen") (@mr.State)</div>
+				}
+				else
+				{
+					<ul class="review-checks">
+						<li class="@(conflict ? "is-bad" : "is-ok")">
+							<i class="fas @(conflict ? "fa-circle-xmark" : "fa-circle-check")"></i>@(conflict ? Localize("ReviewDrawer.Check.Conflicts").Text : Localize("ReviewDrawer.Check.NoConflicts").Text)
+						</li>
+						<li class="@(behind > 0 ? "is-warn" : "is-ok")">
+							<i class="fas @(behind > 0 ? "fa-circle-exclamation" : "fa-circle-check")"></i>
+							@(behind > 0 ? string.Format(Localize("ReviewDrawer.Check.Behind").Text, behind, mr.TargetBranch) : string.Format(Localize("ReviewDrawer.Check.UpToDate").Text, mr.TargetBranch))
+							@if (canRebase)
+							{
+								<button type="button" class="btn btn-link btn-sm p-0 ms-1 review-act" data-act="rebase">@(isGitHub ? Model.Detail.RebaseLabel : Localize("ReviewDrawer.Rebase").Text)</button>
+							}
+						</li>
+						<li class="@(mr.IsDraft ? "is-bad" : "is-ok")">
+							<i class="fas @(mr.IsDraft ? "fa-circle-xmark" : "fa-circle-check")"></i>@(mr.IsDraft ? Localize("ReviewDrawer.Check.Draft").Text : Localize("ReviewDrawer.Check.NotDraft").Text)
+						</li>
+						<li class="@(mr.BlockingDiscussionsResolved ? "is-ok" : "is-bad")">
+							<i class="fas @(mr.BlockingDiscussionsResolved ? "fa-circle-check" : "fa-circle-xmark")"></i>@(mr.BlockingDiscussionsResolved ? Localize("ReviewDrawer.Check.DiscussionsResolved").Text : Localize("ReviewDrawer.Check.DiscussionsOpen").Text)
+						</li>
+						<li class="@(Model.Detail.ApprovedBy.Any() ? "is-ok" : "is-info")">
+							<i class="fas @(Model.Detail.ApprovedBy.Any() ? "fa-circle-check" : "fa-circle")"></i>
+							@(Model.Detail.ApprovedBy.Any() ? $"{Localize("ReviewDrawer.Approvals").Text} {string.Join(", ", Model.Detail.ApprovedBy)}" : Localize("ReviewDrawer.NoApprovals").Text)
+						</li>
+					</ul>
+
+					@if (conflict)
+					{
+						<div class="review-conflict">
+							<div class="fw-semibold"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("ReviewDrawer.Conflict.Title")</div>
+							<div class="small mb-2">@Localize("ReviewDrawer.Conflict.Text")</div>
+							<div class="review-conflict__actions">
+								<a href="@(mr.WebUrl)/conflicts" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary"><i class="fab @providerIcon me-1"></i>@Localize("ReviewDrawer.Conflict.Editor")</a>
+							</div>
+						</div>
+					}
+
+					<div class="review-merge">
+						<div class="form-check form-check-inline small">
+							<input class="form-check-input review-merge-squash" type="checkbox" id="rmSquash" @(mr.Squash ? "checked" : "") @(canMerge ? "" : "disabled") />
+							<label class="form-check-label" for="rmSquash">@Localize("ReviewDrawer.Merge.Squash")</label>
+						</div>
+						<div class="form-check form-check-inline small">
+							<input class="form-check-input review-merge-remove" type="checkbox" id="rmRemove" @((mr.ForceRemoveSourceBranch ?? false) ? "checked" : "") @(canMerge ? "" : "disabled") />
+							<label class="form-check-label" for="rmRemove">@Localize("ReviewDrawer.Merge.RemoveSource")</label>
+						</div>
+						<button type="button" class="btn btn-primary w-100 mt-2 review-act" data-act="merge" @(canMerge ? "" : "disabled")>
+							<i class="fas fa-code-merge me-1"></i>@string.Format(Localize("ReviewDrawer.MergeInto").Text, mr.TargetBranch)
+						</button>
+						@if (!canMerge && !string.IsNullOrEmpty(mergeReason))
+						{
+							<div class="review-merge-reason mt-2"><i class="fas fa-circle-info me-1"></i>@mergeReason</div>
+						}
+					</div>
+				}
+			</section>
+
+			@if (opened)
+			{
+				<section class="review-side__block review-local">
+					<details class="review-local__details" @(conflict ? "open" : "")>
+						<summary class="review-side__title review-local__summary">
+							<i class="fas fa-terminal me-1"></i>@Localize("ReviewDrawer.Local.Title")
+							<i class="fas fa-chevron-down ms-auto review-local__chevron"></i>
+						</summary>
+						<ol class="review-steps">
+							@foreach (var step in gitLabSteps)
+							{
+								<li class="review-step">
+									<div class="review-step__label">
+										@step.Label
+										@if (!string.IsNullOrEmpty(step.Link))
+										{
+											<a href="@step.Link" target="_blank" rel="noopener">@Localize("ReviewDrawer.Local.HowToFix")</a>
+										}
+									</div>
+									@if (!string.IsNullOrEmpty(step.Commands))
+									{
+										<div class="review-step__code">
+											<pre class="review-commands">@step.Commands</pre>
+											<button type="button" class="btn btn-sm review-copy review-step__copy" data-copy="@step.Commands" title="@Localize("ReviewDrawer.CopyCommands").Text"><i class="far fa-copy"></i></button>
+										</div>
+									}
+								</li>
+							}
+						</ol>
+						<div class="review-local__tip"><strong>@Localize("ReviewDrawer.Local.TipLabel")</strong> @Localize("ReviewDrawer.Local.Tip") <a href="https://docs.gitlab.com/user/project/merge_requests/merge_request_troubleshooting/#check-out-merge-requests-locally-through-the-head-ref" target="_blank" rel="noopener">@Localize("ReviewDrawer.Local.LearnMore")</a></div>
+					</details>
+				</section>
+			}
+
+			<section class="review-side__block">
+				<div class="review-side__title"><i class="fas fa-list-check me-1"></i>@Localize("ReviewDrawer.Tasks")</div>
+				@if (Model.Detail.Tasks.Any())
+				{
+					@foreach (var t in Model.Detail.Tasks)
+					{
+						<a href="@Url.Action("Edit", "Backlog", new { id = t.Id })" target="_blank" class="review-side-task review-side-task--@TypeCss(t.TaskTypeGroupId)" title="@t.Title">
+							<span class="review-side-task__id">#@t.Id</span>
+							<span class="review-side-task__title">@t.Title</span>
+							<span class="review-side-task__meta">@t.TaskType · @t.Status</span>
+						</a>
+					}
+				}
+				else
+				{
+					<div class="text-muted small">@Localize("ReviewDrawer.NoTasks")</div>
+				}
+			</section>
+
+			<section class="review-side__block">
+				<div class="review-side__title"><i class="fas fa-code-branch me-1"></i>@Localize("ReviewDrawer.Branches")</div>
+				<div class="review-branch-row">
+					<span class="review-branch-row__label">@Localize("ReviewDrawer.Source")</span>
+					<code title="@mr.SourceBranch">@mr.SourceBranch</code>
+					<button type="button" class="btn btn-link btn-sm p-0 review-copy" data-copy="@mr.SourceBranch" title="@Localize("ReviewDrawer.Copy").Text"><i class="far fa-copy"></i></button>
+				</div>
+				<div class="review-branch-row">
+					<span class="review-branch-row__label">@Localize("ReviewDrawer.Target")</span>
+					<code title="@mr.TargetBranch">@mr.TargetBranch</code>
+				</div>
+			</section>
+
+			<section class="review-side__block review-side__meta">
+				<div><i class="fas fa-user me-1"></i>@mr.Author?.Name</div>
+				<div><i class="far fa-clock me-1"></i>@Localize("ReviewDrawer.Opened") <span class="review-time" data-time="@DateTime.SpecifyKind(mr.CreatedAt, DateTimeKind.Utc).ToString("o")"></span></div>
+				<div><i class="fas fa-folder me-1"></i>@Model.Detail.Scope.ProjectName</div>
+				@if (mr.Reviewers.Any())
+				{
+					<div><i class="fas fa-user-check me-1"></i>@Localize("ReviewPage.Col.Reviewer"): @string.Join(", ", mr.Reviewers.Select(r => r.Name ?? r.UserName))</div>
+				}
+			</section>
+		</aside>
+	</div>
+</div>

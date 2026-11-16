@@ -1,0 +1,174 @@
+@using Taskist.Core.Dtos.Git
+@model ReviewQueueDto
+@{
+	var now = DateTime.UtcNow;
+
+	string StatusLabel(string s) => s switch
+	{
+		ReviewMergeStatus.Mergeable => Localize("ReviewStatus.Mergeable").Text,
+		ReviewMergeStatus.Conflict => Localize("ReviewStatus.Conflict").Text,
+		ReviewMergeStatus.Draft => Localize("ReviewStatus.Draft").Text,
+		ReviewMergeStatus.NeedsRebase => Localize("ReviewStatus.NeedsRebase").Text,
+		ReviewMergeStatus.Checking => Localize("ReviewStatus.Checking").Text,
+		ReviewMergeStatus.NotChecked => Localize("ReviewStatus.NotChecked").Text,
+		ReviewMergeStatus.Blocked => Localize("ReviewStatus.Blocked").Text,
+		_ => Localize("ReviewStatus.Other").Text
+	};
+	string StatusIcon(string s) => s switch
+	{
+		ReviewMergeStatus.Mergeable => "fa-circle-check",
+		ReviewMergeStatus.Conflict => "fa-code-compare",
+		ReviewMergeStatus.Draft => "fa-pen-ruler",
+		ReviewMergeStatus.NeedsRebase => "fa-code-pull-request",
+		ReviewMergeStatus.Checking => "fa-spinner fa-spin",
+		ReviewMergeStatus.NotChecked => "fa-circle-minus",
+		ReviewMergeStatus.Blocked => "fa-ban",
+		_ => "fa-circle-question"
+	};
+	(string Text, string Css) Age(DateTime utc)
+	{
+		var span = now - DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+		if (span.TotalMinutes < 0) span = TimeSpan.Zero;
+		var text = span.TotalHours < 1 ? $"{Math.Max(1, (int)span.TotalMinutes)}m"
+			: span.TotalDays < 1 ? $"{(int)span.TotalHours}h"
+			: span.TotalDays < 30 ? $"{(int)span.TotalDays}d"
+			: span.TotalDays < 365 ? $"{(int)(span.TotalDays / 30)}mo"
+			: $"{(int)(span.TotalDays / 365)}y";
+		var css = span.TotalDays < 3 ? "fresh" : span.TotalDays < 14 ? "aging" : "old";
+		return (text, css);
+	}
+	string Initials(string? name)
+	{
+		if (string.IsNullOrWhiteSpace(name)) return "?";
+		var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		return (parts.Length == 1 ? parts[0][..Math.Min(2, parts[0].Length)] : $"{parts[0][0]}{parts[^1][0]}").ToUpperInvariant();
+	}
+	string TypeCss(int group) => group switch { 3 => "bug", 2 => "cr", 1 => "todo", _ => "other" };
+}
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+	<div class="alert alert-warning m-3 mb-0 small review-queue-error" data-error="@Model.Error">
+		<i class="fas fa-plug-circle-exclamation me-1"></i>
+		@if (Model.FailedProjects.Count > 0)
+		{
+			@Localize("ReviewPage.FailedProjects") <strong>@string.Join(", ", Model.FailedProjects)</strong>
+		}
+		<div class="small mt-1">@Model.Error</div>
+	</div>
+}
+
+@if (!Model.Items.Any())
+{
+	<wp-empty-state icon="far fa-circle-check" size="compact" heading="@Localize("EmptyState.Reviews.Empty.Title").Text" text="@Localize("ReviewPage.Empty").Text"></wp-empty-state>
+}
+else
+{
+	<div class="review-table-wrap">
+		<table class="table align-middle mb-0 review-table">
+			<thead>
+				<tr>
+					<th>@Localize("ReviewPage.Col.Mr")</th>
+					<th>@Localize("ReviewPage.Col.Tasks")</th>
+					<th>@Localize("ReviewPage.Col.Reviewer")</th>
+					<th>@Localize("ReviewPage.Col.Status")</th>
+					<th class="text-end">@Localize("ReviewPage.Col.Age")</th>
+					<th class="review-col-actions"></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var mr in Model.Items)
+				{
+					var age = Age(mr.UpdatedAt);
+					var primaryTask = mr.TitleIsTaskReference ? mr.Tasks.FirstOrDefault() : null;
+					<tr class="review-row" tabindex="0"
+						data-repository-id="@mr.RepositoryId" data-iid="@mr.Iid"
+						data-title="@(mr.RefPrefix)@mr.Iid @(primaryTask?.Title ?? mr.Title)"
+						data-mine="@(mr.IsMine ? "1" : "0")" data-lead="@(mr.IsLeadProject ? "1" : "0")"
+						data-project="@mr.ProjectName" data-target="@mr.TargetBranch" data-author="@mr.AuthorName"
+						data-status="@mr.Status" data-stale="@(mr.IsStale ? "1" : "0")" data-unassigned="@(mr.Unassigned ? "1" : "0")"
+						data-updated="@DateTime.SpecifyKind(mr.UpdatedAt, DateTimeKind.Utc).ToString("o")"
+						data-created="@DateTime.SpecifyKind(mr.CreatedAt, DateTimeKind.Utc).ToString("o")"
+						data-search="@($"{mr.RefPrefix}{mr.Iid} {mr.Title} {string.Join(" ", mr.Tasks.Select(t => $"#{t.Id} {t.Title}"))} {mr.SourceBranch} {mr.TargetBranch} {mr.AuthorName}".ToLowerInvariant())">
+						<td class="review-cell-title">
+							<div class="review-title">
+								<span class="review-iid">@(mr.RefPrefix)@mr.Iid</span>
+								@if (primaryTask != null)
+								{
+									<span class="review-title__text" title="@mr.Title">#@primaryTask.Id @primaryTask.Title</span>
+									@if (mr.Tasks.Count > 1)
+									{
+										<span class="review-title__more">+@(mr.Tasks.Count - 1)</span>
+									}
+								}
+								else
+								{
+									<span class="review-title__text" title="@mr.Title">@mr.Title</span>
+								}
+								@if (mr.IsOwn)
+								{
+									<span class="review-tag review-tag--own">@Localize("ReviewPage.Tag.Yours")</span>
+								}
+							</div>
+							<div class="review-sub">
+								<span class="review-sub__branch" title="@mr.SourceBranch → @mr.TargetBranch"><i class="fas fa-code-branch me-1"></i>@mr.SourceBranch <i class="fas fa-arrow-right-long mx-1"></i><strong>@mr.TargetBranch</strong></span>
+								<span class="review-sub__sep">·</span>
+								<span><i class="fas fa-user me-1"></i>@mr.AuthorName</span>
+								<span class="review-sub__project review-sub__sep">·</span>
+								<span class="review-sub__project"><i class="fas fa-folder me-1"></i>@mr.ProjectName</span>
+							</div>
+						</td>
+						<td>
+							@if (mr.Tasks.Any())
+							{
+								@foreach (var t in mr.Tasks.Take(3))
+								{
+									<a href="@Url.Action("Edit", "Backlog", new { id = t.Id })" target="_blank" class="review-task-chip review-task-chip--@TypeCss(t.TaskTypeGroupId)" title="@t.TaskType · @t.Status · @t.Title">#@t.Id</a>
+								}
+								@if (mr.Tasks.Count > 3)
+								{
+									<span class="review-task-more" title="@string.Join(", ", mr.Tasks.Skip(3).Select(t => "#" + t.Id))">+@(mr.Tasks.Count - 3)</span>
+								}
+							}
+							else
+							{
+								<span class="review-muted" title="@Localize("ReviewPage.NoTaskHint").Text">@Localize("ReviewPage.NoTask")</span>
+							}
+						</td>
+						<td>
+							@if (mr.Unassigned)
+							{
+								<span class="review-muted" title="@Localize("ReviewPage.Tag.Unassigned").Text">—</span>
+							}
+							else
+							{
+								<span class="review-avatars">
+									@foreach (var name in mr.ReviewerNames.Take(3))
+									{
+										<span class="review-avatar" title="@name">@Initials(name)</span>
+									}
+								</span>
+							}
+						</td>
+						<td><span class="review-status review-status--@mr.Status"><i class="fas @StatusIcon(mr.Status) me-1"></i>@StatusLabel(mr.Status)</span></td>
+						<td class="text-end">
+							<span class="review-age review-age--@age.Css review-time-tip" data-time="@DateTime.SpecifyKind(mr.UpdatedAt, DateTimeKind.Utc).ToString("o")">@age.Text</span>
+						</td>
+						<td class="review-col-actions">
+							<div class="review-row-actions">
+								<button type="button" class="btn btn-sm btn-primary review-open"><i class="fas fa-magnifying-glass-chart me-1"></i>@Localize("ReviewPage.Action.Review")</button>
+								@if (!string.IsNullOrEmpty(mr.WebUrl))
+								{
+									<a href="@mr.WebUrl" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary" title="@Localize("ReviewDrawer.OpenInGitLab").Text"><i class="fas fa-arrow-up-right-from-square"></i></a>
+								}
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<wp-empty-state class="review-none-match d-none" icon="fas fa-filter-circle-xmark" size="compact" tone="info" heading="@Localize("EmptyState.Reviews.NoneMatch.Title").Text" text="@Localize("ReviewPage.NoneMatch").Text">
+		<button type="button" class="btn btn-sm btn-outline-primary review-empty__clear"><i class="fas fa-filter-circle-xmark me-1"></i>@Localize("ReviewPage.ClearFilters")</button>
+	</wp-empty-state>
+}

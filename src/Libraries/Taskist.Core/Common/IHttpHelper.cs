@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 
 namespace Taskist.Core.Common;
 
@@ -11,6 +11,8 @@ public interface IHttpHelper
     string GetCurrentPageUrl(bool includeQueryString, bool lowercaseUrl = false);
 
     string GetCurrentIpAddress();
+
+    int? GetCurrentUserId();
 
     bool IsCurrentConnectionSecured();
 

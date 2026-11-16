@@ -1,0 +1,261 @@
+/* Hand-made dark-mode styles: third-party widgets that ship light-only CSS, and fixes the generator can't infer.
+   Everything is scoped to [data-coreui-theme=dark]. Generated twins of our own rules live in theme-dark.generated.css. */
+
+[data-coreui-theme=dark] {
+    --app-dark-surface: var(--cui-body-bg);
+    --app-dark-raised: var(--cui-tertiary-bg);
+    --app-dark-border: var(--cui-border-color);
+    --app-dark-text: var(--cui-body-color);
+    --app-dark-muted: var(--cui-secondary-color);
+    color-scheme: dark;
+}
+
+/* CoreUI 5.1 keeps the light "subtle" palette in dark mode (alerts, subtle badges, list-group variants) */
+[data-coreui-theme=dark] {
+    --cui-secondary-text-emphasis: #a7acb1;
+    --cui-secondary-bg-subtle: #161719;
+    --cui-secondary-border-subtle: #41464b;
+    --cui-success-text-emphasis: #75b798;
+    --cui-success-bg-subtle: #051b11;
+    --cui-success-border-subtle: #0f5132;
+    --cui-info-text-emphasis: #6edff6;
+    --cui-info-bg-subtle: #032830;
+    --cui-info-border-subtle: #087990;
+    --cui-warning-text-emphasis: #ffda6a;
+    --cui-warning-bg-subtle: #332701;
+    --cui-warning-border-subtle: #997404;
+    --cui-danger-text-emphasis: #ea868f;
+    --cui-danger-bg-subtle: #2c0b0e;
+    --cui-danger-border-subtle: #842029;
+    --cui-light-text-emphasis: #f8f9fa;
+    --cui-light-bg-subtle: #343a40;
+    --cui-light-border-subtle: #495057;
+    --cui-dark-text-emphasis: #dee2e6;
+    --cui-dark-bg-subtle: #1a1d20;
+    --cui-dark-border-subtle: #343a40;
+}
+
+/* select2 */
+[data-coreui-theme=dark] .select2-container--default .select2-selection--single,
+[data-coreui-theme=dark] .select2-container--default .select2-selection--multiple,
+[data-coreui-theme=dark] .select2-dropdown {
+    background-color: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .select2-container--default .select2-selection--single .select2-selection__rendered,
+[data-coreui-theme=dark] .select2-container--default .select2-results__option,
+[data-coreui-theme=dark] .select2-container--default .select2-search--inline .select2-search__field {
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .select2-container--default .select2-selection--single .select2-selection__placeholder,
+[data-coreui-theme=dark] .select2-container--default .select2-search--inline .select2-search__field::placeholder {
+    color: var(--app-dark-muted);
+}
+
+[data-coreui-theme=dark] .select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-color: var(--app-dark-muted) transparent transparent transparent;
+}
+
+[data-coreui-theme=dark] .select2-container--default .select2-search--dropdown .select2-search__field {
+    background-color: var(--app-dark-raised);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .select2-container--default .select2-results__option[aria-selected=true],
+[data-coreui-theme=dark] .select2-container--default .select2-results__option--selected {
+    background-color: var(--app-dark-raised);
+}
+
+[data-coreui-theme=dark] .select2-container--default.select2-container--disabled .select2-selection--single,
+[data-coreui-theme=dark] .select2-container--default.select2-container--disabled .select2-selection--multiple {
+    background-color: var(--cui-secondary-bg);
+}
+
+[data-coreui-theme=dark] .select2-container--default .select2-selection__clear,
+[data-coreui-theme=dark] .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+    color: var(--app-dark-muted);
+}
+
+/* DataTables */
+[data-coreui-theme=dark] table.dataTable,
+[data-coreui-theme=dark] .dataTables_wrapper {
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .dataTables_wrapper .dataTables_length select,
+[data-coreui-theme=dark] .dataTables_wrapper .dataTables_filter input {
+    background-color: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] table.dataTable > tbody > tr.selected > * {
+    box-shadow: inset 0 0 0 9999px rgba(var(--app-accent-rgb), .25);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] div.dataTables_processing,
+[data-coreui-theme=dark] div.dt-processing {
+    background-color: var(--app-dark-raised);
+    color: var(--app-dark-text);
+}
+
+/* jquery-confirm */
+[data-coreui-theme=dark] .jconfirm.jconfirm-bootstrap .jconfirm-box,
+[data-coreui-theme=dark] .jconfirm.jconfirm-light .jconfirm-box,
+[data-coreui-theme=dark] .jconfirm .jconfirm-box {
+    background: var(--app-dark-surface);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .jconfirm .jconfirm-box div.jconfirm-title-c,
+[data-coreui-theme=dark] .jconfirm .jconfirm-box div.jconfirm-content {
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .jconfirm .jconfirm-box div.jconfirm-closeIcon {
+    color: var(--app-dark-muted);
+}
+
+[data-coreui-theme=dark] .jconfirm .jconfirm-bg {
+    background-color: #000;
+}
+
+[data-coreui-theme=dark] .jconfirm .jc-form-scroll .form-modal-actions {
+    background: var(--app-dark-surface);
+    border-top-color: var(--app-dark-border);
+}
+
+/* SweetAlert2 */
+[data-coreui-theme=dark] .swal2-popup {
+    background: var(--app-dark-surface);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .swal2-title,
+[data-coreui-theme=dark] .swal2-html-container {
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .swal2-input,
+[data-coreui-theme=dark] .swal2-textarea,
+[data-coreui-theme=dark] .swal2-select {
+    background: var(--app-dark-raised);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+}
+
+/* bootstrap-datepicker */
+[data-coreui-theme=dark] .datepicker.dropdown-menu,
+[data-coreui-theme=dark] .datepicker-dropdown {
+    background-color: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .datepicker-dropdown.datepicker-orient-bottom:after { border-bottom-color: var(--app-dark-surface); }
+[data-coreui-theme=dark] .datepicker-dropdown.datepicker-orient-top:after { border-top-color: var(--app-dark-surface); }
+
+[data-coreui-theme=dark] .datepicker table tr td.day:hover,
+[data-coreui-theme=dark] .datepicker table tr td.focused,
+[data-coreui-theme=dark] .datepicker table tr td span:hover,
+[data-coreui-theme=dark] .datepicker table tr td span.focused,
+[data-coreui-theme=dark] .datepicker .datepicker-switch:hover,
+[data-coreui-theme=dark] .datepicker .prev:hover,
+[data-coreui-theme=dark] .datepicker .next:hover,
+[data-coreui-theme=dark] .datepicker tfoot tr th:hover {
+    background: var(--app-dark-raised);
+}
+
+[data-coreui-theme=dark] .datepicker table tr td.old,
+[data-coreui-theme=dark] .datepicker table tr td.new {
+    color: var(--app-dark-muted);
+}
+
+[data-coreui-theme=dark] .datepicker table tr td.today {
+    background: rgba(255, 194, 26, .25);
+    color: var(--app-dark-text);
+}
+
+/* Dropzone */
+[data-coreui-theme=dark] .dropzone {
+    background: var(--app-dark-surface);
+    border-color: var(--app-dark-border);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .dropzone .dz-preview.dz-image-preview {
+    background: transparent;
+}
+
+/* Native form controls and scrollbars */
+[data-coreui-theme=dark] input[type=date],
+[data-coreui-theme=dark] input[type=time],
+[data-coreui-theme=dark] input[type=number] {
+    color-scheme: dark;
+}
+
+[data-coreui-theme=dark] .simplebar-scrollbar:before {
+    background: rgba(255, 255, 255, .5);
+}
+
+/* Bootstrap/CoreUI utility classes our markup uses for light surfaces */
+[data-coreui-theme=dark] .bg-white,
+[data-coreui-theme=dark] .bg-light {
+    background-color: var(--app-dark-raised) !important;
+}
+
+[data-coreui-theme=dark] .text-dark {
+    color: var(--app-dark-text) !important;
+}
+
+[data-coreui-theme=dark] .badge.text-dark,
+[data-coreui-theme=dark] .bg-warning.text-dark,
+[data-coreui-theme=dark] .text-bg-warning,
+[data-coreui-theme=dark] .text-bg-light {
+    color: #212631 !important;
+}
+
+[data-coreui-theme=dark] .btn-light {
+    --cui-btn-color: var(--app-dark-text);
+    --cui-btn-bg: var(--app-dark-raised);
+    --cui-btn-border-color: var(--app-dark-border);
+    --cui-btn-hover-color: var(--app-dark-text);
+    --cui-btn-hover-bg: var(--cui-secondary-bg);
+    --cui-btn-hover-border-color: var(--app-dark-border);
+}
+
+/* FullCalendar (timeline, team availability) */
+[data-coreui-theme=dark] .fc {
+    --fc-page-bg-color: var(--app-dark-surface);
+    --fc-neutral-bg-color: var(--app-dark-raised);
+    --fc-neutral-text-color: var(--app-dark-muted);
+    --fc-border-color: var(--app-dark-border);
+    --fc-today-bg-color: rgba(255, 194, 26, .12);
+    --fc-list-event-hover-bg-color: var(--app-dark-raised);
+    --fc-highlight-color: rgba(var(--app-accent-rgb), .2);
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .fc .fc-col-header,
+[data-coreui-theme=dark] .fc .fc-col-header-cell,
+[data-coreui-theme=dark] .fc .fc-scrollgrid-section-header > th,
+[data-coreui-theme=dark] .fc .fc-list-day-cushion,
+[data-coreui-theme=dark] .fc .fc-timegrid-axis {
+    background-color: var(--app-dark-raised);
+}
+
+[data-coreui-theme=dark] .fc .fc-col-header-cell-cushion,
+[data-coreui-theme=dark] .fc .fc-daygrid-day-number,
+[data-coreui-theme=dark] .fc .fc-list-day-text,
+[data-coreui-theme=dark] .fc .fc-list-day-side-text {
+    color: var(--app-dark-text);
+}
+
+[data-coreui-theme=dark] .fc .fc-day-other .fc-daygrid-day-number {
+    color: var(--app-dark-muted);
+}

@@ -1,0 +1,92 @@
+@model Taskist.Web.Models.Users.GitConnectionViewModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+    var c = Model.Connection;
+    var isGitHub = c.ProviderType == (int)Taskist.Core.Enums.GitProviderType.GitHub;
+    var icon = isGitHub ? "fa-github" : "fa-gitlab";
+}
+
+<div class="gitlab-connection" data-connection-id="@c.ConnectionId"
+     data-connect-url="@Url.Action("ConnectGit")" data-disconnect-url="@Url.Action("DisconnectGit")"
+     data-disconnect-confirm="@Localize("Profile.GitLab.DisconnectConfirm").Text">
+
+    @if (c.Connected)
+    {
+        <div class="gitlab-connection__status @(c.Expired ? "is-expired" : c.ExpiringSoon ? "is-expiring" : "is-ok")">
+            <i class="fab @icon"></i>
+            <div>
+                <div class="fw-semibold">@Localize("Profile.GitLab.ConnectedAs") @c.AccountUserName</div>
+                <div class="small">
+                    @if (c.IsOAuth)
+                    {
+                        @Localize("Profile.Git.ConnectedWithOAuth")
+                    }
+                    else if (c.ExpiresOn != null)
+                    {
+                        @(c.Expired ? Localize("Profile.GitLab.ExpiredOn").Text : Localize("Profile.GitLab.ExpiresOn").Text) @c.ExpiresOn.Value.ToString("dd-MMM-yyyy")
+                    }
+                    else
+                    {
+                        @Localize("Profile.GitLab.NoExpiry")
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <p class="small text-muted mb-2">@Localize("Profile.GitLab.Why")</p>
+
+    @if (c.OAuthAvailable)
+    {
+        <form method="post" action="@Url.Action("GitOAuthStart")" class="mb-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="connectionId" value="@c.ConnectionId" />
+            <button type="submit" class="btn btn-primary"><i class="fab @icon me-1"></i>@string.Format(Localize("Profile.Git.ConnectWithOAuth").Text, c.ProviderName)</button>
+            <div class="form-text">@Localize("Profile.Git.OAuthHint")</div>
+        </form>
+        <div class="small text-muted mb-2">@Localize("Profile.Git.OrToken")</div>
+    }
+
+    <ol class="gitlab-guide">
+        <li>
+            <div class="gitlab-guide__title">@Localize("Profile.GitLab.Guide.Step1.Title")</div>
+            <div class="gitlab-guide__text">@Localize("Profile.GitLab.Guide.Step1.Text")</div>
+            @if (!string.IsNullOrEmpty(c.TokenHelpUrl))
+            {
+                <a href="@c.TokenHelpUrl" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-up-right-from-square me-1"></i>@Localize("Profile.GitLab.OpenTokenPage")</a>
+            }
+        </li>
+        <li>
+            <div class="gitlab-guide__title">@Localize("Profile.Git.Guide.Scopes")</div>
+            <div class="gitlab-guide__scopes"><span class="gitlab-scope gitlab-scope--on"><i class="far fa-square-check"></i>@c.RequiredScopes</span></div>
+            <div class="gitlab-guide__text mt-1">@Localize("Profile.GitLab.Guide.Step4.Text")</div>
+        </li>
+        <li>
+            <div class="gitlab-guide__title">@Localize("Profile.GitLab.Guide.Step5.Title")</div>
+            <div class="gitlab-guide__text">@Localize("Profile.GitLab.Guide.Step5.Text")</div>
+            <div class="gitlab-guide__note"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("Profile.GitLab.Guide.Step5.Note")</div>
+        </li>
+    </ol>
+
+    @if (!string.IsNullOrEmpty(c.ExpectedUserName))
+    {
+        <div class="alert alert-info py-2 small">
+            @Localize("Profile.GitLab.Requirements.User") <code>@c.ExpectedUserName</code>
+        </div>
+    }
+
+    <div class="input-group mb-1">
+        <span class="input-group-text"><i class="fas fa-key"></i></span>
+        <input type="password" class="form-control gitlab-connection__token" autocomplete="new-password" maxlength="1000"
+               placeholder="@(c.Connected ? Localize("Profile.GitLab.ReplacePlaceholder").Text : Localize("Profile.GitLab.TokenPlaceholder").Text)" />
+        <button type="button" class="btn btn-primary gitlab-connection__connect"><i class="fas fa-plug me-1"></i>@Localize("Profile.GitLab.Connect")</button>
+    </div>
+    <div class="form-text">@Localize("Profile.GitLab.StoredEncrypted")</div>
+
+    @if (c.Connected)
+    {
+        <div class="text-end mt-3">
+            <button type="button" class="btn btn-sm btn-outline-danger gitlab-connection__disconnect"><i class="fas fa-plug-circle-xmark me-1"></i>@Localize("Profile.GitLab.Disconnect")</button>
+        </div>
+    }
+</div>

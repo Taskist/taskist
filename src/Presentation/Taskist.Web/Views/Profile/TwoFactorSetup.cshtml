@@ -1,0 +1,23 @@
+@model TwoFactorSetupModel
+
+<div class="twofactor-setup p-2">
+    <ol class="twofactor-setup__steps">
+        <li>
+            <div class="fw-semibold">@Localize("Profile.TwoFactor.Step1").Text</div>
+            <div class="text-muted small mb-2">@Localize("Profile.TwoFactor.Step1Hint").Text</div>
+            <img class="twofactor-setup__qr" src="@Model.QrCodeDataUri" alt="@Localize("Profile.TwoFactor.QrAlt").Text" width="200" height="200" />
+            <div class="small text-muted mt-2">@Localize("Profile.TwoFactor.ManualKey").Text</div>
+            <code class="twofactor-setup__key">@Model.ManualKey</code>
+            <div class="small text-muted">@Model.AccountName</div>
+        </li>
+        <li>
+            <div class="fw-semibold">@Localize("Profile.TwoFactor.Step2").Text</div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+                <input type="text" class="form-control twofactor-setup__code js-2fa-setup-code" inputmode="numeric" autocomplete="one-time-code"
+                       maxlength="7" placeholder="123456" aria-label="@Localize("Profile.TwoFactor.Step2").Text" />
+                <button type="button" class="btn btn-primary js-2fa-enable"><i class="fas fa-check me-1"></i>@Localize("Profile.TwoFactor.Enable").Text</button>
+            </div>
+            <div class="text-danger small mt-2 js-2fa-setup-error" hidden></div>
+        </li>
+    </ol>
+</div>

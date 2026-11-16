@@ -1,0 +1,28 @@
+@model Dictionary<string, int>
+@{
+    var overdue = Model.GetValueOrDefault("Overdue", 0);
+    var tiles = new[]
+    {
+        ("Today", Model.GetValueOrDefault("Today", 0), "wp-due--today", "fa-calendar-day"),
+        ("Tomorrow", Model.GetValueOrDefault("Tomorrow", 0), "wp-due--soon", "fa-calendar-plus"),
+        ("Next 7 Days", Model.GetValueOrDefault("Next 7 Days", 0), "wp-due--week", "fa-calendar-week"),
+        ("Overdue", overdue, "wp-due--overdue", "fa-triangle-exclamation"),
+        ("No Due Date", Model.GetValueOrDefault("No Due Date", 0), "wp-due--none", "fa-calendar-xmark")
+    };
+}
+
+<div class="wp-card h-100">
+    <div class="wp-card__head"><i class="fas fa-business-time me-2"></i>@Localize("Dashboard.MyDueTasks").Text</div>
+    <div class="wp-card__body">
+        <div class="wp-due">
+            @foreach (var (label, count, css, icon) in tiles)
+            {
+                <div class="wp-due__tile @css">
+                    <span class="wp-due__icon"><i class="fas @icon"></i></span>
+                    <span class="wp-due__value">@count</span>
+                    <span class="wp-due__label">@label</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>

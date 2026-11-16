@@ -1,0 +1,543 @@
+/* Backlog filter panel + chips */
+
+/* Filter off-canvas drawer */
+.offcanvas.backlog-filter-offcanvas {
+    --cui-offcanvas-width: min(640px, 100vw);
+    --bs-offcanvas-width: min(640px, 100vw);
+    width: min(640px, 100vw) !important;
+}
+
+/* Keep the grid toolbar buttons on a single row (labels collapse to icons on small screens) */
+#gridToolbar {
+    flex-wrap: nowrap;
+}
+
+.backlog-filter-offcanvas .offcanvas-body {
+    padding: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.backlog-filter-offcanvas #filter-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* Scrollable fields region */
+.backlog-filter-offcanvas .filter-scroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 18px;
+}
+
+/* Action footer pinned at the bottom of the drawer */
+.backlog-filter-offcanvas .filter-actions {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px;
+    background: #fff;
+    border-top: 1px solid #e3eaf2;
+}
+
+
+/* Filter trigger button */
+.filter-open-btn {
+    background: #3b4a5a;
+    color: #fff;
+    border: none;
+    font-weight: 600;
+}
+
+.filter-open-btn:hover,
+.filter-open-btn:focus {
+    background: #34424f;
+    color: #fff;
+}
+
+/* Filter panel header */
+.filter-panel-header {
+    background: #3b4a5a;
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    cursor: pointer;
+}
+
+.filter-panel-header:hover {
+    background: #34424f;
+}
+
+.filter-panel-title {
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.2px;
+}
+
+.filter-count-badge:empty {
+    display: none;
+}
+
+.filter-count-badge {
+    background: #e74c3c;
+    color: #fff;
+    border-radius: 10px;
+    padding: 1px 8px;
+    font-size: 0.72rem;
+    margin-left: 6px;
+    font-weight: 600;
+}
+
+.filter-toggle-icon {
+    opacity: 0.85;
+    transition: transform 0.15s ease;
+}
+
+/* Saved-filter band (stands out from the filter fields) */
+.filter-presets {
+    background: #f4f7fb;
+    border: 1px solid #e3eaf2;
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 12px;
+}
+
+.filter-presets-title {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #3b4a5a;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.filter-presets-title i {
+    color: #18b5c4;
+}
+
+/* Active-filter chips */
+.filter-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #eaf1f8;
+    border: 1px solid #cddcec;
+    color: #2c3e50;
+    border-radius: 16px;
+    padding: 3px 4px 3px 12px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.filter-chip-label {
+    color: #6c7a89;
+    margin-right: 4px;
+}
+
+.filter-chip-remove {
+    border: none;
+    background: transparent;
+    color: #8b97a7;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-left: 7px;
+    padding: 0;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.filter-chip-remove:hover {
+    background: #f8d2d2;
+    color: #c0392b;
+}
+
+
+
+/* Sub-task expand — top-level caret in the Title cell */
+.subtask-toggle {
+    display: inline-block;
+    width: 16px;
+    margin-right: 4px;
+    color: #64748b;
+    cursor: pointer;
+    text-align: center;
+}
+.subtask-toggle:hover { color: #1cc7c9; }
+tr.subtask-open .subtask-toggle { color: #1cc7c9; }
+
+/* Sub-task tree panel */
+.subtask-panel {
+    padding: 6px 10px 8px 30px;
+    background: #f8fafc;
+    border-left: 3px solid #1cc7c9;
+}
+
+.subtask-row { position: relative; padding-left: 18px; }
+/* connector rails */
+.subtask-row::before {
+    content: "";
+    position: absolute;
+    left: 4px; top: 0; bottom: 0;
+    border-left: 1px solid #cbd5e1;
+}
+.subtask-row:last-child::before { bottom: auto; height: 15px; }
+.subtask-row > .subtask-main::before {
+    content: "";
+    position: absolute;
+    left: 4px; top: 15px;
+    width: 12px;
+    border-top: 1px solid #cbd5e1;
+}
+
+.subtask-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    min-height: 30px;
+}
+
+.subtask-caret {
+    flex: 0 0 auto;
+    width: 14px;
+    color: #64748b;
+    cursor: pointer;
+    text-align: center;
+    font-size: 12px;
+}
+.subtask-caret:hover { color: #1cc7c9; }
+.subtask-caret--leaf { cursor: default; }
+
+.subtask-type-chip {
+    flex: 0 0 auto;
+    width: 20px; height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.subtask-title {
+    font-weight: 600;
+    color: #1f2937;
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.subtask-title:hover { text-decoration: underline; }
+.subtask-id { color: #94a3b8; font-weight: 700; margin-right: 2px; }
+
+.subtask-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 40px;
+    margin-top: -2px;
+}
+.subtask-status {
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 1px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+}
+.subtask-due { font-size: 11px; white-space: nowrap; }
+.subtask-due--over { color: #e11d48; }
+.subtask-due--today { color: #d97706; }
+.subtask-due--future { color: #64748b; }
+
+.subtask-avatar {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: .02em;
+}
+
+/* nested (recursive) level */
+.subtask-nested { display: none; margin-left: 14px; }
+.subtask-row.open > .subtask-nested { display: block; }
+.subtask-nested .subtask-panel { border-left-color: #cbd5e1; padding-left: 22px; }
+
+.subtask-empty { color: #94a3b8; font-size: 12px; }
+
+/* wider screens: put meta inline with title instead of wrapped below */
+@media (min-width: 992px) {
+    .subtask-row { display: flex; align-items: center; }
+    .subtask-row > .subtask-main { flex: 1 1 auto; min-width: 0; }
+    .subtask-main .subtask-title { max-width: 46vw; }
+    .subtask-row > .subtask-meta { flex: 0 0 auto; padding-left: 0; margin-top: 0; }
+    .subtask-row > .subtask-nested { flex-basis: 100%; }
+}
+
+.backlog-age {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 3px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border-left: 3px solid transparent;
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.backlog-age-status {
+    font-weight: 400;
+    opacity: 0.75;
+}
+
+.backlog-age--blue { border-left-color: blue; }
+.backlog-age--orange { border-left-color: orange; background: #fff7ed; }
+.backlog-age--pink { border-left-color: pink; background: #fdf2f8; }
+.backlog-age--red { border-left-color: red; background: #fef2f2; color: #b91c1c; }
+
+.backlog-age[data-bs-toggle="tooltip"] {
+    cursor: default;
+}
+
+.backlog-age-tip {
+    text-align: left;
+    line-height: 1.5;
+}
+
+.backlog-age-tooltip .tooltip-inner {
+    max-width: 360px;
+}
+
+/* Saved filters: single compact row */
+.filter-presets-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-presets-icon {
+    color: #18b5c4;
+    flex: 0 0 auto;
+}
+
+.filter-presets-row .form-select {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.filter-presets-row .btn {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+.filter-presets-save {
+    margin-top: 6px;
+}
+
+/* Grouped, collapsible filter sections */
+.backlog-filter-offcanvas .filter-scroll {
+    padding: 14px 16px;
+}
+
+.backlog-filter-offcanvas .filter-scroll .form-label {
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+    color: #475569;
+}
+
+.filter-sections-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 4px;
+}
+
+.filter-sections-toggle-all {
+    font-size: 0.78rem;
+    text-decoration: none;
+}
+
+.filter-section {
+    border: 1px solid #e3eaf2;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    background: #fff;
+}
+
+.filter-section--main {
+    border: 0;
+    margin-bottom: 6px;
+}
+
+.filter-section-head {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 0;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #33455c;
+    text-align: left;
+}
+
+.filter-section.is-open .filter-section-head {
+    border-bottom: 1px solid #e3eaf2;
+    border-radius: 8px 8px 0 0;
+}
+
+.filter-section-title {
+    flex: 1 1 auto;
+}
+
+.filter-section-count.has-count {
+    min-width: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: #5856d6;
+    color: #fff;
+    font-size: 0.72rem;
+    line-height: 18px;
+    text-align: center;
+}
+
+.filter-section-chevron {
+    font-size: 0.75rem;
+    color: #64748b;
+    transition: transform 0.15s ease;
+}
+
+.filter-section.is-open .filter-section-chevron {
+    transform: rotate(180deg);
+}
+
+.filter-section-body {
+    display: none;
+    padding: 10px 12px 2px;
+}
+
+.filter-section.is-open .filter-section-body {
+    display: block;
+}
+
+.filter-section .due-date-type {
+    flex: 0 0 110px;
+}
+
+.backlog-age-help {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    margin-left: 2px;
+    cursor: help;
+}
+
+/* Bulk move to Quick Capture: skipped-task summary */
+.bulk-move-skipped {
+    max-height: 240px;
+    overflow-y: auto;
+    padding-left: 18px;
+    font-size: 0.85rem;
+    margin-bottom: 0;
+}
+
+.bulk-move-preview-summary {
+    font-size: 0.88rem;
+    font-weight: 600;
+    padding: 6px 10px;
+    border-radius: 6px;
+}
+
+.bulk-move-preview-summary.is-ok {
+    background: #ecfdf5;
+    color: #166534;
+}
+
+.bulk-move-preview-summary.is-none {
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.bulk-move-staying {
+    font-size: 0.83rem;
+    color: #1e40af;
+    background: #eff6ff;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+/* ---- Grid selection bar (bulk actions) ---- */
+.grid-selection-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .5rem .75rem;
+    margin: .75rem 1rem 0;
+    padding: .45rem .6rem .45rem .9rem;
+    border-radius: .65rem;
+    background: linear-gradient(90deg, #eef2ff, #f5f3ff);
+    border: 1px solid #c7d2fe;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, .12);
+    animation: grid-selection-in .18s ease-out;
+}
+@keyframes grid-selection-in {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.grid-selection-count { font-weight: 600; color: #3730a3; white-space: nowrap; }
+.grid-selection-actions { display: flex; flex-wrap: wrap; gap: .4rem; flex: 1 1 auto; }
+.grid-selection-btn {
+    background: #fff;
+    border: 1px solid #c7d2fe;
+    color: #3730a3;
+}
+.grid-selection-btn:hover, .grid-selection-btn:focus { background: #4f46e5; border-color: #4f46e5; color: #fff; }
+.grid-selection-clear { color: #64748b; background: transparent; border: 0; margin-left: auto; }
+.grid-selection-clear:hover { color: #0f172a; background: rgba(15, 23, 42, .06); }
+@media (max-width: 575.98px) {
+    .grid-selection-bar { margin: .5rem .5rem 0; }
+    .grid-selection-clear { margin-left: 0; }
+}
+
+/* ---- Grid title icons (branch, closing details, attachments, comments) ---- */
+.dt-title-icons { display: inline-flex; align-items: center; gap: .25rem; margin-left: .4rem; vertical-align: middle; white-space: nowrap; }
+.dt-title-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: .15rem;
+    padding: .05rem .3rem;
+    border-radius: .35rem;
+    font-size: .9rem;
+    line-height: 1.2;
+    text-decoration: none;
+    color: #94a3b8;
+    transition: background .12s, color .12s;
+}
+.dt-title-icon:hover { background: #f1f5f9; }
+.dt-title-icon__count { font-size: .72rem; font-weight: 700; }
+.dt-title-icon--branch { color: #6366f1; }
+.dt-title-icon--branch:hover { color: #4338ca; background: #eef2ff; }
+.dt-title-icon--closing { color: #d97706; }
+.dt-title-icon--closing:hover { color: #b45309; background: #fffbeb; }
+.dt-title-icon--files { color: #64748b; }
+.dt-title-icon--files:hover { color: #15803d; background: #f0fdf4; }
+.dt-title-icon--comments { color: #64748b; }
+.dt-title-icon--comments:hover { color: #0f172a; }

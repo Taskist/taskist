@@ -1,0 +1,125 @@
+@model ResourceLoadPageModel
+@{
+    ViewData["Title"] = Localize("ResourceLoadPage.Title");
+}
+
+@section PageStyles {
+    <link href="~/css/pages/resource-load.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div id="rl-config" class="d-none" data-data-url="@Url.Action("ResourceLoadData")" data-export-url="@Url.Action("ExportResourceLoad")" data-backlog-url="@Url.Action("Index", "Backlog")"></div>
+
+<div class="container-fluid mt-3">
+    <wp-filter-panel id="rlFilter">
+            <div class="row g-2 rl-filters">
+                <div class="col-md-3">
+                    <label class="form-label">Project</label>
+                    <select id="rlProjects" class="form-control rl-multi" multiple asp-items="Model.AvailableProjects"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Resource</label>
+                    <select id="rlUsers" class="form-control rl-multi" multiple asp-items="Model.AvailableUsers"></select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Status group</label>
+                    <select id="rlStatusGroups" class="form-control rl-multi" multiple asp-items="Model.AvailableStatusGroups"></select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Severity</label>
+                    <select id="rlSeverities" class="form-control rl-multi" multiple asp-items="Model.AvailableSeverities"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Role</label>
+                    <select id="rlRole" class="form-select" data-wp-filter-ignore>
+                        <option value="both" selected>Dev + QA</option>
+                        <option value="dev">Developers</option>
+                        <option value="qa">QA</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Load basis</label>
+                    <select id="rlBasis" class="form-select" data-wp-filter-ignore>
+                        <option value="assignee" selected>As assignee</option>
+                        <option value="tester">As tester</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Due window</label>
+                    <select id="rlDue" class="form-select" data-wp-filter-ignore>
+                        <option value="all" selected>All</option>
+                        <option value="overdue">Overdue only</option>
+                        <option value="dueweek">Due this week</option>
+                        <option value="range">Date range</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Due from</label>
+                    <input id="rlFrom" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Due to</label>
+                    <input id="rlTo" type="date" class="form-control" />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Busy threshold</label>
+                    <input id="rlThreshold" type="number" min="1" class="form-control" placeholder="default" />
+                </div>
+
+                <div class="col-md-12 d-flex flex-wrap align-items-center gap-3 mt-1">
+                    <div class="form-check"><input id="rlUnassigned" type="checkbox" class="form-check-input" /><label class="form-check-label" for="rlUnassigned">Include unassigned</label></div>
+                    <div class="form-check"><input id="rlWeighted" type="checkbox" class="form-check-input" /><label class="form-check-label" for="rlWeighted">Severity-weighted load</label></div>
+                    <div class="ms-auto d-flex gap-2">
+                        <button id="rlReset" type="button" class="btn btn-sm btn-secondary">Reset</button>
+                        <button id="rlApply" type="button" class="btn btn-sm btn-primary">Apply</button>
+                        <a id="rlExport" class="btn btn-sm btn-outline-success" href="#" title="Export to Excel"><i class="fa-solid fa-file-excel"></i></a>
+                    </div>
+                </div>
+            </div>
+    </wp-filter-panel>
+
+    <div class="row g-2 mb-3 rl-summary">
+        <div class="col"><div class="rl-stat rl-stat--free"><span class="rl-stat__value" id="rlFree">0</span><span class="rl-stat__label">Free</span></div></div>
+        <div class="col"><div class="rl-stat rl-stat--light"><span class="rl-stat__value" id="rlLight">0</span><span class="rl-stat__label">Light</span></div></div>
+        <div class="col"><div class="rl-stat rl-stat--balanced"><span class="rl-stat__value" id="rlBalanced">0</span><span class="rl-stat__label">Balanced</span></div></div>
+        <div class="col"><div class="rl-stat rl-stat--overloaded"><span class="rl-stat__value" id="rlOverloaded">0</span><span class="rl-stat__label">Overloaded</span></div></div>
+        <div class="col"><div class="rl-stat rl-stat--unavailable"><span class="rl-stat__value" id="rlUnavailable">0</span><span class="rl-stat__label">Unavailable</span></div></div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header fw-semibold rl-collapse-toggle collapsed" role="button" data-bs-toggle="collapse" data-bs-target="#rlChartCollapse" aria-expanded="false" aria-controls="rlChartCollapse">
+            <i class="fas fa-chevron-down me-2 rl-chevron"></i>Open tasks by resource (top 20)
+        </div>
+        <div id="rlChartCollapse" class="collapse">
+            <div class="card-body"><div class="rl-chart"><canvas id="rlChart"></canvas></div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="rlTable" class="table table-bordered table-striped table-condensed nowrap" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Resource</th>
+                            <th>Role</th>
+                            <th>Projects</th>
+                            <th class="text-end">Open</th>
+                            <th class="text-end">Overdue</th>
+                            <th class="text-end">Due ≤7d</th>
+                            <th class="text-end">Reopened</th>
+                            <th class="text-end">Crit/High</th>
+                            <th>Band</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section PageScripts {
+    <script src="~/js/pages/report/resource-load.js" asp-append-version="true"></script>
+}

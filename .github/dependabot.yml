@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # Before merging a major update, check the new licence: Taskist only takes
+  # MIT / Apache / BSD dependencies (see CONTRIBUTING.md).
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      microsoft:
+        patterns: ["Microsoft.*", "System.*"]
+        update-types: [minor, patch]
+      test:
+        patterns: ["xunit*", "Microsoft.NET.Test.Sdk"]
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly

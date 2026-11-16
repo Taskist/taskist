@@ -1,4 +1,5 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
+using Taskist.Core.Enums;
 
 namespace Taskist.Core.Domain.Logging;
 

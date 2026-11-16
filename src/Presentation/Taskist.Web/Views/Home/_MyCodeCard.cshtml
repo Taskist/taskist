@@ -1,0 +1,27 @@
+<div class="wp-card my-code" id="myCodeCard"
+     data-url="@Url.Action("Index", "MyCode")"
+     data-connect-url="@Url.Action("Index", "Profile", new { connect = "gitlab" }, null, null, "git")"
+     data-connect-label="@Localize("ReviewPage.Connect.Button").Text"
+     data-mr-context-url="@Url.Action("MergeRequestContext", "Backlog")"
+     data-mr-create-url="@Url.Action("CreateMergeRequest", "Backlog")"
+     data-label-mr-title="@Localize("Backlog.Mr.Create").Text"
+     data-label-mr-field-title="@Localize("Backlog.Mr.Title").Text"
+     data-label-mr-from="@Localize("Backlog.Mr.From").Text"
+     data-label-mr-into="@Localize("Backlog.Mr.Into").Text"
+     data-label-mr-description="@Localize("Backlog.Mr.Description").Text"
+     data-label-mr-reviewer="@Localize("Backlog.Mr.Reviewer").Text"
+     data-label-mr-no-reviewer="@Localize("Backlog.Mr.NoReviewer").Text"
+     data-label-mr-draft="@Localize("Backlog.Mr.Draft").Text"
+     data-label-mr-remove="@Localize("Backlog.Mr.RemoveSource").Text"
+     data-label-mr-moves="@Localize("Backlog.Mr.WillMove").Text"
+     data-label-mr-existing="@Localize("Backlog.Mr.Existing").Text"
+     data-label-mr-create="@Localize("Backlog.Mr.CreateButton").Text"
+     data-label-mr-title-required="@Localize("Backlog.Mr.TitleRequired").Text">
+    <div class="wp-card__head d-flex align-items-center">
+        <span><i class="fas fa-code-pull-request me-2"></i>@Localize("MyCode.Title").Text</span>
+        <button type="button" class="btn btn-link btn-sm ms-auto p-0 my-code__refresh" title="@Localize("MyCode.Refresh").Text"><i class="fas fa-rotate"></i></button>
+    </div>
+    <div class="wp-card__body my-code__body">
+        <div class="text-center text-muted py-3"><span class="spinner-border spinner-border-sm" role="status"></span></div>
+    </div>
+</div>

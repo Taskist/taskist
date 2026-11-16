@@ -1,0 +1,90 @@
+@model ProjectRepositoryModel
+<input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="ProjectId" />
+<div class="validation-errors"></div>
+<div class="project-repository-form" data-search-url="@Url.Action("SearchGitRepositories")">
+    @if (!Model.AvailableConnections.Any())
+    {
+        <div class="alert alert-warning small">@Localize("ProjectRepository.NoConnections")</div>
+    }
+    <div class="mb-3">
+        <wc-label asp-for="GitConnectionId" />
+        <select asp-for="GitConnectionId" asp-items="Model.AvailableConnections" class="form-control project-repository-connection"></select>
+        <span asp-validation-for="GitConnectionId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <wc-label asp-for="RepoRef" />
+        <select asp-for="RepoRef" class="form-control project-repository-ref">
+            @if (!string.IsNullOrWhiteSpace(Model.RepoRef))
+            {
+                <option value="@Model.RepoRef" selected>@(Model.RepoName ?? Model.RepoRef)</option>
+            }
+        </select>
+        <div class="form-text">@Localize("ProjectRepositoryModel.RepoRef.Hint")</div>
+        <span asp-validation-for="RepoRef" class="text-danger"></span>
+    </div>
+    @if (Model.IsPrivate == false)
+    {
+        <div class="alert alert-warning small"><i class="fas fa-globe me-1"></i>@Localize("ProjectRepository.PublicWarning")</div>
+    }
+    <div class="mb-3">
+        <label class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" asp-for="IsPrimary" />
+            <wc-label asp-for="IsPrimary" />
+        </label>
+        <label class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" asp-for="Active" />
+            <wc-label asp-for="Active" />
+        </label>
+    </div>
+
+    <hr />
+    <h6 class="mb-2"><i class="fas fa-circle-dot me-1"></i>@Localize("ProjectRepository.IssueSyncTitle")</h6>
+    <div class="form-text mb-2">@Localize("ProjectRepository.IssueSyncHint")</div>
+    <div class="mb-3">
+        <wc-label asp-for="IssueSyncMode" />
+        <select asp-for="IssueSyncMode" asp-items="Model.AvailableSyncModes" class="form-control"></select>
+    </div>
+    <div class="mb-3">
+        <wc-label asp-for="IssueImportLabel" />
+        <input asp-for="IssueImportLabel" class="form-control" maxlength="100" autocomplete="off" />
+        <div class="form-text">@Localize("ProjectRepositoryModel.IssueImportLabel.Hint")</div>
+    </div>
+    <div class="mb-3">
+        <wc-label asp-for="IssueSyncTaskTypeIds" />
+        <select asp-for="IssueSyncTaskTypeIds" asp-items="Model.AvailableTaskTypes" class="form-control select2" multiple="multiple"></select>
+        <div class="form-text">@Localize("ProjectRepositoryModel.IssueSyncTaskTypeIds.Hint")</div>
+    </div>
+    <div class="mb-3">
+        <label class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" asp-for="IssueSyncComments" />
+            <wc-label asp-for="IssueSyncComments" />
+        </label>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <wc-label asp-for="IssueTaskTypeId" />
+            <select asp-for="IssueTaskTypeId" asp-items="Model.AvailableTaskTypes" class="form-control select2"><option value="">-</option></select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <wc-label asp-for="IssueSeverityId" />
+            <select asp-for="IssueSeverityId" asp-items="Model.AvailableSeverities" class="form-control select2"><option value="">-</option></select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <wc-label asp-for="IssueOpenStatusId" />
+            <select asp-for="IssueOpenStatusId" asp-items="Model.AvailableStatuses" class="form-control select2"><option value="">-</option></select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <wc-label asp-for="IssueClosedStatusId" />
+            <select asp-for="IssueClosedStatusId" asp-items="Model.AvailableStatuses" class="form-control select2"><option value="">-</option></select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <wc-label asp-for="IssueSyncUserId" />
+            <select asp-for="IssueSyncUserId" asp-items="Model.AvailableUsers" class="form-control select2"><option value="">-</option></select>
+        </div>
+        <div class="col-md-6 mb-3">
+            <wc-label asp-for="IssueImportLimitPerHour" />
+            <input asp-for="IssueImportLimitPerHour" type="number" min="1" max="1000" class="form-control" />
+        </div>
+    </div>
+</div>

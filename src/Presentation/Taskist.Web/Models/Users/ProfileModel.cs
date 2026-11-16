@@ -1,7 +1,8 @@
+using Taskist.Web.Helpers.Attributes;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Taskist.Core.Enums;
+using Taskist.Web.Helpers.Appearance;
 
 namespace Taskist.Web.Models.Users;
 
@@ -18,19 +19,37 @@ public class ProfileModel
     [ScaffoldColumn(false)]
     public int Id { get; set; }
 
-    [Display(Name = "First Name")]
-    [Required(ErrorMessage = "First name is required")]
+    [LocalizedDisplayName("Profile.FirstName")]
     public string FirstName { get; set; }
 
-    [Display(Name = "Last Name")]
-    [Required(ErrorMessage = "Last name is required")]
+    [LocalizedDisplayName("Profile.LastName")]
     public string LastName { get; set; }
 
-    [Display(Name = "Mobile Number")]
+    [LocalizedDisplayName("Profile.FriendlyName")]
+    public string FriendlyName { get; set; }
+
+    [LocalizedDisplayName("Profile.Mobile")]
     public string MobileNumber { get; set; }
 
-    [Display(Name = "Email")]
+    [LocalizedDisplayName("Profile.MaritalStatus")]
+    public MaritalStatus MaritalStatus { get; set; }
+
+    [LocalizedDisplayName("Profile.Email")]
     public string Email { get; set; }
+
+    public bool HasPhoto { get; set; }
+
+    public IList<Taskist.Core.Dtos.Git.GitAccountStatusDto> GitConnections { get; set; } = [];
+
+    public IList<LinkedSignInModel> LinkedSignIns { get; set; } = [];
+
+    public bool? HasPassword { get; set; }
+
+    public bool? TwoFactorEnabled { get; set; }
+
+    public int? RecoveryCodesRemaining { get; set; }
+
+    public bool? TwoFactorSetupRequired { get; set; }
 
     [Display(Name = "Gender")]
     public int? Gender { get; set; }
@@ -63,10 +82,12 @@ public class ProfileModel
     [RegularExpression(@"((?:https?\:\/\/|\/.)(?:[-a-z0-9]+\.)*[-a-z0-9]+.*)", ErrorMessage = "Provide a valid url")]
     public string GoogleScholarUrl { get; set; }
 
-    public string Name => $"{FirstName} {LastName}";
+    public string Name => string.IsNullOrWhiteSpace(FriendlyName) ? $"{FirstName} {LastName}" : FriendlyName;
 
     public bool HasSocialMediaLinks => !string.IsNullOrEmpty(FaceBookUrl) || !string.IsNullOrEmpty(TwitterUrl)
         || !string.IsNullOrEmpty(LinkedInUrl) || !string.IsNullOrEmpty(GoogleScholarUrl);
 
     public IList<SelectListItem> AvailableGenders { get; set; }
+
+    public AppearanceSettings Appearance { get; set; } = new();
 }

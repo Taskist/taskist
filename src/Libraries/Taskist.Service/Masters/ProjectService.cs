@@ -1,10 +1,11 @@
-﻿using Taskist.Core.Common;
-using Taskist.Core.Domain.Users;
-using Taskist.Core.Domain.Masters;
-using Taskist.Data.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.DynamicLinq;
 using System.Linq.Dynamic.Core;
+using Taskist.Core.Common;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
+using Taskist.Core.Extensions;
+using Taskist.Data.Repository;
 
 namespace Taskist.Service.Masters;
 
@@ -34,7 +35,7 @@ public class ProjectService : IProjectService
         return await _projectRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));
@@ -121,7 +122,8 @@ public class ProjectService : IProjectService
             query = query.Where(x => x.ProjectId == projectId);
 
             if (!string.IsNullOrWhiteSpace(search))
-                query = query.Where(c => c.User.Name.Contains(search) ||
+                query = query.Where(c => c.User.FirstName.Contains(search) ||
+                c.User.LastName.Contains(search) ||
                 c.Project.Name.Contains(search));
 
             return query;

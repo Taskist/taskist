@@ -1,0 +1,68 @@
+/* Wiki page layout */
+.wiki-tree-pane {
+    max-height: calc(100vh - 240px);
+    overflow-y: auto;
+}
+
+.wiki-content-pane {
+    min-height: calc(100vh - 240px);
+}
+
+@media (min-width: 768px) {
+    .wiki-tree-pane {
+        border-right: 1px solid var(--cui-border-color, #e3eaf2);
+    }
+}
+
+#wikiTree {
+    font-size: .9rem;
+}
+
+.wiki-tag-badge {
+    background: #eaf1f8;
+    border: 1px solid #cddcec;
+    color: #2c3e50;
+    border-radius: 14px;
+    padding: 2px 10px;
+    font-size: .78rem;
+    margin-right: 6px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.wiki-tag-badge i {
+    color: #18b5c4;
+    margin-right: 5px;
+}
+
+#wikiLinkedTasks .wiki-linked-title {
+    font-weight: 600;
+    font-size: .8rem;
+    color: #3b4a5a;
+    margin-right: 8px;
+}
+
+.wiki-linked-task {
+    display: inline-flex;
+    align-items: center;
+    background: #f4f7fb;
+    border: 1px solid #e3eaf2;
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: .78rem;
+    margin: 0 6px 6px 0;
+    text-decoration: none;
+    color: #2c3e50;
+}
+
+.wiki-version-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    border-bottom: 1px solid #eef2f7;
+}
+
+.wiki-version-row:last-child {
+    border-bottom: none;
+}

@@ -1,0 +1,18 @@
+@model DashboardModel
+@{
+    var pid = Model.ProjectIds;
+}
+
+@if (pid.Any())
+{
+    <div class="wp-stat-grid mb-3">
+        @await Component.InvokeAsync("CardWithCounts", new { projectIds = pid, selectedProjectId = 0 })
+    </div>
+
+    <div class="wp-dash-grid">
+        @await Component.InvokeAsync("ProjectTaskCount", new { projectIds = pid })
+        @await Component.InvokeAsync("WorkTrend", new { projectIds = pid, days = Model.Days })
+        @await Component.InvokeAsync("WorkDistribution", new { projectIds = pid })
+        @await Component.InvokeAsync("ReleaseTaskCount", new { projectIds = pid })
+    </div>
+}

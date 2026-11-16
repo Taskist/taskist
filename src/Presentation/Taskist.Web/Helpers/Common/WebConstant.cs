@@ -1,4 +1,4 @@
-﻿namespace Taskist.Web.Helpers.Common;
+namespace Taskist.Web.Helpers.Common;
 
 public static class WebConstant
 {

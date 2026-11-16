@@ -1,10 +1,14 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.DynamicLinq;
 using System.Linq.Dynamic.Core;
 using Taskist.Core.Caching;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Settings;
 using Taskist.Core.Domain.Users;
+using Taskist.Core.Enums;
+using Taskist.Core.Extensions;
+using Taskist.Data.Extensions;
 using Taskist.Data.Repository;
 using Taskist.Service.Common;
 using Taskist.Service.Masters;
@@ -17,6 +21,7 @@ public class UserService : IUserService
 {
     #region Fields
 
+    protected readonly UserSettings _userSettings;
     protected readonly IRepository<User> _userRepository;
     protected readonly IRepository<UserPassword> _passwordRepository;
     protected readonly IRepository<UserRole> _userRoleRepository;
@@ -24,6 +29,8 @@ public class UserService : IUserService
     protected readonly IRepository<UserRoleMap> _userRoleMapRepository;
     protected readonly IRepository<UserRolePermissionMap> _permissionMapRepository;
     protected readonly IRepository<UserProjectMap> _userProjectMapRepository;
+    protected readonly IRepository<UserTwoFactor> _twoFactorRepository;
+    protected readonly IAddressService _addressService;
     protected readonly IMessageService _messageService;
     protected readonly IEncryptionService _encryptionService;
     protected readonly ISettingService _settingsService;
@@ -33,18 +40,22 @@ public class UserService : IUserService
 
     #region Ctor
 
-    public UserService(IRepository<User> userRepository,
-        IRepository<UserPassword> passwordRepository,
-        IRepository<UserRole> userRoleRepository,
-        IRepository<UserRolePermission> permissionRepository,
-        IRepository<UserRoleMap> userRoleMapRepository,
-        IRepository<UserRolePermissionMap> permissionMapRepository,
-        IRepository<UserProjectMap> userProjectMapRepository,
-        IEncryptionService encryptionService,
-        ISettingService settingsService,
-        IMessageService messageService,
-        ICacheManager cacheManager)
+    public UserService(UserSettings userSettings,
+            IRepository<User> userRepository,
+            IRepository<UserPassword> passwordRepository,
+            IRepository<UserRole> userRoleRepository,
+            IRepository<UserRolePermission> permissionRepository,
+            IRepository<UserRoleMap> userRoleMapRepository,
+            IRepository<UserRolePermissionMap> permissionMapRepository,
+            IRepository<UserProjectMap> userProjectMapRepository,
+            IRepository<UserTwoFactor> twoFactorRepository,
+            IEncryptionService encryptionService,
+            ISettingService settingsService,
+            IAddressService addressService,
+            IMessageService messageService,
+            ICacheManager cacheManager)
     {
+        _userSettings = userSettings;
         _userRepository = userRepository;
         _passwordRepository = passwordRepository;
         _userRoleRepository = userRoleRepository;
@@ -52,8 +63,10 @@ public class UserService : IUserService
         _userRoleMapRepository = userRoleMapRepository;
         _permissionMapRepository = permissionMapRepository;
         _userProjectMapRepository = userProjectMapRepository;
+        _twoFactorRepository = twoFactorRepository;
         _encryptionService = encryptionService;
         _settingsService = settingsService;
+        _addressService = addressService;
         _messageService = messageService;
         _cacheManager = cacheManager;
     }
@@ -63,12 +76,13 @@ public class UserService : IUserService
     #region Users
 
     public async Task<IPagedList<User>> GetPagedListAsync(string search = "", int pageIndex = 0,
-        int pageSize = int.MaxValue, string sortColumn = "", string sortDirection = "")
+            int pageSize = int.MaxValue, string sortColumn = "", string sortDirection = "", int[] statuses = null,
+            int[] roleIds = null, bool? locked = null)
     {
         return await _userRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.SystemAccount);
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query =
@@ -76,18 +90,28 @@ public class UserService : IUserService
                         c =>
                             c.FirstName.Contains(search) ||
                             c.LastName.Contains(search) ||
-                            c.Email.Contains(search));
+                            c.Email.Contains(search) ||
+                            c.MobileNumber.Contains(search));
+
+            if (statuses is { Length: > 0 })
+                query = query.Where(c => statuses.Contains(c.Status));
+
+            if (roleIds is { Length: > 0 })
+                query = query.Where(c => c.UserUserRoleMaps.Any(m => roleIds.Contains(m.UserRoleId)));
+
+            if (locked.HasValue)
+                query = query.Where(c => c.Locked == locked.Value);
 
             return query;
         }, pageIndex, pageSize);
     }
 
     public async Task<IPagedList<UserRole>> GetPagedListUserRoleAsync(string search = "", int pageIndex = 0,
-        int pageSize = int.MaxValue, string sortColumn = "", string sortDirection = "")
+            int pageSize = int.MaxValue, string sortColumn = "", string sortDirection = "")
     {
         return await _userRoleRepository.GetAllPagedAsync(query =>
         {
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query =
@@ -105,28 +129,114 @@ public class UserService : IUserService
         return await _permissionMapRepository.GetAllAsync(includeDeleted: false);
     }
 
+    public async Task<IList<UserRoleMap>> GetAllUserRoleMapsAsync()
+    {
+        return await _userRoleMapRepository.GetAllAsync(includeDeleted: false);
+    }
+
     public async Task<IList<User>> GetAllAsync()
     {
-        return await _userRepository.GetAllAsync();
+        return SortByName(await _userRepository.GetAllAsync());
     }
 
     public async Task<IList<User>> GetAllActiveAsync()
     {
-        return await _userRepository.GetAllAsync(query => query.Where(x =>
-            x.Status == (int)UserStatusEnum.Active &&
-            !x.SystemAccount), false);
+        return SortByName(await _userRepository.GetAllAsync(query => query.Where(x =>
+            x.Status == (int)UserStatus.Active &&
+            !x.SystemAccount), false));
+    }
+
+    public async Task<IList<User>> GetAllActiveByRoleAsync(string roleName)
+    {
+        return SortByName(await _userRepository.GetAllAsync(query => query.Where(x =>
+            x.Status == (int)UserStatus.Active &&
+            !x.SystemAccount &&
+            x.UserUserRoleMaps.Any(y => y.UserRole.SystemName == roleName)), false));
+    }
+
+    public async Task<IList<User>> GetAllInactiveAsync()
+    {
+        return SortByName(await _userRepository.GetAllAsync(query => query.Where(x =>
+            x.Status != (int)UserStatus.Active &&
+            !x.SystemAccount), false));
+    }
+
+    public async Task<IList<User>> GetAllInactiveByRoleAsync(string roleName)
+    {
+        return SortByName(await _userRepository.GetAllAsync(query => query.Where(x =>
+            x.Status != (int)UserStatus.Active &&
+            !x.SystemAccount &&
+            x.UserUserRoleMaps.Any(y => y.UserRole.SystemName == roleName)), false));
+    }
+
+    public async Task<IList<User>> GetActiveByRolesAsync(IEnumerable<string> roleNames)
+    {
+        var roles = (roleNames ?? []).Where(r => !string.IsNullOrWhiteSpace(r)).Distinct().ToList();
+        if (roles.Count == 0)
+            return [];
+
+        return SortByName(await _userRepository.GetAllAsync(query => query.Where(x =>
+            x.Status == (int)UserStatus.Active &&
+            !x.SystemAccount &&
+            x.UserUserRoleMaps.Any(y => roles.Contains(y.UserRole.SystemName))), false));
     }
 
     public async Task<IList<User>> GetAllActiveByProjectAsync(int projectId)
     {
-        return await _userProjectMapRepository.Table.Where(x =>
-        (x.User.Status == (int)UserStatusEnum.Active && !x.User.SystemAccount) && x.ProjectId == projectId)
-            .Select(s => s.User).ToListAsync();
+        var query = _userProjectMapRepository.Table.Where(x =>
+        (x.User.Status == (int)UserStatus.Active && !x.User.SystemAccount));
+
+        if (projectId > 0)
+            query = query.Where(x => x.ProjectId == projectId);
+
+        return SortByName(await query.Select(s => s.User).Distinct().ToListAsync());
+    }
+
+    public async Task<IList<User>> GetAllActiveByProjectAsync(int projectId, string roleName)
+    {
+        var query = _userProjectMapRepository.Table.Where(x =>
+        (x.User.Status == (int)UserStatus.Active && !x.User.SystemAccount) &&
+        x.User.UserUserRoleMaps.Any(y => y.UserRole.SystemName == roleName));
+
+        if (projectId > 0)
+            query = query.Where(x => x.ProjectId == projectId);
+
+        return SortByName(await query.Select(s => s.User).Distinct().ToListAsync());
+    }
+
+    public async Task<IList<int>> GetProjectLeadIdsForUserAsync(int userId)
+    {
+        var projectIds = _userProjectMapRepository.Table
+            .Where(x => x.UserId == userId)
+            .Select(x => x.ProjectId);
+
+        return await _userProjectMapRepository.Table
+            .Where(x => projectIds.Contains(x.ProjectId)
+                && x.UserId != userId
+                && x.User.Status == (int)UserStatus.Active && !x.User.SystemAccount
+                && x.User.UserUserRoleMaps.Any(y =>
+                    y.UserRole.SystemName == UserConstant.ProjectManagerRoleName
+                    || y.UserRole.SystemName == UserConstant.TeamLeadRoleName))
+            .Select(x => x.UserId)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    public async Task<Dictionary<int, List<string>>> GetActiveUserProjectNamesAsync()
+    {
+        var rows = await _userProjectMapRepository.Table
+            .Where(x => x.Project.Active && !x.Project.Deleted)
+            .Select(x => new { x.UserId, x.Project.Name })
+            .ToListAsync();
+
+        return rows
+            .GroupBy(r => r.UserId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Name).Distinct().OrderBy(n => n).ToList());
     }
 
     public async Task<IList<User>> GetAllAssigneeAsync()
     {
-        return await _userRepository.GetAllAsync(query => query.Where(x => x.Status == (int)UserStatusEnum.Active && !x.SystemAccount), false);
+        return SortByName(await _userRepository.GetAllAsync(query => query.Where(x => x.Status == (int)UserStatus.Active && !x.SystemAccount), false));
     }
 
     public async Task<User> GetByIdAsync(int id)
@@ -158,6 +268,50 @@ public class UserService : IUserService
         return await query.FirstOrDefaultAsync();
     }
 
+    public async Task<User> GetByNameAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            return null;
+
+        var query = from c in _userRepository.Table
+                    where c.Name == name
+                    select c;
+
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<User> GetByGitUserAsync(string gitUsername)
+    {
+        if (string.IsNullOrWhiteSpace(gitUsername))
+            return null;
+
+        var query = from c in _userRepository.Table
+                    where c.GitUserName == gitUsername
+                    select c;
+
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<User> GetByMobileNumberAsync(string mobileNo)
+    {
+        var query = from c in _userRepository.Table
+                    where c.MobileNumber == mobileNo
+                    select c;
+
+        return await query.FirstOrDefaultAsync();
+    }
+
+    public async Task<string> GenerateCode()
+    {
+        var prefix = _userSettings.Prefix;
+        var sequence = _userSettings.Sequence;
+
+        if (string.IsNullOrEmpty(prefix))
+            return null;
+
+        return $"{prefix}{sequence + 1}";
+    }
+
     public async Task InsertAsync(User entity)
     {
         if (entity == null)
@@ -185,6 +339,21 @@ public class UserService : IUserService
         await _userRepository.DeleteAsync(entity);
     }
 
+    public async Task<IList<User>> GetUserByPermissionAsync(string permissionSystemName)
+    {
+        if (string.IsNullOrWhiteSpace(permissionSystemName))
+            return new List<User>();
+
+        var query = from e in _userRepository.Table
+                    join rm in _userRoleMapRepository.Table on e.Id equals rm.UserId
+                    join pm in _permissionMapRepository.Table on rm.UserRoleId equals pm.UserRoleId
+                    join p in _userRolePermissionRepository.Table on pm.PermissionId equals p.Id
+                    where !e.Deleted && p.SystemName == permissionSystemName
+                    select e;
+
+        return SortByName(await query.Distinct().ToListAsync());
+    }
+
     #endregion
 
     #region User roles
@@ -209,7 +378,7 @@ public class UserService : IUserService
             throw new ArgumentNullException(nameof(role));
 
         var mapping = await _userRoleMapRepository.Table
-            .SingleOrDefaultAsync(x => x.UserId == user.Id && x.UserRoleId == role.Id);
+                    .SingleOrDefaultAsync(x => x.UserId == user.Id && x.UserRoleId == role.Id);
 
         if (mapping != null)
             await _userRoleMapRepository.DeleteAsync(mapping);
@@ -252,7 +421,6 @@ public class UserService : IUserService
 
         return await query.FirstOrDefaultAsync();
     }
-
 
     public async Task<int[]> GetUserRoleIdsAsync(User user, bool showHidden = false)
     {
@@ -310,7 +478,7 @@ public class UserService : IUserService
     }
 
     public async Task<bool> IsInUserRoleAsync(User user,
-        string userRoleSystemName, bool onlyActiveUserRoles = true)
+            string userRoleSystemName, bool onlyActiveUserRoles = true)
     {
         if (user == null)
             throw new ArgumentNullException(nameof(user));
@@ -341,7 +509,6 @@ public class UserService : IUserService
     {
         var query = _passwordRepository.Table;
 
-        //filter by user
         if (userId.HasValue)
             query = query.Where(password => password.UserId == userId.Value);
 
@@ -374,29 +541,77 @@ public class UserService : IUserService
 
     #region Authentication/Registration
 
-    public async Task<LoginResultEnum> ValidateAsync(string email, string password)
+    public async Task<LoginResult> ValidateAsync(string email, string password)
     {
         var entity = await GetByEmailAsync(email);
         if (entity == null)
-            return LoginResultEnum.NotExist;
+            return LoginResult.NotExist;
         if (entity.Deleted)
-            return LoginResultEnum.Deleted;
-        if (entity.Status != (int)UserStatusEnum.Active)
-            return LoginResultEnum.NotActive;
+            return LoginResult.Deleted;
+        if (entity.Status != (int)UserStatus.Active)
+            return LoginResult.NotActive;
+        if (entity.Locked)
+            return LoginResult.LockedOut;
 
         var activePassword = await GetCurrentPasswordAsync(entity.Id);
 
         if (activePassword == null)
-            return LoginResultEnum.LockedOut;
+            return LoginResult.LockedOut;
 
-        var enteredPassword = _encryptionService.CreatePasswordHash(password, activePassword.PasswordSalt);
-        if (!activePassword.Password.Equals(enteredPassword))
-            return LoginResultEnum.WrongPassword;
+        var check = _encryptionService.VerifyPassword(password, activePassword.Password);
+        if (check == PasswordCheckResult.Failed)
+        {
+            var security = await _settingsService.LoadSettingAsync<SecuritySettings>();
+            if (security.MaxFailedLoginAttempts > 0)
+            {
+                entity.FailedLoginAttempts++;
+                if (entity.FailedLoginAttempts >= security.MaxFailedLoginAttempts)
+                    entity.Locked = true;
+                await _userRepository.UpdateAsync(entity);
+            }
+            return LoginResult.WrongPassword;
+        }
+
+        if (check == PasswordCheckResult.SuccessRehashNeeded)
+        {
+            activePassword.Password = _encryptionService.HashPassword(password);
+            activePassword.PasswordSalt = string.Empty;
+            await UpdateUserPasswordAsync(activePassword);
+        }
 
         if (!await IsRegisteredAsync(entity))
-            return LoginResultEnum.NotRegistered;
+            return LoginResult.NotRegistered;
 
-        return LoginResultEnum.Successful;
+        if (entity.FailedLoginAttempts != 0 && !await _twoFactorRepository.Table.AnyAsync(x => x.UserId == entity.Id))
+        {
+            entity.FailedLoginAttempts = 0;
+            await _userRepository.UpdateAsync(entity);
+        }
+
+        return LoginResult.Successful;
+    }
+
+    public async Task<bool> UnlockAsync(int userId)
+    {
+        var entity = await GetByIdAsync(userId);
+        if (entity == null)
+            return false;
+
+        entity.Locked = false;
+        entity.FailedLoginAttempts = 0;
+        await _userRepository.UpdateAsync(entity);
+
+        return true;
+    }
+
+    public async Task<bool> ValidateCurrentPasswordAsync(int userId, string password)
+    {
+        var activePassword = await GetCurrentPasswordAsync(userId);
+
+        if (activePassword == null)
+            return false;
+
+        return _encryptionService.VerifyPassword(password, activePassword.Password) != PasswordCheckResult.Failed;
     }
 
     public async Task ResetPasswordAsync(int userId, string newPassword)
@@ -409,8 +624,8 @@ public class UserService : IUserService
             CreatedOn = DateTime.UtcNow
         };
 
-        var saltKey = _encryptionService.CreateSaltKey(10);
-        var encryptedNewPassword = _encryptionService.CreatePasswordHash(newPassword, saltKey);
+        var saltKey = string.Empty;
+        var encryptedNewPassword = _encryptionService.HashPassword(newPassword);
 
         var currentPassword = await GetCurrentPasswordAsync(entity.Id);
         if (currentPassword != null)
@@ -427,46 +642,51 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<RegistrationResultEnum> RegisterAsync(User user,
-        List<int> roleIds,
-        User loggedUser,
-        bool emailWelcomeKit)
+    public async Task<RegistrationResult> RegisterAsync(User user,
+            Address address,
+            List<int> roleIds,
+            User loggedUser,
+            bool emailWelcomeKit)
     {
-        user.Code = Guid.NewGuid();
-        user.Status = (int)UserStatusEnum.Active;
-        user.LanguageId = loggedUser.LanguageId;
-        user.SystemAccount = false;
-        user.Deleted = false;
-
-        await InsertAsync(user);
-
-        var newUserEntity = await GetByEmailAsync(user.Email);
-        if (newUserEntity != null && newUserEntity.Id > 0)
+        var newAddressEntity = await _addressService.InsertAsync(address);
+        if (newAddressEntity.Id > 0)
         {
-            var registeredRole = await GetUserRoleBySystemNameAsync(UserConstant.RegisteredRoleName);
+            user.Code = Guid.NewGuid();
+            user.Status = (int)UserStatus.Active;
+            user.LanguageId = loggedUser.LanguageId;
+            user.AddressId = newAddressEntity.Id;
+            user.SystemAccount = false;
+            user.Deleted = false;
 
-            if (registeredRole == null)
-                throw new Exception("Registered role not found");
-
-            if (!roleIds.Any(x => x == registeredRole.Id))
-                newUserEntity.AddToRole(new UserRoleMap { UserRole = registeredRole });
-
-            foreach (var roleId in roleIds)
+            await InsertAsync(user);
+            var newUserEntity = await GetByEmailAsync(user.Email);
+            if (newUserEntity != null && newUserEntity.Id > 0)
             {
-                newUserEntity.AddToRole(new UserRoleMap { UserId = newUserEntity.Id, UserRoleId = roleId });
+                var registeredRole = await GetUserRoleBySystemNameAsync(UserConstant.RegisteredRoleName);
+
+                if (registeredRole == null)
+                    throw new Exception("Registered role not found");
+
+                if (!roleIds.Any(x => x == registeredRole.Id))
+                    newUserEntity.AddToRole(new UserRoleMap { UserRole = registeredRole });
+
+                foreach (var roleId in roleIds)
+                {
+                    newUserEntity.AddToRole(new UserRoleMap { UserId = newUserEntity.Id, UserRoleId = roleId });
+                }
+
+                await UpdateAsync(newUserEntity);
+
+                if (emailWelcomeKit)
+                {
+                    await _messageService.EmailActivationKitAsync(newUserEntity);
+                }
+
+                return RegistrationResult.Successful;
             }
-
-            await UpdateAsync(newUserEntity);
-
-            if (emailWelcomeKit)
-            {
-                await _messageService.EmailActivationKitAsync(newUserEntity);
-            }
-
-            return RegistrationResultEnum.Successful;
         }
 
-        return RegistrationResultEnum.Failed;
+        return RegistrationResult.Failed;
     }
 
     public async Task<User> ValidateTokenAsync(string token)
@@ -484,10 +704,13 @@ public class UserService : IUserService
             if (Guid.TryParse(tokenArr[0].ToString(), out Guid code))
             {
                 var user = await GetByCodeAsync(code);
-                if (user == null || user.Id <= 0 || user.Deleted || user.Status != (int)UserStatusEnum.Active)
+                if (user == null || user.Id <= 0 || user.Deleted || user.Status != (int)UserStatus.Active)
                     return null;
 
-                var isValidToken = _encryptionService.ValidateToken(tokenArr[1].ToString(), 10);
+                var security = await _settingsService.LoadSettingAsync<SecuritySettings>();
+                var expiryMinutes = security.TokenExpiryMinutes > 0 ? security.TokenExpiryMinutes : 60;
+
+                var isValidToken = _encryptionService.ValidateToken(tokenArr[1].ToString(), expiryMinutes);
                 if (!isValidToken)
                     return null;
 
@@ -506,13 +729,18 @@ public class UserService : IUserService
 
     #region Projects
 
-    public async Task<IList<Project>> GetAllAccessibleProjects(int userId)
+    public async Task<IList<Project>> GetAllAccessibleProjects(int userId, bool fetchOnlyCanViewOthersTask = false)
     {
         var query = _userProjectMapRepository.Table
             .Where(x => x.Project.Active && !x.Project.Deleted && x.UserId == userId)
-            .Select(s => s.Project);
+            .Select(s => s);
 
-        return await _cacheManager.GetAsync(ServiceConstant.AccessibleProjectCacheKey, () => query.ToListAsync());
+        if (fetchOnlyCanViewOthersTask)
+            query = query.Where(x => x.CanViewOthersTask);
+
+        var key = string.Format(ServiceConstant.AccessibleProjectCacheKey, userId, fetchOnlyCanViewOthersTask ? "viewall" : "all");
+
+        return await _cacheManager.GetAsync(key, () => query.Select(s => s.Project).ToListAsync());
     }
 
     public async Task<UserProjectMap> GetProjectMapping(int userId, int projectId)
@@ -521,6 +749,15 @@ public class UserService : IUserService
             .Where(x => x.Project.Active && !x.Project.Deleted && x.UserId == userId && x.ProjectId == projectId);
 
         return await query.FirstOrDefaultAsync();
+    }
+
+    #endregion
+
+    #region Utilities
+
+    private static IList<User> SortByName(IEnumerable<User> users)
+    {
+        return users.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     #endregion

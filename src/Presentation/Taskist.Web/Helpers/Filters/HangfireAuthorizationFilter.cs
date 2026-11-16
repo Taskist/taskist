@@ -1,34 +1,25 @@
-﻿using Taskist.Service.Authentication;
+using Taskist.Core.Common;
+using Taskist.Service.Security;
 using Hangfire.Dashboard;
 
 namespace Taskist.Web.Helpers.Filters
 {
     public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
     {
-        #region Fields
-
-        protected readonly IAuthenticationService _authenticationService;
-
-        #endregion
-
-        #region Ctor
-
-        public HangfireAuthorizationFilter(IAuthenticationService authenticationService)
-        {
-            _authenticationService = authenticationService;
-        }
-
-        #endregion
-
-        #region Methods
-
         public bool Authorize(DashboardContext context)
         {
             var httpContext = context.GetHttpContext();
 
-            var user = _authenticationService.GetAuthenticatedUserAsync().Result;
-            if (user.UserRoles.Any(x => x.SystemName == "SystemAdministrator"))
-                return true;
+            if (httpContext.User?.Identity?.IsAuthenticated == true)
+            {
+                if (httpContext.User.IsInRole(Constant.AdministratorRoleName))
+                    return true;
+
+                var permissionService = httpContext.RequestServices.GetService<IPermissionService>();
+                if (permissionService != null
+                    && permissionService.AuthorizeAsync(PermissionProvider.ManageJobs).GetAwaiter().GetResult())
+                    return true;
+            }
 
             httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
             httpContext.Response.ContentType = "text/html";
@@ -36,7 +27,5 @@ namespace Taskist.Web.Helpers.Filters
 
             return false;
         }
-
-        #endregion
     }
 }

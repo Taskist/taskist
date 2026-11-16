@@ -1,0 +1,49 @@
+/* Task Explorer */
+.tx-presets { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.tx-preset.active { font-weight: 600; }
+.tx-preset-toggle { min-width: 150px; text-align: left; }
+.tx-help { cursor: help; }
+.tx-project { width: 200px; max-width: 100%; }
+
+@media (max-width: 575.98px) {
+    .tx-project { width: 100%; }
+    .tx-preset-toggle { min-width: 0; }
+}
+.pivot { overflow-x: auto; }
+
+/* ===== On-theme pivottable chrome (scoped to #pivot) ===== */
+/* Headers + totals: app grid-header tint */
+#pivot .pvtTable thead tr th,
+#pivot .pvtTable tbody tr th,
+#pivot .pvtAxisLabel,
+#pivot .pvtColLabel,
+#pivot .pvtRowLabel,
+#pivot .pvtTotalLabel,
+#pivot .pvtGrandTotal,
+#pivot .pvtTotal {
+    background: #eef6f6;
+    color: #2a3b52;
+    border-color: #dfe4ea;
+}
+#pivot .pvtTable td,
+#pivot .pvtTable th { border-color: #dfe4ea; }
+
+/* Drag-field boxes / axis chips: neutral app-grey pills */
+.pvtUi .pvtAttr,
+.pvtUi .pvtAxisContainer li span.pvtAttr {
+    background: #f2f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    color: #2a3b52;
+}
+.pvtUi .pvtAxisContainer,
+.pvtUi .pvtVals,
+.pvtUi .pvtRenderers { background: #f8fafc; border-color: #e2e8f0; }
+.pvtUi select { border: 1px solid #d8dbe0; border-radius: 4px; }
+
+/* Sort arrows / triangles + drop-target highlight in brand teal */
+.pvtUi .pvtTriangle { color: #1cc7c9; }
+.pvtUi .pvtPlaceholder { border-color: #1cc7c9; }
+
+/* Clickable value cells: teal hover (matches app grid) */
+#pivot .pvtTable td.pvtVal:hover { outline: 2px solid #1cc7c9; cursor: pointer; }

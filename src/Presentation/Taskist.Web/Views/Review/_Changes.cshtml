@@ -1,0 +1,115 @@
+@using Taskist.Core.Dtos.Git
+@using Taskist.Web.Helpers.Common
+@model MergeRequestChangesDto
+@{
+	var files = Model.Changes.Select(c =>
+	{
+		var rows = DiffRenderer.Parse(c.Diff);
+		var (added, removed) = DiffRenderer.Count(rows);
+		return (Change: c, Rows: rows, Added: added, Removed: removed);
+	}).ToList();
+	var totalAdded = files.Sum(f => f.Added);
+	var totalRemoved = files.Sum(f => f.Removed);
+}
+
+<div class="review-diff-summary">
+	<span><i class="far fa-file-lines me-1"></i>@files.Count @Localize("ReviewDrawer.Files")</span>
+	<span class="review-diff-add">+@totalAdded</span>
+	<span class="review-diff-del">−@totalRemoved</span>
+	@if (Model.Overflow)
+	{
+		<span class="text-warning ms-2"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("ReviewDrawer.Overflow")</span>
+	}
+	@if (files.Count > 1)
+	{
+		<span class="ms-auto d-flex gap-2">
+			<button type="button" class="btn btn-link btn-sm p-0 review-files-expand">@Localize("ReviewDrawer.ExpandAll")</button>
+			<button type="button" class="btn btn-link btn-sm p-0 review-files-collapse">@Localize("ReviewDrawer.CollapseAll")</button>
+		</span>
+	}
+</div>
+
+@if (!files.Any())
+{
+	<div class="text-muted small">@Localize("ReviewDrawer.NoChanges")</div>
+}
+
+<div class="review-changes-layout @(files.Count > 1 ? "has-nav" : "")">
+@if (files.Count > 1)
+{
+	<nav class="review-file-nav">
+		@for (var i = 0; i < files.Count; i++)
+		{
+			var nf = files[i];
+			var navPath = (nf.Change.DeletedFile ? nf.Change.OldPath : nf.Change.NewPath) ?? string.Empty;
+			var fileName = navPath.Contains('/') ? navPath[(navPath.LastIndexOf('/') + 1)..] : navPath;
+			<button type="button" class="review-file-nav__item" data-target="rf-@i" title="@navPath">
+				<span class="review-file-nav__name">@fileName</span>
+				<span class="review-file-nav__stats"><span class="review-diff-add">+@nf.Added</span> <span class="review-diff-del">−@nf.Removed</span></span>
+			</button>
+		}
+	</nav>
+}
+<div class="review-files">
+@for (var fi = 0; fi < files.Count; fi++)
+{
+	var f = files[fi];
+	var c = f.Change;
+	var path = c.DeletedFile ? c.OldPath : c.NewPath;
+	<details class="review-file" id="rf-@fi" @(f.Rows.Count <= 400 ? "open" : "")>
+		<summary class="review-file__head">
+			@if (c.NewFile)
+			{
+				<span class="review-file__badge review-file__badge--new">@Localize("ReviewDrawer.File.New")</span>
+			}
+			else if (c.DeletedFile)
+			{
+				<span class="review-file__badge review-file__badge--deleted">@Localize("ReviewDrawer.File.Deleted")</span>
+			}
+			else if (c.RenamedFile)
+			{
+				<span class="review-file__badge review-file__badge--renamed">@Localize("ReviewDrawer.File.Renamed")</span>
+			}
+			<span class="review-file__path" title="@path">@(c.RenamedFile ? $"{c.OldPath} → {c.NewPath}" : path)</span>
+			<span class="review-file__stats"><span class="review-diff-add">+@f.Added</span> <span class="review-diff-del">−@f.Removed</span></span>
+		</summary>
+		@if (c.TooLarge || (string.IsNullOrEmpty(c.Diff) && !c.NewFile && !c.DeletedFile && !c.RenamedFile))
+		{
+			<div class="review-file__empty">@Localize("ReviewDrawer.TooLarge")</div>
+		}
+		else if (!f.Rows.Any())
+		{
+			<div class="review-file__empty">@Localize("ReviewDrawer.NoContentChange")</div>
+		}
+		else
+		{
+			<div class="review-diff-wrap">
+				<table class="review-diff">
+					<tbody>
+						@foreach (var r in f.Rows)
+						{
+							@if (r.Kind == DiffRowKind.Hunk)
+							{
+								<tr class="review-diff__hunk"><td colspan="3">@r.Text</td></tr>
+							}
+							else if (r.Kind == DiffRowKind.Note)
+							{
+								<tr class="review-diff__note"><td colspan="3">@r.Text</td></tr>
+							}
+							else
+							{
+								<tr class="review-diff__line review-diff__line--@r.Kind.ToString().ToLowerInvariant()">
+									<td class="review-diff__num">@r.OldLine</td>
+									<td class="review-diff__num">@r.NewLine</td>
+									<td class="review-diff__code"><span class="review-diff__sign">@(r.Kind == DiffRowKind.Added ? "+" : r.Kind == DiffRowKind.Removed ? "−" : " ")</span>@r.Text</td>
+								</tr>
+							}
+						}
+					</tbody>
+				</table>
+			</div>
+		}
+	</details>
+}
+</div>
+</div>

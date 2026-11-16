@@ -1,4 +1,4 @@
-﻿@model BacklogModel
+@model BacklogModel
 @{
     var updateCssClassName = "";
     if (Model.Id > 0 && Model.CanEdit)
@@ -6,7 +6,9 @@
         updateCssClassName = "ajax-update";
     }
 }
+
 <input type="hidden" asp-for="Id" />
+<input type="hidden" asp-for="SourceWikiDocumentId" />
 <div asp-validation-summary="ModelOnly" class="message-error"></div>
 <div class="row">
     <div class="col-md-12">
@@ -14,9 +16,11 @@
             <wc-label asp-for="Title" class="form-wc-label"></wc-label>
             <input asp-for="Title" class="form-control form-control-maxlength @updateCssClassName" autocomplete="off" maxlength="500" />
             <span asp-validation-for="Title" class="text-danger"></span>
+            <div id="similar-tasks" class="similar-tasks d-none"></div>
         </div>
     </div>
 </div>
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainAfterTitle)" />
 <div class="row">
     <div class="col-md-12">
         <ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
@@ -25,16 +29,20 @@
                     <i class="fas fa-sticky-note me-1"></i>@Localize("BacklogPage.DescriptionTabTitle")
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link text-success" id="devnotes-tab" data-bs-toggle="tab" data-bs-target="#devnotes" type="button" role="tab" aria-controls="devnotes" aria-selected="false">
-                    <i class="fas fa-code me-1"></i>@Localize("BacklogPage.DeveloperNotesTabTitle")
+            <li class="nav-item @(Model.ShowRootCauseTab ? "" : "d-none")" role="presentation" id="rca-tab-item">
+                <button class="nav-link rcf-tab" id="rca-tab" data-bs-toggle="tab" data-bs-target="#rca" type="button" role="tab" aria-controls="rca" aria-selected="false">
+                    <i class="fas fa-magnifying-glass-chart me-1"></i>@Localize("BacklogPage.RootCauseFixTabTitle")
+                    <span class="rcf-tab-badge" id="rcfTabBadge"></span>
                 </button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link text-danger" id="qanotes-tab" data-bs-toggle="tab" data-bs-target="#qanotes" type="button" role="tab" aria-controls="qanotes" aria-selected="false">
-                    <i class="fas fa-bolt me-1"></i>@Localize("BacklogPage.QaNotesTabTitle")
-                </button>
-            </li>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentJson))
+            {
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link text-secondary" id="environment-tab" data-bs-toggle="tab" data-bs-target="#environment" type="button" role="tab" aria-controls="environment" aria-selected="false">
+                        <i class="fas fa-desktop me-1"></i>@Localize("BacklogPage.EnvironmentTabTitle")
+                    </button>
+                </li>
+            }
         </ul>
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade active show" id="description" role="tabpanel" aria-labelledby="description-tab">
@@ -45,287 +53,100 @@
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
                     </div>
-                    <div class="col-md-12 mb-4 text-end">
-                        <button id="btnSaveDescription" type="button" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
-                        </button>
-                    </div>
                 </div>
             </div>
-            <div class="tab-pane fade" id="devnotes" role="tabpanel" aria-labelledby="devnotes-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <textarea asp-for="DeveloperNotes"></textarea>
-                            <span asp-validation-for="DeveloperNotes" class="text-danger"></span>
+            <div class="tab-pane fade" id="rca" role="tabpanel" aria-labelledby="rca-tab">
+                <div class="rcf">
+                    <section class="rcf-step rcf-step--cause" data-item="rc">
+                        <div class="rcf-marker"><span data-step="1">1</span></div>
+                        <div class="rcf-card">
+                            <header class="rcf-head">
+                                <div class="rcf-head__text">
+                                    <div class="rcf-title"><i class="fas fa-bug me-2"></i>@Localize("BacklogPage.RootCauseFix.RootCause")</div>
+                                    <div class="rcf-sub">@Localize("BacklogPage.RootCauseFix.RootCauseHint")</div>
+                                </div>
+                                <span class="rcf-req d-none"></span>
+                                <span class="rcf-state"></span>
+                            </header>
+                            <textarea asp-for="RootCauseAnalysis"></textarea>
+                            <span asp-validation-for="RootCauseAnalysis" class="text-danger"></span>
                         </div>
-                    </div>
-                    <div class="col-md-12 mb-4 text-end">
-                        <button id="btnSaveDeveloperNotes" type="button" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="qanotes" role="tabpanel" aria-labelledby="qanotes-tab">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="mb-3">
-                            <textarea asp-for="QualityNotes"></textarea>
-                            <span asp-validation-for="QualityNotes" class="text-danger"></span>
+                    </section>
+                    <section class="rcf-step rcf-step--fix" data-item="res">
+                        <div class="rcf-marker"><span data-step="2">2</span></div>
+                        <div class="rcf-card">
+                            <header class="rcf-head">
+                                <div class="rcf-head__text">
+                                    <div class="rcf-title"><i class="fas fa-screwdriver-wrench me-2"></i>@Localize("BacklogPage.RootCauseFix.Resolution")</div>
+                                    <div class="rcf-sub">@Localize("BacklogPage.RootCauseFix.ResolutionHint")</div>
+                                </div>
+                                <span class="rcf-req d-none"></span>
+                                <span class="rcf-state"></span>
+                            </header>
+                            <textarea asp-for="ResolutionDetails"></textarea>
+                            <span asp-validation-for="ResolutionDetails" class="text-danger"></span>
                         </div>
-                    </div>
-                    <div class="col-md-12 mb-4 text-end">
-                        <button id="btnSaveQualityNotes" type="button" class="btn btn-primary" style="display: none;">
-                            <i class="fas fa-save me-1"></i>@Localize("Button.Save")
-                        </button>
-                    </div>
+                    </section>
                 </div>
             </div>
+            @if (!string.IsNullOrWhiteSpace(Model.EnvironmentJson))
+            {
+                <div class="tab-pane fade mb-3" id="environment" role="tabpanel" aria-labelledby="environment-tab">
+                    <div id="envPanel" class="env-panel" data-env="@Model.EnvironmentJson"></div>
+                </div>
+            }
         </div>
     </div>
 </div>
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainAfterDescription)" />
 <div id="thumbnail-zone"></div>
 <div class="row">
     <div class="col-md-12">
-        <div id="dropzone-container" class="dropzone">
+        <div id="dropzone-container" class="dropzone mb-3">
             <div class="dz-message">
-                Drag and drop files here or click to upload
+                <i class="fas fa-cloud-arrow-up me-2"></i>Drag files here or click to upload
             </div>
         </div>
     </div>
 </div>
-@await Component.InvokeAsync("CustomFields", new { backLogId = Model.Id, placement = CustomFieldPlacementEnum.MainSection })
-<script>
-    let initialDescription = '';
-    let isDescriptionChanged = false;
-    let initialDeveloperNotes = '';
-    let isDeveloperNotesChanged = false;
-    let initialQualityNotes = '';
-    let isQualityNotesChanged = false;
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainAfterAttachments)" />
+<div class="row">
+    <div class="col-lg-6">
+        <div class="mb-3">
+            <wc-label asp-for="ParentId" />
+            <select class="form-control select2 @updateCssClassName" asp-for="ParentId"></select>
+            <span asp-validation-for="ParentId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="mb-3">
+            <wc-label asp-for="SelectedTags" />
+            <select class="form-control backlog-tags" asp-for="SelectedTags" asp-items="Model.AvailableTags" multiple="multiple" disabled="@(Model.Id > 0 && !Model.CanEdit)"></select>
+            <span asp-validation-for="SelectedTags" class="text-danger"></span>
+        </div>
+    </div>
+</div>
 
-    $(function () {
-        Dropzone.autoDiscover = false;
-        let docs = [];
+<partial name="_CustomFieldSlot" model="Model.CustomFieldLayout.For(BacklogFormSlot.MainBottom)" />
 
-        const myDropzone = $("div#dropzone-container").dropzone({
-            url: "@Url.Action("UploadDocument")",
-            autoProcessQueue: true,
-            maxFilesize: 2,
-            maxFiles: 5,
-            addRemoveLinks: true,
-            acceptedFiles: ".jpg,.png,.gif,.pdf,.docx,.txt",
-            init: function () {
-                this.on("addedfile", function (file) {
-                    const progressElement = file.previewElement.querySelector(".dz-progress");
-                    if (progressElement) {
-                        progressElement.remove();
-                    }
-                });
-
-                this.on("sending", function (file, xhr, formData) {
-                    formData.append("reference", "@Model.Id");
-                });
-
-                this.on("success", function (file, response) {
-                    file.serverFilePath = response.token;
-                    if (parseInt('@Model.Id') > 0) {
-                        this.removeFile(file);
-                        renderDocuments();
-                    } else {
-                        docs.push(response.token);
-                        $('#Token').val(JSON.stringify(docs));
-                    }
-                });
-
-                this.on("maxfilesexceeded", function (file) {
-                    this.removeFile(file);
-                    alert("You can only upload up to 5 files.");
-                });
-            }
-        });
-
-        tinymce.init({
-            selector: '#Description',
-            plugins: 'lists link image table code',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
-            height: 250,
-            menubar: false,
-            setup: function (editor) {
-                if (parseInt('@Model.Id') > 0) {
-                    editor.on('init', function () {
-                        initialDescription = editor.getContent();
-                    });
-
-                    editor.on('keyup change', function () {
-                        checkDescriptionChange(editor.getContent());
-                    });
-                }
-            }
-        });
-
-        tinymce.init({
-            selector: '#DeveloperNotes',
-            plugins: 'lists link image table code',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
-            height: 250,
-            menubar: false,
-            setup: function (editor) {
-                if (parseInt('@Model.Id') > 0) {
-                    editor.on('init', function () {
-                        initialDeveloperNotes= editor.getContent();
-                    });
-
-                    editor.on('keyup change', function () {
-                        checkDeveloperNotesChange(editor.getContent());
-                    });
-                }
-            }
-        });
-
-        tinymce.init({
-            selector: '#QualityNotes',
-            plugins: 'lists link image table code',
-            toolbar: 'undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent',
-            height: 250,
-            menubar: false,
-            setup: function (editor) {
-                if (parseInt('@Model.Id') > 0) {
-                    editor.on('init', function () {
-                        initialQualityNotes = editor.getContent();
-                    });
-
-                    editor.on('keyup change', function () {
-                        checkQualityNotesChange(editor.getContent());
-                    });
-                }
-            }
-        });
-
-        renderDocuments();
-
-        $('#btnSaveDescription').click(function () {
-            var id = '@Model.Id';
-            var value = tinymce.get('Description').getContent();
-            var name = 'Description';
-            var dto = {
-                id,
-                name,
-                value
-            };
-
-            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response) {
-                JSManager.showSuccess(response.message);
-                if (response.status === 2000) {
-                    const content = tinymce.get('Description').getContent();
-                    initialDescription = content;
-                    isDescriptionChanged = false;
-                    document.getElementById('btnSaveDescription').style.display = 'none';
-                }
-            });
-        });
-
-        $('#btnSaveDeveloperNotes').click(function () {
-            var id = '@Model.Id';
-            var value = tinymce.get('DeveloperNotes').getContent();
-            var name = 'DeveloperNotes';
-            var dto = {
-                id,
-                name,
-                value
-            };
-
-            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response) {
-                JSManager.showSuccess(response.message);
-                if (response.status === 2000) {
-                    const content = tinymce.get('DeveloperNotes').getContent();
-                    initialDeveloperNotes = content;
-                    isDeveloperNotesChanged = false;
-                    document.getElementById('btnSaveDeveloperNotes').style.display = 'none';
-                }
-            });
-        });
-
-        $('#btnSaveQualityNotes').click(function () {
-            var id = '@Model.Id';
-            var value = tinymce.get('QualityNotes').getContent();
-            var name = 'QualityNotes';
-            var dto = {
-                id,
-                name,
-                value
-            };
-
-            JSManager.ajaxPatch('@Url.Action("UpdateStatus")', dto, name, undefined, function (response) {
-                JSManager.showSuccess(response.message);
-                if (response.status === 2000) {
-                    const content = tinymce.get('QualityNotes').getContent();
-                    initialQualityNotes = content;
-                    isQualityNotesChanged = false;
-                    document.getElementById('btnSaveQualityNotes').style.display = 'none';
-                }
-            });
-        });
-    });
-
-    function checkDescriptionChange(currentContent) {
-        const saveButton = document.getElementById('btnSaveDescription');
-        if (currentContent !== initialDescription) {
-            isDescriptionChanged = true;
-            saveButton.style.display = 'inline-block';
-        } else {
-            isDescriptionChanged = false;
-            saveButton.style.display = 'none';
-        }
-    }
-
-    function checkDeveloperNotesChange(currentContent) {
-        const saveButton = document.getElementById('btnSaveDeveloperNotes');
-        if (currentContent !== initialDeveloperNotes) {
-            isDeveloperNotesChanged = true;
-            saveButton.style.display = 'inline-block';
-        } else {
-            isDeveloperNotesChanged = false;
-            saveButton.style.display = 'none';
-        }
-    }
-
-    function checkQualityNotesChange(currentContent) {
-        const saveButton = document.getElementById('btnSaveQualityNotes');
-        if (currentContent !== initialQualityNotes) {
-            isQualityNotesChanged = true;
-            saveButton.style.display = 'inline-block';
-        } else {
-            isQualityNotesChanged = false;
-            saveButton.style.display = 'none';
-        }
-    }
-
-    function handlePageLeave(event) {
-        if (isDescriptionChanged) {
-            event.preventDefault();
-            Swal.fire({
-                title: 'You have unsaved changes!',
-                text: 'Do you want to save your changes?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Yes, save it!',
-                cancelButtonText: 'No, discard changes',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    saveContent();
-                }
-                window.location.href = event.target.href;
-            });
-        }
-    }
-
-    document.querySelectorAll('a').forEach(anchor => {
-        anchor.addEventListener('click', handlePageLeave);
-    });
-
-    function renderDocuments() {
-        JSManager.renderPartial('@Url.Action("Documents")', { id: @Model.Id }, 'thumbnail-zone');
-    }
-</script>
+<div id="backlog-form-config" class="d-none"
+     data-id="@Model.Id"
+     data-parent-id="@Model.ParentId"
+     data-parent-title="@Model.ParentTitle"
+     data-can-edit="@Model.CanEdit.ToString().ToLower()"
+     data-project-id="@Model.ProjectId"
+     data-merge-request-id="@(Model.MergeRequestId ?? 0)"
+     data-parent-tasks-url="@Url.Action("GetParentTasks")"
+     data-upload-url="@Url.Action("UploadDocument")"
+     data-upload-accept="@Taskist.Core.Common.UploadPolicy.AcceptAttribute()"
+     data-upload-max-mb="@Taskist.Core.Common.UploadPolicy.MaxAttachmentMegabytes"
+     data-documents-url="@Url.Action("Documents")"
+     data-merge-request-url="@Url.Action("MergeRequest")"
+     data-modules-url="@Url.Action("GetModules")"
+     data-project-options-url="@Url.Action("ProjectOptions")"
+     data-sub-modules-url="@Url.Action("GetSubModules", "SubModule")"
+     data-reload-url="@Url.Action("ReloadForProject")"
+     data-bug-task-type-ids="@Model.BugTaskTypeIds"
+     data-rca-clear-msg="@Localize("Backlog.RcaClearOnTypeChangeMsg")"
+     data-similar-url="@Url.Action("SimilarTasks")"
+     data-custom-field-url="@Url.Action("UpdateCustomField")"></div>

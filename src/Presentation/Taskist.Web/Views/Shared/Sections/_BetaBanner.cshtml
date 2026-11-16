@@ -1,0 +1,11 @@
+@inject Taskist.Core.Configuration.IAppInfoProvider AppInfo
+@inject GeneralSettings GeneralSettings
+@if (AppInfo.IsBeta)
+{
+    var support = string.IsNullOrWhiteSpace(GeneralSettings.SupportEmail) ? "taskist@outlook.in" : GeneralSettings.SupportEmail;
+    <div class="beta-pill mx-auto" id="betaBanner" data-version="@AppInfo.Version" data-support="@support" role="status" title="@AppInfo.BetaMessage Found a problem? Report it.">
+        <i class="fas fa-flask"></i>
+        <span class="beta-pill__text">Beta build &middot; <a href="#" id="betaReport" class="beta-pill__report">Report a problem</a></span>
+        <span class="beta-pill__chip">BETA</span>
+    </div>
+}

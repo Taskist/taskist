@@ -1,0 +1,233 @@
+﻿@using Taskist.Core.Dtos.Git
+@model TaskCodeViewModel
+@{
+	string StateClass(TaskCodeDto.MergeRequest mr) => mr.Draft ? "draft" : (mr.State ?? "").ToLowerInvariant() switch
+	{
+		"opened" => "open",
+		"merged" => "merged",
+		"closed" => "closed",
+		_ => "other"
+	};
+
+	string StateLabel(TaskCodeDto.MergeRequest mr) => mr.Draft ? "Draft" : (mr.State ?? "").ToLowerInvariant() switch
+	{
+		"opened" => "Open",
+		"merged" => "Merged",
+		"closed" => "Closed",
+		_ => mr.State ?? "-"
+	};
+}
+
+@if (Model.Code.State == TaskCodeState.NotConfigured)
+{
+	<div class="text-muted small">@Localize("Backlog.Code.NotConfigured")</div>
+}
+else if (Model.Code.State == TaskCodeState.NotLinked)
+{
+	<div class="text-muted small">@Localize("Backlog.Code.NotLinked")</div>
+}
+else
+{
+	var canManage = Model.CanManageBranch;
+	var canCreate = Model.CanCreateBranch;
+	var closingMrId = Model.ClosingMrId;
+	var canReview = Model.CanReview;
+	var reviewProjectId = Model.ProjectId;
+	var linkedBranchNames = Model.Code.Branches.Where(b => !b.Deleted).Select(b => b.Name).ToHashSet();
+	var activeMrCount =Model.Code.MergeRequests.Count(m => !string.Equals(m.State, "closed", StringComparison.OrdinalIgnoreCase));
+
+	<span class="task-code-summary d-none" data-mr-count="@activeMrCount" data-state="@Model.Code.State"></span>
+
+	@if (!string.IsNullOrEmpty(Model.Code.ErrorMessage))
+	{
+		<span class="task-code-error d-none" data-error="@Model.Code.ErrorMessage"></span>
+	}
+
+	@if (Model.Code.State == TaskCodeState.Unreachable)
+	{
+		<div class="alert alert-warning py-1 px-2 small mb-2"><i class="fas fa-plug-circle-exclamation me-1"></i>@Localize("Backlog.Code.Unreachable")</div>
+	}
+	else if (Model.Code.Partial)
+	{
+		<div class="text-warning small mb-2"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("Backlog.Code.Partial")</div>
+	}
+
+	<div class="task-code-section">
+		<div class="task-code-heading d-flex align-items-center">
+			<span>@Localize("Backlog.Code.Branches")</span>
+			@if (canManage && Model.Code.Branches.Any())
+			{
+				<div class="dropdown ms-auto">
+					<button type="button" class="btn btn-sm btn-outline-primary task-code-add" data-bs-toggle="dropdown" aria-expanded="false">
+						<i class="fas fa-plus me-1"></i>@Localize("Backlog.Code.AddBranch")<i class="fas fa-caret-down ms-1"></i>
+					</button>
+					<ul class="dropdown-menu dropdown-menu-end">
+						@if (canCreate)
+						{
+							<li><button type="button" class="dropdown-item task-code-create"><i class="fas fa-code-branch me-2"></i>@Localize("Backlog.Branch.Create")</button></li>
+						}
+						<li><button type="button" class="dropdown-item task-code-link"><i class="fas fa-link me-2"></i>@Localize("Backlog.Branch.LinkExisting")</button></li>
+					</ul>
+				</div>
+			}
+		</div>
+		@if (Model.Code.Branches.Any())
+		{
+			<div class="task-code-branches">
+			@foreach (var b in Model.Code.Branches)
+			{
+				var isGroup = b.Origin == (int)Taskist.Core.Enums.GitBranchOrigin.Created && b.SharedWithTaskIds.Any();
+				var canCreateMr = canManage && !b.Deleted && Model.Code.State != TaskCodeState.Unreachable
+					&& !Model.Code.MergeRequests.Any(m => m.SourceBranch == b.Name && string.Equals(m.State, "opened", StringComparison.OrdinalIgnoreCase));
+				<div class="task-code-branch @(b.Deleted ? "task-code-branch--deleted" : "")">
+					<div class="task-code-branch__top">
+						<i class="fas fa-code-branch task-code-branch__icon"></i>
+						<code class="task-code-branch-name" title="@b.Name">@b.Name</code>
+						@if (Model.Code.MultipleRepositories)
+						{
+							<span class="task-code-repo-badge" title="@b.RepositoryName"><i class="fas fa-box-archive me-1"></i>@b.RepositoryName</span>
+						}
+						@if (b.Deleted)
+						{
+							<span class="task-code-deleted-badge" title="@Localize("Backlog.Code.BranchDeletedHint").Text"><i class="fas fa-box-archive me-1"></i>@Localize("Backlog.Code.BranchDeleted")</span>
+						}
+						else
+						{
+							<div class="dropdown task-code-branch__menu">
+								<button type="button" class="btn btn-sm btn-link p-0 px-1" data-bs-toggle="dropdown" aria-expanded="false" title="@Localize("Backlog.Code.BranchActions").Text"><i class="fas fa-ellipsis"></i></button>
+								<ul class="dropdown-menu dropdown-menu-end">
+									<li><button type="button" class="dropdown-item task-code-copy" data-copy="git fetch origin; git checkout '@b.Name'"><i class="far fa-copy me-2"></i>@Localize("Backlog.Code.CopyCheckout")</button></li>
+									<li><button type="button" class="dropdown-item task-code-copy" data-copy="@b.Name"><i class="fas fa-code-branch me-2"></i>@Localize("Backlog.Code.CopyBranchName")</button></li>
+									@if (!string.IsNullOrEmpty(b.Url))
+									{
+										<li><a class="dropdown-item" href="@b.Url" target="_blank" rel="noopener"><i class="fas fa-arrow-up-right-from-square me-2"></i>@Localize("Backlog.Code.OpenBranchInGitLab")</a></li>
+									}
+									@if (canManage)
+									{
+										<li><hr class="dropdown-divider" /></li>
+										<li><button type="button" class="dropdown-item text-danger task-code-unlink" data-branch-id="@b.Id" data-branch-name="@b.Name"><i class="fas fa-link-slash me-2"></i>@Localize("Backlog.Branch.Unlink")</button></li>
+									}
+								</ul>
+							</div>
+						}
+					</div>
+					<div class="task-code-meta task-code-branch__meta">
+						@if (!string.IsNullOrEmpty(b.BaseBranch))
+						{
+							<span>@Localize("Backlog.Code.From") <strong>@b.BaseBranch</strong></span>
+							<span class="task-code-dot">·</span>
+						}
+						@if (!string.IsNullOrEmpty(b.CreatedBy))
+						{
+							<span>@b.CreatedBy</span>
+							<span class="task-code-dot">·</span>
+						}
+						<span class="task-code-time" data-time="@DateTime.SpecifyKind(b.CreatedOn, DateTimeKind.Utc).ToString("o")"></span>
+					</div>
+					@if (b.SharedWithTaskIds.Any())
+					{
+						<div class="task-code-branch__shared">
+							@if (isGroup)
+							{
+								<span class="task-code-group-badge" title="@Localize("Backlog.Code.GroupHint").Text"><i class="fas fa-layer-group me-1"></i>@string.Format(Localize("Backlog.Code.GroupTasks").Text, b.SharedWithTaskIds.Count + 1)</span>
+							}
+							else
+							{
+								<span class="task-code-shared-label">@Localize("Backlog.Code.SharedWith")</span>
+							}
+							@foreach (var id in b.SharedWithTaskIds)
+							{
+								<a href="@Url.Action("Edit", new { id })" target="_blank" class="task-code-task-link">#@id</a>
+							}
+						</div>
+					}
+					@if (canCreateMr)
+					{
+						<button type="button" class="btn btn-sm task-code-create-mr" data-branch-id="@b.Id" data-branch-name="@b.Name">
+							<i class="fas fa-code-pull-request me-1"></i>@Localize("Backlog.Mr.Create")
+						</button>
+					}
+				</div>
+			}
+			</div>
+		}
+		else
+		{
+			<div class="text-muted small">@Localize("Backlog.Code.NoBranches")</div>
+			@if (canManage)
+			{
+				<div class="d-flex flex-wrap gap-2 mt-2">
+					@if (canCreate)
+					{
+						<button type="button" class="btn btn-sm btn-outline-primary task-code-create"><i class="fas fa-code-branch me-1"></i>@Localize("Backlog.Branch.Create")</button>
+					}
+					<button type="button" class="btn btn-sm btn-outline-secondary task-code-link"><i class="fas fa-link me-1"></i>@Localize("Backlog.Branch.LinkExisting")</button>
+				</div>
+			}
+		}
+	</div>
+
+	@if (Model.Code.State != TaskCodeState.Unreachable)
+	{
+		<div class="task-code-section">
+			<div class="task-code-heading">@Model.Code.ShortTerm · @Localize("Backlog.Code.MergeRequests")</div>
+			@if (Model.Code.MergeRequests.Any())
+			{
+				@foreach (var mr in Model.Code.MergeRequests)
+				{
+					<div class="task-code-mr @(Model.IsClosing(mr) ? "task-code-mr--closing" : "")">
+						<div class="d-flex align-items-start gap-2">
+							<span class="task-code-state task-code-state--@StateClass(mr)">@StateLabel(mr)</span>
+							<a href="@mr.Url" target="_blank" rel="noopener" class="task-code-mr-title" title="@mr.Title">@(mr.RefPrefix)@mr.Iid @mr.Title</a>
+							@if (Model.Code.MultipleRepositories)
+							{
+								<span class="task-code-repo-badge">@mr.RepositoryName</span>
+							}
+							@if (Model.IsClosing(mr))
+							{
+								<span class="task-code-closing-badge" title="@Localize("Backlog.Code.ClosingMrHint").Text"><i class="fas fa-flag-checkered me-1"></i>@Localize("Backlog.Code.ClosingMr")</span>
+							}
+							@if (canReview && Model.ReviewRepositoryIds.Contains(mr.RepositoryId) && string.Equals(mr.State, "opened", StringComparison.OrdinalIgnoreCase))
+							{
+								<button type="button" class="btn btn-sm btn-outline-primary py-0 px-2 task-code-review"
+										data-url="@Url.Action("Detail", "Review", new { repositoryId = mr.RepositoryId, iid = mr.Iid })"
+										data-title="@Localize("Backlog.Code.Review").Text @(mr.RefPrefix)@mr.Iid" title="@Localize("Backlog.Code.ReviewHint").Text">
+									<i class="fas fa-magnifying-glass-chart me-1"></i>@Localize("Backlog.Code.Review")
+								</button>
+							}
+						</div>
+						<div class="task-code-meta">
+							<i class="fas fa-arrow-right-long me-1"></i>@mr.TargetBranch
+							@if (!string.IsNullOrEmpty(mr.Author))
+							{
+								<span>· @mr.Author</span>
+							}
+							<span>· <span class="task-code-time" data-time="@DateTime.SpecifyKind(mr.UpdatedAt, DateTimeKind.Utc).ToString("o")"></span></span>
+						</div>
+						@if (canManage && string.Equals(mr.State, "opened", StringComparison.OrdinalIgnoreCase)
+							&& !string.IsNullOrEmpty(mr.SourceBranch) && !linkedBranchNames.Contains(mr.SourceBranch))
+						{
+							<button type="button" class="btn btn-sm btn-link p-0 task-code-link-source" data-name="@mr.SourceBranch" title="@Localize("Backlog.Code.LinkSourceBranchHint").Text">
+								<i class="fas fa-link me-1"></i>@Localize("Backlog.Code.LinkSourceBranch") <code>@mr.SourceBranch</code>
+							</button>
+						}
+					</div>
+				}
+			}
+			else
+			{
+				<div class="task-code-empty"><i class="fas fa-code-pull-request me-2"></i><span>@string.Format(Localize("Backlog.Code.NoMergeRequestsHint").Text, Model.TaskId)</span></div>
+			}
+			@if (closingMrId != null && !Model.Code.MergeRequests.Any(m => Model.IsClosing(m)))
+			{
+				<div class="task-code-mr task-code-mr--closing">
+					<div class="d-flex align-items-center gap-2">
+						<span class="task-code-closing-badge"><i class="fas fa-flag-checkered me-1"></i>@Localize("Backlog.Code.ClosingMr")</span>
+						<span class="task-code-mr-title">@(Model.ClosingRefPrefix)@closingMrId</span>
+					</div>
+					<div class="task-code-meta">@Localize("Backlog.Code.ClosingMrManual")</div>
+				</div>
+			}
+		</div>
+	}
+}

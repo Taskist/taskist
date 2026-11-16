@@ -1,85 +1,40 @@
-﻿@model BacklogCommentModel
+@model BacklogCommentModel
 
-<div class="comments-container" id="comments">
-    @if (Model.Comments.Count > 0)
-    {
-        <div id="timeline" class="timeline">
-            @foreach (var comment in Model.Comments)
+<div class="comments-root" data-task-id="@Model.BackLogId" data-create-url="@Url.Action("CommentCreate")" data-photo-url="@Url.Action("Photo", "Profile")">
+    <div class="comments-container" id="comments">
+        <div id="comments-empty" class="comments-empty @(Model.Comments.Any() ? "d-none" : "")">
+            <i class="far fa-comments"></i>
+            <div>Nobody commented yet!</div>
+            <small>Be the first to add a comment.</small>
+        </div>
+        <div id="comments-list" class="comments-list">
+            @foreach (var comment in Model.Comments.OrderBy(c => c.CommentOn))
             {
-                <div class="timeline-item">
-                    <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>@comment.CommentBy</div>
-                    <div class="time text-muted"><i class="far fa-clock me-1"></i>@comment.CommentOn.ToString("dd-MM-yyyy hh:mm")</div>
-                    <div class="details">@Html.Raw(comment.Comment)</div>
+                <div class="comment-item">
+                    <div class="comment-avatar"><img src="@Url.Action("Photo", "Profile", new { userId = comment.CommentById })" alt="@comment.CommentBy" /></div>
+                    <div class="comment-body">
+                        <div class="comment-meta">
+                            <span class="comment-author">@comment.CommentBy</span>
+                            <span class="comment-time" data-time="@DateTime.SpecifyKind(comment.CommentOn, DateTimeKind.Utc).ToString("o")"></span>
+                        </div>
+                        <div class="comment-text">@if (comment.SystemComment) { @Html.Raw(comment.Comment) } else { @comment.Comment }</div>
+                    </div>
                 </div>
             }
         </div>
-    }
-    else
-    {
-        <div class="alert alert-info">Nobody commented yet!</div>
-    }
-</div>
-<div class="comment-box" id="comment-box">
-    <div class="input-group">
-        <input type="text" id="tbComment" class="form-control" placeholder="Write a comment...">
-        <button class="btn btn-primary" id="btnAddComment"><i class="far fa-paper-plane"></i></button>
+    </div>
+    <div class="comment-box" id="comment-box">
+        <div class="comment-input-wrap">
+            <textarea id="tbComment" class="form-control comment-input" rows="1" placeholder="Write a comment..." autocomplete="off"></textarea>
+            <button type="button" class="btn btn-primary comment-send" id="btnAddComment" title="Send" aria-label="Send comment" disabled><i class="far fa-paper-plane"></i></button>
+        </div>
+        <small class="comment-hint text-muted">Enter to send &middot; Shift+Enter for a new line</small>
+        @if (Model.CanPostToIssue)
+        {
+            <div class="form-check form-check-inline small mt-1">
+                <input class="form-check-input comment-post-to-issue" type="checkbox" id="cbPostToIssue" />
+                <label class="form-check-label" for="cbPostToIssue" title="@Localize("Backlog.Issue.PostToIssueHint").Text">@Localize("Backlog.Issue.PostToIssue")</label>
+            </div>
+        }
     </div>
 </div>
-<style>
-    .offcanvas {
-        height: 100vh;
-    }
-
-    .offcanvas-body {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .comments-container {
-        flex-grow: 1;
-        overflow-y: auto;
-        padding-bottom: 10px;
-    }
-
-    .comment-box {
-        background: white;
-        padding: 10px;
-        border-top: 1px solid #ddd;
-    }
-</style>
-
-<script>
-    $(function() {
-        $("#btnAddComment").click(function() {
-            addComment();
-        });
-
-      $("#tbComment").keypress(function(event) {
-        if (event.which === 13) {
-          event.preventDefault();
-          addComment();
-        }
-      });
-
-      $("#pdOffCanvas").on("shown.bs.offcanvas", function() {
-        $("#tbComment").focus();
-      });
-    })
-
-    function addComment() {
-        let comment = $("#tbComment").val().trim();
-        if (comment) {
-            const dto = {
-                id: @Model.BackLogId,
-                comment
-            };
-
-            JSManager.ajaxPost('@Url.Action("CommentCreate")', dto, 'comment-box', 'Processing...', function(response) {
-                $("#tbComment").val("").focus();
-                const html = `<div class="timeline-item"> <div class="username text-secondary"><i class="fas fa-user-tie me-1"></i>${response.commentby}</div> <div class="time text-muted"><i class="far fa-clock me-1"></i>${response.commenton}</div> <div class="details">${comment}</div> </div>`;
-                $('#timeline').prepend(html);
-            });
-        }
-    }
-</script>

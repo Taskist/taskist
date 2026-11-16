@@ -1,53 +1,149 @@
 ﻿@model UserRegistrationModel
 <input type="hidden" asp-for="User.Id" />
-<div class="row">	
-	<div class="col-md-3">
-		<div class="mb-3">
-			<wc-label asp-for="User.FirstName" class="form-wc-label"></wc-label>
-			<input asp-for="User.FirstName" class="form-control form-control-maxlength" autocomplete="off" maxlength="50" />
-			<span asp-validation-for="User.FirstName" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="col-md-3">
-		<div class="mb-3">
-			<wc-label asp-for="User.LastName" />
-			<input asp-for="User.LastName" class="form-control form-control-maxlength" autocomplete="off" maxlength="50" />
-			<span asp-validation-for="User.LastName" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="col-md-4">
-		<div class="mb-3">
-			<wc-label asp-for="User.Email" />
-			<input asp-for="User.Email" class="form-control form-control-maxlength" autocomplete="off" maxlength="150" />
-			<span asp-validation-for="User.Email" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="col-md-2">
-		<div class="mb-3">
-			<wc-label asp-for="User.GenderId" />
-			<select class="form-control select2" data-style="btn-default" asp-for="User.GenderId" asp-items="Html.GetEnumSelectList<GenderEnum>()"></select>
-			<span asp-validation-for="User.GenderId" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="col-md-2">
-		<div class="mb-3">
-			<wc-label asp-for="User.LanguageId" />
-			<select class="form-control select2" data-style="btn-default" asp-for="User.LanguageId" asp-items="Model.AvailableLanguages"></select>
-			<span asp-validation-for="User.LanguageId" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="col-md-2">
-		<div class="mb-3">
-			<wc-label asp-for="User.Status" />
-			<select asp-for="User.Status" asp-items="Html.GetEnumSelectList<UserStatusEnum>()" class="form-control select2"></select>
-			<span asp-validation-for="User.Status" class="text-danger"></span>
-		</div>
-	</div>
-	<div class="col-sm-8">
-		<div class="mb-3">
-			<wc-label asp-for="User.SelectedRoleIds" />
-			<select asp-for="User.SelectedRoleIds" asp-items="Model.AvailableRoles" class="form-control select2" multiple></select>
-			<span asp-validation-for="User.SelectedRoleIds" class="text-danger"></span>
-		</div>
-	</div>
+<input type="hidden" asp-for="Address.Id" />
+<div class="row">
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.UserNumber" class="form-wc-label"></wc-label>
+            <input asp-for="User.UserNumber" class="form-control form-control-maxlength" autocomplete="off" maxlength="20" />
+            <span asp-validation-for="User.UserNumber" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="mb-3">
+            <wc-label asp-for="User.FirstName" class="form-wc-label"></wc-label>
+            <input asp-for="User.FirstName" class="form-control form-control-maxlength" autocomplete="off" maxlength="50" />
+            <span asp-validation-for="User.FirstName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="mb-3">
+            <wc-label asp-for="User.LastName" />
+            <input asp-for="User.LastName" class="form-control form-control-maxlength" autocomplete="off" maxlength="50" />
+            <span asp-validation-for="User.LastName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="User.FriendlyName" />
+            <input asp-for="User.FriendlyName" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            <span asp-validation-for="User.FriendlyName" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="mb-3">
+            <wc-label asp-for="User.Email" />
+            <input asp-for="User.Email" class="form-control form-control-maxlength" autocomplete="off" maxlength="150" />
+            <span asp-validation-for="User.Email" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.MobileNumber" />
+            <input asp-for="User.MobileNumber" class="form-control form-control-maxlength" autocomplete="off" maxlength="10" />
+            <span asp-validation-for="User.MobileNumber" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.GenderId" />
+            <select class="form-control select2" data-style="btn-default" asp-for="User.GenderId" asp-items="Html.GetEnumSelectList<Gender>()"></select>
+            <span asp-validation-for="User.GenderId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.MaritalStatus" />
+            <select class="form-control select2" data-style="btn-default" asp-for="User.MaritalStatus" asp-items="Html.GetEnumSelectList<Taskist.Core.Enums.MaritalStatus>()"></select>
+            <span asp-validation-for="User.MaritalStatus" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.DateOfBirth" />
+            <input asp-for="User.DateOfBirth" class="form-control datepicker-dob" autocomplete="off" type="text" maxlength="15" />
+            <span asp-validation-for="User.DateOfBirth" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.DateOfJoin" />
+            <input asp-for="User.DateOfJoin" class="form-control datepicker" autocomplete="off" type="text" maxlength="15" />
+            <span asp-validation-for="User.DateOfJoin" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.LanguageId" />
+            <select class="form-control select2" data-style="btn-default" asp-for="User.LanguageId" asp-items="Model.AvailableLanguages"></select>
+            <span asp-validation-for="User.LanguageId" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="mb-3">
+            <wc-label asp-for="User.Status" />
+            <select asp-for="User.Status" asp-items="Html.GetEnumSelectList<UserStatus>()" class="form-control select2"></select>
+            <span asp-validation-for="User.Status" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-sm-12">
+        <div class="mb-3">
+            <wc-label asp-for="User.SelectedRoleIds" />
+            <select asp-for="User.SelectedRoleIds" asp-items="Model.AvailableRoles" class="form-control select2" multiple></select>
+            <span asp-validation-for="User.SelectedRoleIds" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="Address.Address1" class="form-wc-label"></wc-label>
+            <input asp-for="Address.Address1" class="form-control form-control-maxlength" autocomplete="off" />
+            <span asp-validation-for="Address.Address1" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="mb-3">
+            <wc-label asp-for="Address.Address2" class="form-wc-label"></wc-label>
+            <input asp-for="Address.Address2" class="form-control form-control-maxlength" autocomplete="off" />
+            <span asp-validation-for="Address.Address2" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <div class="mb-3">
+            <wc-label asp-for="Address.City" class="form-wc-label"></wc-label>
+            <input asp-for="Address.City" class="form-control form-control-maxlength" autocomplete="off" maxlength="50" />
+            <span asp-validation-for="Address.City" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="mb-3">
+            <wc-label asp-for="Address.ZipPostalCode" class="form-wc-label"></wc-label>
+            <input asp-for="Address.ZipPostalCode" class="form-control numeric-tb form-control-maxlength" autocomplete="off" maxlength="10" />
+            <span asp-validation-for="Address.ZipPostalCode" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-3">
+        <div class="mb-3">
+            <wc-label asp-for="User.GitUserName" class="form-wc-label"></wc-label>
+            @if (Model.User.GitLabConfigured)
+            {
+                <select asp-for="User.GitUserName" class="form-control select2-remote" data-url="@Url.Action("GetGitLabUsers")" data-placeholder="Search Git users...">
+                    @if (!string.IsNullOrWhiteSpace(Model.User.GitUserName))
+                    {
+                        <option value="@Model.User.GitUserName" selected>@Model.User.GitUserName</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <input asp-for="User.GitUserName" class="form-control form-control-maxlength" autocomplete="off" maxlength="100" />
+            }
+            <span asp-validation-for="User.GitUserName" class="text-danger"></span>
+        </div>
+    </div>
 </div>

@@ -1,0 +1,168 @@
+.release-projects {
+    cursor: default;
+}
+
+.release-projects-tooltip .tooltip-inner {
+    max-width: 320px;
+}
+
+.release-projects-tip {
+    text-align: left;
+    line-height: 1.5;
+}
+
+.release-projects-tip strong {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.release-progress-toggle {
+    text-decoration: none;
+    font-size: 0.75rem;
+}
+
+.release-progress-breakdown {
+    padding: 6px 12px;
+    max-width: 560px;
+}
+
+.release-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 3px 0;
+    font-size: 0.82rem;
+}
+
+.release-progress-name {
+    flex: 0 0 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.release-progress-bar {
+    flex: 1 1 auto;
+    height: 8px;
+}
+
+.release-progress-count {
+    flex: 0 0 auto;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+#pdOffCanvas:has(.release-mismatch) {
+    --bs-offcanvas-width: min(720px, 100vw);
+}
+
+.release-mismatch-intro {
+    font-size: 0.82rem;
+    color: #64748b;
+    margin-bottom: 14px;
+}
+
+.release-mismatch-group {
+    border: 1px solid #e3e9f1;
+    border-left: 3px solid #f59e0b;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    background: #fff;
+}
+
+.release-mismatch-head {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 10px;
+}
+
+.release-mismatch-title {
+    font-size: 0.95rem;
+    word-break: break-word;
+}
+
+.release-mismatch-meta {
+    font-size: 0.78rem;
+    color: #64748b;
+}
+
+.release-mismatch-meta span {
+    color: #33455c;
+}
+
+.release-mismatch-summary {
+    font-size: 0.85rem;
+}
+
+.release-mismatch-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+.release-mismatch-toggle {
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+.release-mismatch-tasks {
+    margin-top: 10px;
+    border-top: 1px solid #eef2f7;
+    padding-top: 6px;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.release-mismatch-task {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 4px;
+    border-radius: 4px;
+    font-size: 0.83rem;
+    cursor: pointer;
+    margin: 0;
+}
+
+.release-mismatch-task:hover {
+    background: #f8fafc;
+}
+
+.release-mismatch-task .form-check-input {
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.release-mismatch-id {
+    flex: 0 0 auto;
+    min-width: 48px;
+}
+
+.release-mismatch-task-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.release-mismatch-status {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    color: #64748b;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 1px 8px;
+}
+
+.release-version.is-auto .release-version-auto {
+    color: var(--cui-primary);
+    background: var(--cui-primary-bg-subtle);
+    border-color: var(--cui-primary-border-subtle);
+}
+
+.release-version-hint code {
+    font-size: 0.75rem;
+}

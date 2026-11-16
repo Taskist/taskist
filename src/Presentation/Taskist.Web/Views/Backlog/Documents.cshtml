@@ -1,39 +1,18 @@
-﻿@model IList<BacklogDocumentGridModel>
+@model IList<BacklogDocumentGridModel>
 
-@if (Model.Count > 0)
+@await Html.PartialAsync("_FileTiles", new FileTilesModel
 {
-    <div class="thumbnail-container">
-        @foreach (var doc in Model)
-        {
-            var iconColorClass = "none";
-            var iconClass = "none";
-
-            switch (doc.ContentType)
-            {
-                case "image/png":
-                case "image/jpeg":
-                    iconColorClass = "img";
-                    iconClass = "fas fa-file-image";
-                    break;
-                case "application/pdf":
-                    iconColorClass = "pdf";
-                    iconClass = "fas fa-file-pdf";
-                    break;
-            }
-
-            <div id="file-icon-container-@doc.Id" class="file-icon-container">
-                <a asp-action="ViewDocument" asp-route-token="@doc.Id" target="_blank">
-                    <div class="file-icon @iconColorClass">
-                        <i class="@iconClass"></i>
-                    </div>
-                </a>
-                <div class="file-icon-delete" data-token="@doc.Id">
-                    <i class="fas fa-times text-red"></i> Delete
-                </div>
-            </div>
-        }
-    </div>
-}
+    AllowDelete = true,
+    Items = Model.Select(d => new FileTileModel
+    {
+        Id = d.Id,
+        Name = d.Name,
+        ContentType = d.ContentType,
+        FileSize = d.FileSize,
+        Extension = d.Extension,
+        Url = Url.Action("ViewDocument", new { token = d.Id })!
+    }).ToList()
+})
 
 <script>
     $(function(){

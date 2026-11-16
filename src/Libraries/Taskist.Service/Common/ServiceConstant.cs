@@ -1,50 +1,56 @@
-﻿namespace Taskist.Service.Common;
+namespace Taskist.Service.Common;
 
 public static class ServiceConstant
 {
     #region Permissions
 
-    public static string PermissionsAllowedCacheKey => "taskist.per.allowed-{0}-{1}";
+    public static string PermissionsAllowedCacheKey => "wc.bl.per.allowed-{0}-{1}";
 
-    public static string PermissionsAllByUserRoleIdCacheKey => "taskist.per.allbyuserroleid-{0}";
+    public static string PermissionsAllByUserRoleIdCacheKey => "wc.bl.per.allbyuserroleid-{0}";
 
-    public static string PermissionsPatternCacheKey => "taskist.per.";
+    public static string PermissionsPatternCacheKey => "wc.bl.per.";
 
     #endregion
 
     #region Auth
 
-    public static string ClaimsIssuer => "taskist";
+    public static string ClaimsIssuer => "wc.bl";
+
+    public static string IsAdminClaim => "wc.bl.isadmin";
+
+    public static string LanguageIdClaim => "wc.bl.languageid";
+
+    public static string AuthMethodClaim => "wc.bl.amr";
 
     #endregion Auth
 
     #region Caching
 
-    public static string PermissionsPrefixCacheKey => "taskist.per.";
+    public static string PermissionsPrefixCacheKey => "wc.bl.per.";
 
-    public static string UserRolesPrefixCacheKey => "taskist.userrole.";
+    public static string UserRolesPrefixCacheKey => "wc.bl.userrole.";
 
-    public static string UserRolesBySystemNameCacheKey => "taskist.user.systemname-{0}";
+    public static string UserRolesBySystemNameCacheKey => "wc.bl.user.systemname-{0}";
 
-    public static string UserRolesAllCacheKey => "taskist.userrole.all-{0}";
+    public static string UserRolesAllCacheKey => "wc.bl.userrole.all-{0}";
 
-    public static string UserRoleIdsCacheKey => "taskist.userrole.ids.{0}-{1}";
+    public static string UserRoleIdsCacheKey => "wc.bl.userrole.ids.{0}-{1}";
 
-    public static string MenuCacheKeyByUser => "taskist.menu-{0}";
+    public static string MenuCacheKeyByUser => "wc.bl.menu-{0}";
 
-    public static string MenuResourceCacheKey => "taskist.menures";
+    public static string MenuResourceCacheKey => "wc.bl.menures";
 
-    public static string LangCacheKey => "taskist.lang";
+    public static string LangCacheKey => "wc.bl.lang";
 
-    public static string ActivityTypesCacheKey => "taskist.acttype";
+    public static string ActivityTypesCacheKey => "wc.bl.acttype";
 
-    public static string LocaleStringResourcesByNameCacheKey => "taskist.localestringresource.byname.{0}-{1}";
+    public static string LocaleStringResourcesByNameCacheKey => "wc.bl.localestringresource.byname.{0}-{1}";
 
-    public static string GenericAttributeCacheKey => "taskist.genericattribute.{0}-{1}";
+    public static string GenericAttributeCacheKey => "wc.bl.genericattribute.{0}-{1}";
 
-    public static string SettingsAllAsDictionaryCacheKey => "taskist.settings.all.dictionary";
+    public static string SettingsAllAsDictionaryCacheKey => "wc.bl.settings.all.dictionary";
 
-    public static string AccessibleProjectCacheKey => "wc.user.ids.projects";
+    public static string AccessibleProjectCacheKey => "wc.user.ids.projects.{0}.{1}";
 
     #endregion
 
@@ -58,9 +64,9 @@ public static class ServiceConstant
 
     #region Messages
 
-    public static string NotificationListKey => "taskist.notificationList";
+    public static string NotificationListKey => "wc.bl.notificationList";
 
-    public static string MessageTemplatesByNamePrefix => "taskist.messagetemplate.byname.{0}";
+    public static string MessageTemplatesByNamePrefix => "wc.bl.messagetemplate.byname.{0}";
 
     #endregion
 }

@@ -1,4 +1,4 @@
-﻿namespace Taskist.Core.Common;
+namespace Taskist.Core.Common;
 
 [Serializable]
 public class PagedList<T> : List<T>, IPagedList<T>

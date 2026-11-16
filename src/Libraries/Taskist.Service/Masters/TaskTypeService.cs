@@ -1,4 +1,5 @@
-﻿using System.Linq.Dynamic.Core;
+using Taskist.Core.Extensions;
+using System.Linq.Dynamic.Core;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
@@ -30,7 +31,7 @@ public class TaskTypeService : ITaskTypeService
         return await _taskTypeRepository.GetAllPagedAsync(query =>
         {
             query = query.Where(x => !x.Deleted);
-            query = query.OrderBy($"{sortColumn} {sortDirection}");
+            query = query.ApplySafeSort(sortColumn, sortDirection);
 
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.Name.Contains(search));

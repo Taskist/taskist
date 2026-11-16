@@ -1,8 +1,8 @@
-﻿namespace Taskist.Web.Models.Masters
+namespace Taskist.Web.Models.Masters
 {
     public class CustomFieldValueModel
     {
-        public int BacklogTaskId { get; set; }
+        public int BacklogId { get; set; }
 
         public int CustomFieldId { get; set; }
 

@@ -1,9 +1,9 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 using Taskist.Core.Domain.Users;
 
 namespace Taskist.Core.Domain.Masters;
 
-public class SubModule : BaseEntity, ISoftDeletedEntity
+public class SubModule : BaseEntity, ISoftDeletedEntity, IAuditableEntity
 {
     public string Name { get; set; }
 

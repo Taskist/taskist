@@ -1,4 +1,5 @@
-﻿using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Settings;
 using System.Net;
 using System.Net.Mail;
 
@@ -6,6 +7,15 @@ namespace Taskist.Service.Messages;
 
 public class EmailService : IEmailService
 {
+	private readonly IAppLinkBuilder _linkBuilder;
+	private readonly GeneralSettings _generalSettings;
+
+	public EmailService(IAppLinkBuilder linkBuilder, GeneralSettings generalSettings)
+	{
+		_linkBuilder = linkBuilder;
+		_generalSettings = generalSettings;
+	}
+
 	public async Task SendEmailAsync(EmailAccount emailAccount,
 		string subject,
 		string body,
@@ -14,6 +24,8 @@ public class EmailService : IEmailService
 	{
 		try
 		{
+			body = EmailLayoutBuilder.Wrap(body, _linkBuilder.Build("images/brand/logo.png"), _generalSettings.CompanyName);
+
 			ServicePointManager.Expect100Continue = true;
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls
 					| SecurityProtocolType.Tls11

@@ -1,7 +1,8 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Enums;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Logging;
-using Taskist.Core.Domain.Users;
 using Taskist.Data.Repository;
+using Taskist.Core.Domain.Users;
 
 namespace Taskist.Service.Logging;
 

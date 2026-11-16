@@ -21,6 +21,7 @@ public class DataTableModel
         FooterInfoLabel = "Showing page _PAGE_ of _PAGES_";
         FooterInfoWhenEmptyLabel = "No records available";
         AddButtonToHeader = false;
+        Selectable = false;
     }
 
     public string Title { get; set; }
@@ -49,6 +50,10 @@ public class DataTableModel
 
     public bool Sorting { get; set; }
 
+    public string DefaultSortColumn { get; set; }
+
+    public string DefaultSortDirection { get; set; }
+
     public string LengthChangeLabel { get; set; }
 
     public string SearchLabel { get; set; }
@@ -62,6 +67,20 @@ public class DataTableModel
     public string FooterInfoWhenEmptyLabel { get; set; }
 
     public bool AddButtonToHeader { get; set; }
+
+    public bool Selectable { get; set; }
+
+    public string SelectionKey { get; set; }
+
+    public string SelectionActableKey { get; set; }
+
+    public string SelectionActionUrl { get; set; }
+
+    public string SelectionActionText { get; set; }
+
+    public string SelectionConfirmMsg { get; set; }
+
+    public string SelectionNoneMsg { get; set; }
 
     public IList<ColumnModel> Columns { get; set; }
 }

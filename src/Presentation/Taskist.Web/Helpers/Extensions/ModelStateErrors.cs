@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Helpers.Extensions;

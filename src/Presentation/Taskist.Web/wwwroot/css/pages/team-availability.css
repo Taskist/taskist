@@ -1,0 +1,115 @@
+/* Team Availability board */
+
+/* KPI tiles */
+.tav-kpi {
+    background: #fff;
+    border: 1px solid #e6ecf3;
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    height: 100%;
+}
+.tav-kpi__val { font-size: 1.5rem; font-weight: 700; color: #1b2e4a; line-height: 1; }
+.tav-kpi__lbl { font-size: .75rem; color: #7b8aa0; }
+.tav-kpi--warn { border-color: #f6dba8; background: #fff9ef; }
+.tav-kpi--warn .tav-kpi__val { color: #b45309; }
+.tav-kpi--danger { border-color: #f3b6b6; background: #fef4f4; }
+.tav-kpi--danger .tav-kpi__val { color: #dc2626; }
+
+/* Legend chips */
+.tav-chip { display: inline-block; padding: 1px 10px; border-radius: 999px; font-size: 11px; margin-right: 6px; }
+.tav-chip--approved { background: #6f78e6; color: #fff; }
+.tav-chip--pending {
+    background: repeating-linear-gradient(45deg, #cbd5e1, #cbd5e1 4px, #eef2f7 4px, #eef2f7 8px);
+    color: #334155;
+    border: 1px solid #cbd5e1;
+}
+
+/* Swimlane gantt */
+.tav-gantt { font-size: 12px; overflow-x: auto; max-width: 100%; }
+.tav-axis, .tav-row { display: flex; align-items: center; }
+.tav-axis-label, .tav-row-label {
+    flex: 0 0 150px;
+    width: 150px;
+    padding-right: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tav-row-label { font-weight: 600; color: #33455c; }
+.tav-axis-track, .tav-track {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 26px;
+    overflow: hidden;
+}
+/* Small screens: keep a readable track width and scroll horizontally */
+@media (max-width: 767.98px) {
+    .tav-axis-track, .tav-track { min-width: 520px; }
+}
+.tav-axis-track { height: 20px; border-bottom: 1px solid #e6ecf3; }
+.tav-tick {
+    position: absolute;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #9aa7b8;
+    white-space: nowrap;
+}
+.tav-tick--end { transform: translateX(-100%); }
+.tav-today, .tav-today-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: #ef4444;
+    opacity: .7;
+}
+.tav-row { border-bottom: 1px solid #f1f5f9; }
+.tav-row:hover { background: #f8fbff; }
+.tav-bar {
+    position: absolute;
+    top: 4px;
+    height: 20px;
+    border-radius: 4px;
+    cursor: default;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 6px;
+    overflow: hidden;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    text-shadow: 0 1px 1px rgba(0,0,0,.35);
+}
+.tav-bar__icon { flex: 0 0 auto; font-size: 10px; }
+.tav-bar__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tav-bar--pending {
+    opacity: .95;
+    background-image: repeating-linear-gradient(45deg, rgba(255,255,255,.4), rgba(255,255,255,.4) 3px, transparent 3px, transparent 6px) !important;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.15);
+}
+
+/* Calendar pending events: striped overlay */
+.tav-ev-pending { opacity: .9; }
+.tav-ev-pending .fc-event-title::after { content: " (pending)"; font-style: italic; opacity: .8; }
+
+/* Calendar toolbar responsiveness */
+#tavCalendar .fc-toolbar { flex-wrap: wrap; gap: 6px; }
+#tavCalendar .fc-toolbar-title { font-size: 1.1rem; }
+@media (max-width: 575.98px) {
+    #tavCalendar .fc-header-toolbar { margin-bottom: .5rem; justify-content: center; }
+    #tavCalendar .fc-footer-toolbar { margin-top: .5rem; }
+    #tavCalendar .fc-toolbar-chunk { display: flex; flex-wrap: wrap; gap: 4px; }
+    #tavCalendar .fc .fc-button { padding: .28em .55em; font-size: .8rem; }
+    #tavCalendar .fc-toolbar-title { font-size: 1rem; text-align: center; width: 100%; }
+}

@@ -1,4 +1,5 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Enums;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 using Taskist.Data.Repository;
 using Microsoft.EntityFrameworkCore;
@@ -34,14 +35,23 @@ public class CustomFieldService : ICustomFieldService
             if (!string.IsNullOrWhiteSpace(search))
                 query = query.Where(c => c.ResourceKey.Contains(search));
 
-            return query;
+            return query
+                .OrderBy(x => x.Slot ?? (x.Placement == (int)CustomFieldPlacement.StatusSection
+                    ? (int)BacklogFormSlot.StatusBottom
+                    : (int)BacklogFormSlot.MainBottom))
+                .ThenBy(x => x.DisplayOrder ?? int.MaxValue)
+                .ThenBy(x => x.Id);
         }, pageIndex, pageSize);
+    }
+
+    public async Task<IList<CustomField>> GetAllAsync(int projectId)
+    {
+        return await _customFieldRepository.GetAllAsync(q => q.Where(x => x.ProjectId == projectId), false);
     }
 
     public async Task<IList<CustomField>> GetAllAsync(int projectId, int placement)
     {
-        return await _customFieldRepository.GetAllAsync(q => q.Where(x => x.ProjectId == projectId && x.Placement == placement),
-            false);
+        return await _customFieldRepository.GetAllAsync(q => q.Where(x => x.ProjectId == projectId && x.Placement == placement), false);
     }
 
     public async Task<IList<CustomField>> GetAllMandatoryAsync(int projectId)

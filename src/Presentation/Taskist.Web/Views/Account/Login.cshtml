@@ -1,45 +1,146 @@
-﻿@model LoginModel
+@model LoginModel
+@inject Taskist.Service.Masters.ISettingService SettingService
+@inject Taskist.Core.Configuration.IAppInfoProvider AppInfo
+@inject Taskist.Service.Localization.ILocalizationService LocalizationService
+@functions {
+	private async Task<string> TextAsync(string key, string fallback)
+	{
+		var value = await LocalizationService.GetResourceAsync(key);
+		return string.IsNullOrWhiteSpace(value) || string.Equals(value, key, StringComparison.OrdinalIgnoreCase) ? fallback : value;
+	}
+}
 @{
 	ViewData["Title"] = "Login";
 	Layout = "~/Views/Shared/_LayoutLogin.cshtml";
+
+	var general = await SettingService.LoadSettingAsync<Taskist.Core.Domain.Settings.GeneralSettings>();
+	var companyName = string.IsNullOrWhiteSpace(general?.CompanyName) ? "Somaraj" : general.CompanyName;
+	var supportEmail = general?.SupportEmail;
 }
 
-<div class="row justify-content-center">
-	<div class="col-lg-4">
-		<div class="card-group d-block d-md-flex row">
-			<div class="card col-md-7 p-4 mb-0">
-				<div class="card-body">
-					<div class="text-center mb-4">
-						<img src="~/images/brand/logo.png" alt="Taskist"/>
-						<hr class="hr-text" data-content="Sign In to your account" />
+@section PageStyles {
+	<link rel="stylesheet" href="~/lib/ladda/ladda-themeless.min.css" />
+	<link rel="stylesheet" href="~/css/pages/login.css" asp-append-version="true" />
+}
 
-					</div>
-					<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off">
-						<div asp-validation-summary="ModelOnly" class="message-error"></div>
-						<div class="mb-3">
-							<label asp-for="Email" class="form-label"></label>
-							<input asp-for="Email" type="text" class="form-control" placeholder="Enter your username" autofocus />
-							<span asp-validation-for="Email" class="text-danger"></span>
-						</div>
-						<div class="mb-3">
-							<label asp-for="Password" class="form-label"></label>
-							<input asp-for="Password" type="password" class="form-control" placeholder="***********************" />
-							<span asp-validation-for="Password" class="text-danger"></span>
-						</div>
-						<div class="row">
-							<div class="col-8">
-								<div class="form-check">
-									<input class="form-check-input" asp-for="RememberMe" type="checkbox" />
-									<label class="form-check-label" asp-for="RememberMe"></label>
-								</div>
-							</div>
-							<div class="col-4">
-								<button type="submit" class="btn btn-primary btn-block">Sign In</button>
-							</div>
-						</div>
-					</form>
-				</div>
+<div class="login-card">
+	<div class="login-brand d-none d-lg-flex">
+		<div class="login-eyebrow">@companyName</div>
+		<div class="login-brand-content">
+			<h1 class="login-brand-title">Welcome to Taskist</h1>
+			<p class="login-brand-tagline">Plan, track and ship your work &mdash; all in one place.</p>
+			<ul class="login-features">
+				<li><i class="fas fa-tasks"></i> Backlog &amp; releases at a glance</li>
+				<li><i class="fas fa-code-branch"></i> Boards, code reviews &amp; wiki</li>
+				<li><i class="fas fa-chart-line"></i> Insightful dashboards &amp; reports</li>
+			</ul>
+		</div>
+		<div class="login-brand-footer">
+			@if (!string.IsNullOrWhiteSpace(supportEmail))
+			{
+				<span>Need help signing in? <a href="mailto:@supportEmail">@supportEmail</a></span>
+			}
+			else
+			{
+				<span>Need access? Contact your administrator.</span>
+			}
+			<span class="login-brand-version">
+				v @AppInfo.Version
+				@if (AppInfo.IsBeta)
+				{
+					<span class="login-beta-chip">BETA</span>
+				}
+			</span>
+		</div>
+		<span class="login-brand-blob login-brand-blob-1"></span>
+		<span class="login-brand-blob login-brand-blob-2"></span>
+	</div>
+
+	<div class="login-form">
+		<div class="login-form-inner">
+			<div class="login-form-logo">
+				<img src="~/images/brand/logo.png" alt="Taskist" />
 			</div>
+			<div class="login-form-header">
+				<h2 id="loginGreeting">Welcome back</h2>
+				<p>Sign in to continue to Taskist.</p>
+			</div>
+
+			@if (Model.TwoFactorExpired == true)
+			{
+				<div class="login-error" role="alert">@await TextAsync("Login.TwoFactor.Expired", "Your sign-in timed out or had too many wrong codes. Sign in again.")</div>
+			}
+
+			@if (!string.IsNullOrEmpty(Model.SsoErrorCode))
+			{
+				<div class="login-error" role="alert">@await TextAsync(Taskist.Web.Helpers.Sso.SsoErrorCode.ResourceKey(Model.SsoErrorCode), "Single sign-on didn't work. Try again, or contact your administrator.")</div>
+			}
+
+			@if (Model.SsoEnabled)
+			{
+				<form asp-action="ExternalLogin" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" class="login-sso">
+					<button type="submit" class="btn btn-outline-secondary login-sso-button">
+						<i class="fas fa-right-to-bracket me-2"></i>@await TextAsync("Login.Sso.SignInWith", "Sign in with") @Model.SsoDisplayName
+					</button>
+				</form>
+
+				@if (Model.ShowPasswordForm)
+				{
+					<div class="login-divider"><span>@await TextAsync("Login.Sso.Or", "or")</span></div>
+				}
+			}
+
+			@if (!Model.ShowPasswordForm)
+			{
+				<p class="login-local-link"><a asp-action="Login" asp-route-local="true" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]">@await TextAsync("Login.Sso.AdministratorSignIn", "Administrator sign-in")</a></p>
+				<p class="login-copy">&copy; @DateTime.Now.Year Taskist &middot; Somaraj</p>
+			}
+			else
+			{
+			<form asp-action="Login" asp-route-returnurl="@Context.Request.Query["ReturnUrl"]" method="post" autocomplete="off" id="loginForm" class="no-auto-ladda">
+				<input type="hidden" asp-for="LocalLogin" />
+				<div asp-validation-summary="ModelOnly" class="login-error"></div>
+				<div class="mb-3">
+					<label asp-for="Email" class="form-label"></label>
+					<div class="login-input">
+						<i class="fas fa-user login-input-icon"></i>
+						<input asp-for="Email" type="text" class="form-control" placeholder="Enter your username" autocomplete="username" autofocus />
+					</div>
+					<span asp-validation-for="Email" class="text-danger"></span>
+				</div>
+
+				<div class="mb-2">
+					<label asp-for="Password" class="form-label"></label>
+					<div class="login-input">
+						<i class="fas fa-lock login-input-icon"></i>
+						<input asp-for="Password" type="password" class="form-control" placeholder="Enter your password" autocomplete="current-password" id="Password" />
+						<button type="button" class="login-toggle" id="togglePassword" tabindex="-1" aria-label="Show password"><i class="fas fa-eye"></i></button>
+					</div>
+					<span asp-validation-for="Password" class="text-danger"></span>
+					<div class="login-caps" id="capsHint"><i class="fas fa-exclamation-triangle"></i> Caps Lock is on</div>
+				</div>
+
+				<div class="login-form-row">
+					<div class="form-check">
+						<input class="form-check-input" asp-for="RememberMe" type="checkbox" />
+						<label class="form-check-label" asp-for="RememberMe"></label>
+					</div>
+					<a class="login-forgot" asp-route="ForgotPassword">Forgot password?</a>
+				</div>
+
+				<button type="submit" class="btn btn-primary login-submit ladda-button" data-style="zoom-in">
+					<span class="ladda-label">Sign In <i class="fas fa-arrow-right ms-1"></i></span>
+				</button>
+
+				<p class="login-copy">&copy; @DateTime.Now.Year Taskist &middot; Somaraj</p>
+			</form>
+			}
 		</div>
 	</div>
 </div>
+
+@section PageScripts {
+	<script src="~/lib/ladda/spin.min.js"></script>
+	<script src="~/lib/ladda/ladda.min.js"></script>
+	<script src="~/js/pages/login.js" asp-append-version="true"></script>
+}

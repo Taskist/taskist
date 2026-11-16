@@ -1,0 +1,87 @@
+@model UserAccessFilterModel
+@using Microsoft.AspNetCore.Mvc.Rendering
+@{
+    ViewData["Title"] = Localize("UserAccessPage.Title");
+    var roles = Model.Roles;
+    var permissions = Model.Permissions;
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/pages/userrole/access.css" asp-append-version="true" />
+}
+
+@section PageScripts {
+    <script src="~/js/pages/userrole/access.js" asp-append-version="true"></script>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">@Localize("UserAccess.FilterRole").Text</label>
+                <select id="filterRoleMs" class="form-control select2 ea-filter" multiple="multiple" data-target="filterRole" data-placeholder="@Localize("UserAccess.All").Text">
+                    @foreach (var r in roles)
+                    {
+                        <option value="@r.Value">@r.Text</option>
+                    }
+                </select>
+                <input type="hidden" id="filterRole" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">@Localize("UserAccess.FilterPermission").Text</label>
+                <select id="filterPermissionMs" class="form-control select2 ea-filter" multiple="multiple" data-target="filterPermission" data-placeholder="@Localize("UserAccess.All").Text">
+                    @foreach (var p in permissions)
+                    {
+                        <option value="@p.Value">@p.Text</option>
+                    }
+                </select>
+                <input type="hidden" id="filterPermission" />
+            </div>
+            <div class="col-md-3 text-end">
+                <button type="button" id="btnResetAccess" class="btn btn-outline-secondary me-1">
+                    <i class="fas fa-rotate-left me-1"></i>@Localize("Button.Reset").Text
+                </button>
+                <button type="button" id="btnExportAccess" class="btn btn-success text-white" data-url="@Url.Action("ExportAccess")">
+                    <i class="fas fa-file-excel me-1"></i>@Localize("Button.Export").Text
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("DataTable", new DataTableModel
+{
+    Name = "UserAccessGrid",
+    Title = Localize("UserAccessPage.Title").Text,
+    LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+    SearchLabel = Localize("Grid.SearchLabel").Text,
+    SearchPlaceholder = Localize("Grid.SearchPlaceholder").Text,
+    ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+    FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+    FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+    UrlRead = Url.Action("AccessDataRead"),
+    FilterParameters = new List<FilterModel>
+    {
+        new FilterModel { Parameter = "roleId", Element = "filterRole" },
+        new FilterModel { Parameter = "permissionId", Element = "filterPermission" }
+    },
+    ColumnActions = new List<ActionModel>
+    {
+        new ActionModel {
+            Title = Localize("UserAccess.ViewAccess").Text,
+            Url = Url.Action("UserAccess"),
+            Text = Localize("UserAccess.ViewAccess").Text,
+            Icon = "fas fa-user-shield",
+            ReferenceParameter = "Id",
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationType.OFFCANVAS,
+            ButtonColor = ButtonColor.PRIMARY
+        }
+    },
+    Columns = new List<ColumnModel>
+    {
+        new ColumnModel { Title = Localize("UserAccessGrid.User").Text, DataColumn = "UserName" },
+        new ColumnModel { Title = Localize("UserAccessGrid.Roles").Text, DataColumn = "Roles" },
+        new ColumnModel { Title = Localize("UserAccessGrid.PermissionCount").Text, DataColumn = "PermissionCount" }
+    }
+})

@@ -1,10 +1,9 @@
-﻿using EFCore.BulkExtensions;
-using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Linq.Expressions;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Common;
 using Taskist.Data.Extensions;
+using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
+using System.Linq.Expressions;
 
 namespace Taskist.Data.Repository;
 
@@ -29,6 +28,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -36,11 +36,37 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
 
     #region Methods
 
-    public async Task<T> GetByIdAsync(int id, bool includeDeleted = true)
+    public async Task<IQueryable<T>> GetQueryableAsync(Expression<Func<T, bool>>? filter = null,
+       Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+       string includeProperties = "")
+    {
+        IQueryable<T> query = Table;
+
+        foreach (var includeProperty in includeProperties.Split([','], StringSplitOptions.RemoveEmptyEntries))
+        {
+            query = query.Include(includeProperty.Trim());
+        }
+
+        if (filter != null)
+            query = query.Where(filter);
+
+        if (orderBy != null)
+            query = orderBy(query);
+
+        return await Task.FromResult(query);
+    }
+
+    public async Task<T> GetByIdAsync(int id, bool includeDeleted = true, params Expression<Func<T, object>>[] includes)
     {
         async Task<T> getEntityAsync()
         {
-            return await AddDeletedFilter(Table, includeDeleted).FirstOrDefaultAsync(entity => entity.Id == Convert.ToInt32(id));
+            var query = AddDeletedFilter(Table, includeDeleted);
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            return query.FirstOrDefault(entity => entity.Id == Convert.ToInt32(id));
         }
 
         return await getEntityAsync();
@@ -154,6 +180,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -170,6 +197,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
         return entity;
     }
@@ -187,6 +215,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -203,6 +232,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -219,6 +249,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -234,6 +265,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -249,7 +281,20 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
+    }
+
+    public async Task RewritePropertiesAsync(T entity, params string[] propertyNames)
+    {
+        if (entity == null)
+            throw new ArgumentNullException(nameof(entity));
+
+        var entry = _context.Entry(entity);
+        foreach (var name in propertyNames)
+            entry.Property(name).IsModified = true;
+
+        await _context.SaveChangesAsync();
     }
 
     public async Task UpdateAsync(IList<T> entities)
@@ -264,6 +309,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -279,6 +325,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -305,6 +352,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -331,6 +379,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -347,6 +396,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -366,7 +416,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
-            return 0;
+            throw;
         }
     }
 
@@ -386,7 +436,7 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
         catch (Exception ex)
         {
             WriteTrace(ex);
-            return 0;
+            throw;
         }
     }
 
@@ -394,14 +444,24 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         try
         {
-            await _context.BulkDeleteAsync(_entities, new BulkConfig
+            await _entities.ExecuteDeleteAsync();
+
+            if (resetIdentity)
             {
-                SetOutputIdentity = resetIdentity
-            });
+                var entityType = _context.Model.FindEntityType(typeof(T));
+                var table = entityType?.GetTableName();
+                if (!string.IsNullOrEmpty(table))
+                {
+                    var schema = entityType!.GetSchema() ?? "dbo";
+                    var name = $"[{schema.Replace("]", "]]")}].[{table.Replace("]", "]]")}]";
+                    await _context.Database.ExecuteSqlRawAsync($"DBCC CHECKIDENT ('{name.Replace("'", "''")}', RESEED, 0)");
+                }
+            }
         }
         catch (Exception ex)
         {
             WriteTrace(ex);
+            throw;
         }
     }
 
@@ -430,8 +490,8 @@ public class Repository<T> : IRepository<T> where T : BaseEntity
     {
         var stackTrace = new StackTrace();
         var caller = stackTrace.GetFrame(1).GetMethod().Name;
-        Trace.WriteLine($"Backlog.Data >> Repository >> {caller} >> Error >> {ex.Message}");
-        Trace.WriteLine($"Backlog.Data >> Repository >> {caller} >> StackTrace >> {ex.StackTrace}");
+        Trace.WriteLine($"Taskist.Data >> Repository >> {caller} >> Error >> {ex.Message}");
+        Trace.WriteLine($"Taskist.Data >> Repository >> {caller} >> StackTrace >> {ex.StackTrace}");
 
         string rootPath = Path.Combine(Directory.GetCurrentDirectory(), "Logs");
         if (!Directory.Exists(rootPath))

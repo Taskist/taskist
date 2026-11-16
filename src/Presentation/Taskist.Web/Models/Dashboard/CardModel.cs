@@ -1,4 +1,4 @@
-﻿namespace Taskist.Web.Models.Dashboard;
+namespace Taskist.Web.Models.Dashboard;
 
 public class CardModel
 {

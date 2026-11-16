@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = Localize("LanguagePage.Title");
 }
 
@@ -20,9 +20,9 @@
             Url = Url.Action("Create"),
             Text = Localize("Button.AddNew").Text,
             Icon = "fas fa-plus",
-            HyperLinkType = HyperLinkTypeEnum.BUTTON_TEXT_ICON,
-            NavigationType = NavigationTypeEnum.STANDARD,
-            ButtonColor = ButtonColorEnum.PRIMARY
+            HyperLinkType = HyperLinkType.BUTTON_TEXT_ICON,
+            NavigationType = NavigationType.STANDARD,
+            ButtonColor = ButtonColor.PRIMARY
         }
     },
     ColumnActions = new List<ActionModel>
@@ -33,9 +33,9 @@
             Text = Localize("Button.Edit").Text,
             Icon = "far fa-edit",
             ReferenceParameter = "Id",
-            HyperLinkType = HyperLinkTypeEnum.HYPERLINK_TEXT_ICON,
-            NavigationType = NavigationTypeEnum.STANDARD,
-            ButtonColor = ButtonColorEnum.PRIMARY
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            NavigationType = NavigationType.STANDARD,
+            ButtonColor = ButtonColor.PRIMARY
         },
         new ActionModel {
             Title = Localize("Button.Delete").Text,
@@ -46,8 +46,8 @@
             ReferenceParameter = "Id",
             DeleteConfirmBox = true,
             DeleteConfirmBoxMsg = Localize("Confirmation.Delete").Text,
-            HyperLinkType = HyperLinkTypeEnum.HYPERLINK_TEXT_ICON,
-            ButtonColor = ButtonColorEnum.PRIMARY
+            HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+            ButtonColor = ButtonColor.PRIMARY
         }
     },
     Columns = new List<ColumnModel>
@@ -57,12 +57,12 @@
         new ColumnModel { Title = Localize("LanguageGrid.DisplayName").Text, DataColumn = "DisplayName" },
         new ColumnModel { Title = Localize("LanguageGrid.DisplayOrder").Text, DataColumn = "DisplayOrder" },
         new ColumnModel { Title = Localize("LanguageGrid.Rtl").Text, DataColumn = "Rtl", Conditions = new List<ColumnConditionModel>{
-            new ColumnConditionModel { Value = "true", Operator = OperatorEnum.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
-            new ColumnConditionModel { Value = "false", Operator = OperatorEnum.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
         }},
         new ColumnModel { Title = Localize("LanguageGrid.Active").Text, DataColumn = "Active", Conditions = new List<ColumnConditionModel>{
-            new ColumnConditionModel { Value = "true", Operator = OperatorEnum.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
-            new ColumnConditionModel { Value = "false", Operator = OperatorEnum.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
+            new ColumnConditionModel { Value = "true", Operator = Operator.EQUAL, Icon = "fa fa-check", TextColor = "#2eb85c" },
+            new ColumnConditionModel { Value = "false", Operator = Operator.EQUAL, Icon = "fa fa-times", TextColor = "#e55353" }
         }}
     }
 })

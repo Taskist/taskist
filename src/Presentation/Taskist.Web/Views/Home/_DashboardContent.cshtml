@@ -1,0 +1,41 @@
+@model DashboardModel
+@{
+    var pid = Model.ProjectIds;
+    var days = Model.Days;
+}
+
+@if (Model.CanBacklog)
+{
+    <div class="wp-stat-grid mb-3">
+        @await Component.InvokeAsync("CardWithCounts", new { projectIds = pid, selectedProjectId = Model.SelectedProjectId })
+    </div>
+}
+
+@if (Model.CanBacklog)
+{
+    <div class="mb-3">@await Component.InvokeAsync("DueTaskCount", new { projectIds = pid })</div>
+}
+
+@if (Model.ShowMyCode)
+{
+    <div class="mb-3">@await Html.PartialAsync("_MyCodeCard")</div>
+}
+
+@if (Model.CanBacklog || Model.CanAnalytics || Model.CanRelease)
+{
+    <div class="wp-dash-grid">
+        @if (Model.CanBacklog)
+        {
+            @await Component.InvokeAsync("ProjectTaskCount", new { projectIds = pid })
+        }
+        @if (Model.CanAnalytics)
+        {
+            @await Component.InvokeAsync("WorkTrend", new { projectIds = pid, days = days })
+            @await Component.InvokeAsync("WorkDistribution", new { projectIds = pid })
+        }
+        @if (Model.CanRelease)
+        {
+            @await Component.InvokeAsync("ReleaseTaskCount", new { projectIds = pid })
+        }
+    </div>
+}

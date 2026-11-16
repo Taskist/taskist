@@ -1,4 +1,4 @@
-﻿let DataTable = {
+let DataTable = {
     RenderActions: function (row, actions) {
         let result = '';
         for (const element of actions) {
@@ -53,39 +53,49 @@
         if (curAction.NavigationType != 1) {
             if (curAction.DeleteConfirmBox) {
                 let displayName = 'are you sure you want to delete this record?';
-                if (JSManager.hasValue(curAction.DisplayReferenceParameter)) {
+                if (JSManager.hasValue(curAction.DeleteConfirmBoxMsg)) {
+                    displayName = curAction.DeleteConfirmBoxMsg;
+                } else if (JSManager.hasValue(curAction.DisplayReferenceParameter)) {
                     displayName = row[curAction.DisplayReferenceParameter];
                 }
 
+                displayName = displayName.replace(/'/g, "\\'");
                 url = "javascript:JSManager.showDeleteConfirmation('" + url + "','" + displayName + "')";
 
             } else if (curAction.ConfirmBox) {
                 url = "javascript:JSManager.ShowConfirmation('" + url + "','" + curAction.ConfirmBoxMsg + "','" + curAction.ModalSize + "')";
+            } else if (curAction.NavigationType == 2) {
+                url = "javascript:JSManager.openForm('" + url + "','" + DataTable.CapitalizeText(title) + "','" + curAction.ModalSize + "')";
             } else {
                 url = "javascript:JSManager.openOffCanvas('" + url + "','" + DataTable.CapitalizeText(title) + "')";
             }
         }
 
+        let openIn = '_self';
+        if (curAction.OpenInBlankPage) {
+            openIn = '_blank';
+        }
+
         if (curAction.HyperLinkType === 2) {
-            finalUrl = '<a title="' + title + '" href="' + url + '" class="btn ' + btnClass + ' btn-sm  me-1"><i class="' + curAction.Icon + '"></i></a>';
+            finalUrl = `<a title="${title}" href="${url}" class="btn ${btnClass} btn-sm me-1" target="${openIn}"><i class="${curAction.Icon}"></i></a>`;
         }
         else if (curAction.HyperLinkType === 1) {
-            finalUrl = '<a title="' + title + '" href=\"' + url + '" class="btn ' + btnClass + ' btn-sm  me-1">' + curAction.Text + '</a>';
+            finalUrl = `a title="${title}" href="${url}" class="btn ${btnClass} btn-sm  me-1" target="${openIn}">${curAction.Text}</a>`;
         }
         else if (curAction.HyperLinkType === 3) {
-            finalUrl = '<a title="' + title + '" href="' + url + '" class="btn ' + btnClass + ' btn-sm  me-1"><i class="' + curAction.Icon + '"></i> ' + curAction.Text + '</a>';
+            finalUrl = `<a title="${title}" href="${url}" class="btn ${btnClass} btn-sm  me-1" target="${openIn}"><i class="${curAction.Icon}"></i>${curAction.Text}</a>`;
         }
         else if (curAction.HyperLinkType === 4) {
-            finalUrl = '<a title="' + title + '" href="' + url + '">' + curAction.Text + '</a>';
+            finalUrl = `<a title="${title}" href="${url}">${curAction.Text}</a>`;
         }
         else if (curAction.HyperLinkType === 5) {
-            finalUrl = '<a title="' + title + '" href="' + url + '" class=" me-1"><i class="' + curAction.Icon + '"></i></a>';
+            finalUrl = `<a title="${title}" href="${url}" class=" me-1" target="${openIn}"><i class="${curAction.Icon}"></i></a>`;
         }
         else if (curAction.HyperLinkType === 6) {
-            finalUrl = '<a title="' + title + '" href="' + url + '" class=" me-1"><i class="' + curAction.Icon + '"></i> ' + curAction.Text + '</a>';
+            finalUrl = `<a title="${title}" href="${url}" class=" me-1" target="${openIn}"><i class="${curAction.Icon}"></i>${curAction.Text}</a>`;
         }
         else {
-            finalUrl = '<a title="' + title + '" href="' + url + '" class=" me-1">' + curAction.Text + '</a>';
+            finalUrl = `<a title="${title}" href="${url}" class=" me-1" target="${openIn}">${curAction.Text}</a>`;
         }
         return finalUrl;
     },
@@ -127,6 +137,16 @@
             newData = DataTable.CapitalizeText(data);
 
         return DataTable.TextEllipsis(newData, maxLength);
+    },
+    RenderDayCount: function (data, row) {
+        var days = (data === null || data === undefined || data === '') ? '' : data;
+        var isHalf = row && (row.IsHalfDay === true || row.isHalfDay === true);
+        var portion = row ? (row.Portion || row.portion) : null;
+        if (isHalf) {
+            var half = (portion === 2 || portion === 'SecondHalf') ? 'Afternoon' : 'Morning';
+            return days + ' <span class="badge-session">' + half + '</span>';
+        }
+        return days;
     },
     ButtonColorToCssClass: function (buttonColor) {
         let cssClass = 'btn-primary';
@@ -284,8 +304,10 @@
 
         let data = text.toString();
         if (data.length > maxLength) {
-            let newData = '<span data-toggle="popover" data-trigger="hover" data-content="' + data + '">' + data.substr(0, maxLength) + '…' + '</span>';
-            return newData;
+            let esc = function (s) {
+                return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            };
+            return '<span title="' + esc(data) + '">' + esc(data.substr(0, maxLength)) + '…' + '</span>';
         }
 
         return text;
@@ -369,5 +391,168 @@
             default:
                 return value != undefined ? value.toString() : null;
         }
+    },
+    RenderSelect: function (row, key, actableKey) {
+        let actable = !JSManager.hasValue(actableKey) || parseInt(row[actableKey]) === 1;
+        if (!actable)
+            return '';
+
+        let id = row[key];
+        return '<input type="checkbox" class="form-check-input dt-select-row" value="' + id + '" />';
     }
 }
+
+let DataTableSelect = {
+    Init: function (gridName, config) {
+        let $table = $('#' + gridName);
+
+        $(document).on('change', '#selectAll_' + gridName, function () {
+            let checked = $(this).is(':checked');
+            $table.find('tbody .dt-select-row').prop('checked', checked);
+        });
+
+        $(document).on('change', '#' + gridName + ' tbody .dt-select-row', function () {
+            let total = $table.find('tbody .dt-select-row').length;
+            let checked = $table.find('tbody .dt-select-row:checked').length;
+            $('#selectAll_' + gridName).prop('checked', total > 0 && total === checked);
+        });
+
+        $(document).on('click', '#' + config.ButtonId, function () {
+            DataTableSelect.SubmitSelected(gridName, config);
+        });
+    },
+    SelectedIds: function (gridName) {
+        let ids = [];
+        $('#' + gridName).find('tbody .dt-select-row:checked').each(function () {
+            ids.push($(this).val());
+        });
+        return ids;
+    },
+    SubmitSelected: function (gridName, config) {
+        let ids = DataTableSelect.SelectedIds(gridName);
+        if (ids.length === 0) {
+            JSManager.showError(config.NoneMsg);
+            return;
+        }
+
+        let msg = config.ConfirmMsg.replace('{0}', ids.length);
+        Swal.fire({
+            text: msg,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#808080',
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (!result.isConfirmed)
+                return;
+
+            let dto = { ids: ids.join(',') };
+            JSManager.addAntiForgeryToken(dto);
+            JSManager.ajaxPost(config.Url, dto, undefined, undefined, function (response) {
+                if (response.status === 2000) {
+                    $('#selectAll_' + gridName).prop('checked', false);
+                    $('#' + gridName).find('tbody .dt-select-row').prop('checked', false);
+                    JSManager.reloadAllGrids();
+                    JSManager.showSuccess(response.message);
+                } else {
+                    JSManager.showError(response.message);
+                }
+            });
+        });
+    }
+};
+
+/* Server-side grid search: one request after the user pauses typing instead of one per key press.
+   Runs 500 ms after the last keystroke (2+ characters), Enter searches at once, Esc or an empty box resets,
+   and an unchanged term never re-queries. Applied to every server-side DataTable via its init event. */
+(function ($) {
+    "use strict";
+
+    if (!$ || !$.fn || !$.fn.dataTable) return;
+
+    var DELAY = 500;
+    var MIN_LENGTH = 2;
+
+    $(document).on("init.dt", function (e, settings) {
+        if (e.namespace !== "dt" || !settings || !settings.oFeatures || !settings.oFeatures.bServerSide) return;
+
+        var api = new $.fn.dataTable.Api(settings);
+        var $input = $(api.table().container()).find("div.dataTables_filter input");
+        if (!$input.length || $input.data("searchDebounced")) return;
+
+        var timer = null;
+
+        function run(value, force) {
+            clearTimeout(timer);
+            var term = $.trim(value || "");
+            if (!force && term.length > 0 && term.length < MIN_LENGTH) return;
+            if (term === api.search()) return;
+            api.search(term).draw();
+        }
+
+        $input.data("searchDebounced", true)
+            .off()
+            .on("input.dtsearch", function () {
+                var value = this.value;
+                clearTimeout(timer);
+                if (!$.trim(value)) {
+                    run("", true);
+                    return;
+                }
+                timer = setTimeout(function () { run(value, false); }, DELAY);
+            })
+            .on("keydown.dtsearch", function (ev) {
+                if (ev.key === "Enter") {
+                    ev.preventDefault();
+                    run(this.value, true);
+                } else if (ev.key === "Escape") {
+                    this.value = "";
+                    run("", true);
+                }
+            });
+    });
+})(window.jQuery);
+
+/* Empty grids: a proper empty state instead of "No records available". With a search term the grid says
+   "No results" and offers Clear search (list endpoints often report the same total either way, so the search
+   term — not recordsTotal — decides which message shows). Templates live in Sections/_EmptyTemplates. */
+(function ($) {
+    "use strict";
+
+    if (!$ || !$.fn || !$.fn.dataTable) return;
+
+    function template(id) {
+        var tpl = document.getElementById(id);
+        return tpl ? tpl.innerHTML : null;
+    }
+
+    $(document).on("preInit.dt", function (e, settings) {
+        if (e.namespace !== "dt") return;
+        var empty = template("wpGridEmptyTpl");
+        if (!empty) return;
+        settings.oLanguage.sEmptyTable = empty;
+        settings.oLanguage.sZeroRecords = empty;
+    });
+
+    $(document).on("draw.dt", function (e, settings) {
+        if (e.namespace !== "dt") return;
+        var api = new $.fn.dataTable.Api(settings);
+        var empty = api.page.info().recordsDisplay === 0;
+        $(api.table().container()).find(".dataTables_info, .dataTables_paginate").toggleClass("d-none", empty);
+        if (!empty || !$.trim(api.search())) return;
+        var $cell = $(api.table().body()).find("td.dataTables_empty");
+        var noMatch = template("wpGridNoMatchTpl");
+        if ($cell.length && noMatch) $cell.html(noMatch);
+    });
+
+    $(document).on("click", ".js-grid-clear-search", function () {
+        var $wrapper = $(this).closest(".dataTables_wrapper");
+        var $table = $wrapper.find("table.dataTable").first();
+        if (!$table.length) return;
+        $wrapper.find("div.dataTables_filter input").val("");
+        $table.DataTable().search("").draw();
+    });
+})(window.jQuery);

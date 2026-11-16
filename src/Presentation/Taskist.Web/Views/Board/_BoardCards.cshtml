@@ -1,0 +1,58 @@
+@model List<BoardCardModel>
+@functions {
+    static string BadgeStyle(string background, string text)
+    {
+        if (string.IsNullOrWhiteSpace(background))
+            return "background:#eef1f8;color:#384b66;border:1px solid #dce3ee;";
+
+        return $"background:{background};color:{(string.IsNullOrWhiteSpace(text) ? "#ffffff" : text)};border:0;";
+    }
+}
+@foreach (var card in Model)
+{
+    <div class="board-card" data-id="@card.Id" data-task-type="@card.TaskTypeId" style="border-left:3px solid @(string.IsNullOrWhiteSpace(card.StatusColor) ? "#6f78e6" : card.StatusColor)">
+        <div class="board-card__title">@card.Title</div>
+        <div class="board-card__meta">
+            <span class="badge board-badge" style="@BadgeStyle(card.TypeColor, card.TypeTextColor)">
+                @if (!string.IsNullOrWhiteSpace(card.TypeIcon))
+                {
+                    <i class="@card.TypeIcon me-1"></i>
+                }
+                @card.TaskTypeName
+            </span>
+            @if (!string.IsNullOrWhiteSpace(card.SeverityName))
+            {
+                <span class="badge board-badge" style="@BadgeStyle(card.SeverityColor, card.SeverityTextColor)">
+                    @if (!string.IsNullOrWhiteSpace(card.SeverityIcon))
+                    {
+                        <i class="@card.SeverityIcon me-1"></i>
+                    }
+                    @card.SeverityName
+                </span>
+            }
+        </div>
+        <div class="board-card__footer">
+            <span class="board-card__assignee">
+                @(string.IsNullOrWhiteSpace(card.AssigneeName) ? Localize("Board.Unassigned").Text : card.AssigneeName)
+            </span>
+            <span class="board-card__icons">
+                @if (card.DueDate.HasValue)
+                {
+                    <span class="me-2"><i class="far fa-calendar me-1"></i>@card.DueDate.Value.ToString("dd-MMM")</span>
+                }
+                @if (card.SubTaskCount > 0)
+                {
+                    <span class="me-2"><i class="fas fa-sitemap me-1"></i>@card.SubTaskCount</span>
+                }
+                @if (card.CommentCount > 0)
+                {
+                    <span class="me-2"><i class="far fa-comment me-1"></i>@card.CommentCount</span>
+                }
+                @if (card.AttachmentCount > 0)
+                {
+                    <span><i class="fas fa-paperclip me-1"></i>@card.AttachmentCount</span>
+                }
+            </span>
+        </div>
+    </div>
+}

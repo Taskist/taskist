@@ -1,8 +1,8 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Masters;
 
-public class Document : BaseEntity
+public class Document : BaseEntity, IAuditableEntity
 {
     public string FileName { get; set; }
 

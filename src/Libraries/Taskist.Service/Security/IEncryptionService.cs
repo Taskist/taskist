@@ -1,14 +1,16 @@
-﻿namespace Taskist.Service.Security;
+using Taskist.Core.Enums;
+
+namespace Taskist.Service.Security;
 
 public interface IEncryptionService
 {
-    string CreateSaltKey(int size);
+    string HashPassword(string password);
 
-    string CreatePasswordHash(string password, string saltKey);
+    PasswordCheckResult VerifyPassword(string password, string storedHash);
 
-    string EncryptText(string plainText, string encryptionPrivateKey = "");
+    string EncryptText(string plainText);
 
-    string DecryptText(string cipherText, string encryptionPrivateKey = "");
+    string DecryptText(string cipherText);
 
     string GenerateToken(Guid userCode);
 

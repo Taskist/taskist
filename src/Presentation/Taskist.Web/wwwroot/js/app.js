@@ -1,4 +1,4 @@
-﻿let JSManager = AppJS.getInstance();
+let JSManager = AppJS.getInstance();
 $(function () {
     JSManager.setMandatorySymbol();
 });

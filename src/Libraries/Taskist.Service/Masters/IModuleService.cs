@@ -1,4 +1,4 @@
-﻿using Taskist.Core.Common;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
 
 namespace Taskist.Service.Masters;
@@ -13,6 +13,8 @@ public interface IModuleService
     Task<IList<Module>> GetAllActiveAsync(bool showDeleted = false);
 
     Task<IList<Module>> GetAllActiveByProjectAsync(int projectId);
+
+    Task<IList<Module>> GetAllActiveByProjectAsync(List<int> projectIds);
 
     Task<Module> GetByIdAsync(int id);
 

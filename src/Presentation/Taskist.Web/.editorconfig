@@ -1,0 +1,8 @@
+# Mapperly diagnostics
+# RMG012 (unmapped target member) and RMG020 (unmapped source member) fire for the
+# UI-only members (SelectList collections) and entity navigation properties that the
+# previous AutoMapper profiles also left unmapped. Silenced to preserve that behaviour
+# and keep the build output clean; revisit if strict mapping is ever desired.
+[*.cs]
+dotnet_diagnostic.RMG012.severity = none
+dotnet_diagnostic.RMG020.severity = none

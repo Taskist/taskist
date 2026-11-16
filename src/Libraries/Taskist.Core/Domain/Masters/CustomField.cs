@@ -1,8 +1,8 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Masters
 {
-    public class CustomField : BaseEntity
+    public class CustomField : BaseEntity, IAuditableEntity
     {
         public int ProjectId { get; set; }
 
@@ -20,7 +20,9 @@ namespace Taskist.Core.Domain.Masters
 
         public int Placement { get; set; }
 
-        public int DisplayOrder { get; set; }
+        public int? Slot { get; set; }
+
+        public int? DisplayOrder { get; set; }
 
         public virtual Project Project { get; set; }
     }

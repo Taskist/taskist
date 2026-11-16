@@ -1,0 +1,82 @@
+@model FileTilesModel
+@functions {
+    static string FileExt(FileTileModel d)
+    {
+        return (d.Extension ?? "").TrimStart('.').ToLowerInvariant();
+    }
+
+    static bool IsImage(FileTileModel d)
+    {
+        return !string.IsNullOrEmpty(d.ContentType) && d.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    static string FileColor(string ext) => ext switch
+    {
+        "pdf" => "pdf",
+        "doc" or "docx" => "doc",
+        "xls" or "xlsx" or "csv" => "xls",
+        "txt" => "txt",
+        _ => "other"
+    };
+
+    static string FileIcon(string ext) => ext switch
+    {
+        "pdf" => "fas fa-file-pdf",
+        "doc" or "docx" => "fas fa-file-word",
+        "xls" or "xlsx" or "csv" => "fas fa-file-excel",
+        "ppt" or "pptx" => "fas fa-file-powerpoint",
+        "txt" => "fas fa-file-lines",
+        "zip" or "rar" or "7z" => "fas fa-file-zipper",
+        _ => "fas fa-file"
+    };
+
+    static string FormatSize(long bytes)
+    {
+        if (bytes <= 0) return "";
+        string[] units = { "B", "KB", "MB", "GB" };
+        double size = bytes;
+        int i = 0;
+        while (size >= 1024 && i < units.Length - 1) { size /= 1024; i++; }
+        return $"{size:0.#} {units[i]}";
+    }
+}
+
+@if (Model.Items.Count > 0)
+{
+    <div class="thumbnail-container">
+        @foreach (var doc in Model.Items)
+        {
+            var ext = FileExt(doc);
+            <div id="file-icon-container-@doc.Id" class="file-tile">
+                @if (IsImage(doc))
+                {
+                    <a href="@doc.Url" class="file-tile-link js-img-preview" data-src="@doc.Url" data-name="@doc.Name" title="@doc.Name">
+                        <img class="file-thumb" src="@doc.Url" alt="@doc.Name" loading="lazy" />
+                    </a>
+                }
+                else
+                {
+                    <a href="@doc.Url" target="_blank" class="file-tile-link" title="@doc.Name">
+                        <div class="file-icon @FileColor(ext)"><i class="@FileIcon(ext)"></i></div>
+                    </a>
+                }
+                <div class="file-name" title="@doc.Name">@doc.Name</div>
+                <div class="file-meta">@FormatSize(doc.FileSize)</div>
+                <div class="file-tile-actions">
+                    <a class="file-action" href="@doc.Url" target="_blank" title="Open"><i class="fas fa-up-right-from-square"></i></a>
+                    @if (Model.AllowDelete)
+                    {
+                        <span class="file-action file-icon-delete" data-token="@doc.Id" title="Delete"><i class="fas fa-trash"></i></span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="files-empty">
+        <i class="far fa-folder-open"></i>
+        <div>@Model.EmptyText</div>
+    </div>
+}

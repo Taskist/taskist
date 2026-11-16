@@ -1,0 +1,49 @@
+@model UserAccessDetailModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+    var totalPermissions = Model.PermissionGroups.Sum(g => g.Permissions.Count);
+}
+
+<div class="mb-2">
+    <strong>@Model.UserName</strong>
+</div>
+
+<div class="mb-3">
+    <div class="text-muted small mb-1">@Localize("UserAccess.Roles").Text</div>
+    @if (Model.Roles.Any())
+    {
+        foreach (var role in Model.Roles)
+        {
+            <span class="badge bg-primary me-1 mb-1">@role</span>
+        }
+    }
+    else
+    {
+        <span class="text-muted">@Localize("UserAccess.NoRoles").Text</span>
+    }
+</div>
+
+<div class="text-muted small mb-2">@Localize("UserAccess.EffectivePermissions").Text (@totalPermissions)</div>
+
+@if (Model.PermissionGroups.Any())
+{
+    foreach (var group in Model.PermissionGroups)
+    {
+        <div class="ea-group">
+            <div class="ea-group__header">
+                @group.GroupName
+                <span class="ea-group__count">@group.Permissions.Count</span>
+            </div>
+            <div class="ea-group__body">
+                @foreach (var permission in group.Permissions)
+                {
+                    <span class="badge bg-light text-dark border me-1 mb-1">@permission</span>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="text-muted">@Localize("UserAccess.NoPermissions").Text</div>
+}

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Taskist.Core.Common;
 using Taskist.Core.Domain.Users;
@@ -48,6 +48,9 @@ public sealed class SaveLastActivityAttribute : TypeFilterAttribute
                 return;
 
             var user = await _workContext.GetCurrentUserAsync();
+            if (user == null)
+                return;
+
             if (user.LastActivityDate.AddMinutes(15) < DateTime.UtcNow)
             {
                 user.LastActivityDate = DateTime.UtcNow;

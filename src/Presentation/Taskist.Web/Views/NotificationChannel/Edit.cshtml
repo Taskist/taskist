@@ -1,0 +1,13 @@
+@model NotificationChannelModel
+@{
+    Layout = "~/Views/Shared/_LayoutPartial.cshtml";
+}
+
+@section Scripts {
+    <script src="~/js/pages/masters/notification-channel-form.js" asp-append-version="true"></script>
+}
+
+<form class="notification-channel-form" asp-action="Edit" data-ajax="true" data-ajax-method="post" data-ajax-begin="ajaxBegin" data-ajax-success="ajaxSuccess" data-ajax-complete="ajaxComplete" autocomplete="off">
+    @await Html.PartialAsync("_Form", Model)
+    <partial name="_ModalButton" />
+</form>

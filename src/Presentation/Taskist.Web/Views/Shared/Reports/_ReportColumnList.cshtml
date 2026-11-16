@@ -1,0 +1,23 @@
+@using Taskist.Web.Models.Configuration
+@model ReportLayoutModel
+
+<ul class="report-columns list-unstyled">
+    @foreach (var c in Model.Columns)
+    {
+        <li class="report-col-row d-flex align-items-center gap-2 mb-2" data-key="@c.Key">
+            <i class="fas fa-grip-vertical text-muted report-col-handle"></i>
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input report-col-included" type="checkbox" aria-label="@c.Title" @(c.Included ? "checked" : "")>
+            </div>
+            @if (Model.EditTitles)
+            {
+                <span class="report-col-key text-muted small">@c.Key</span>
+                <input type="text" class="form-control form-control-sm report-col-title" value="@c.Title" placeholder="Column title" />
+            }
+            else
+            {
+                <span class="report-col-name">@c.Title</span>
+            }
+        </li>
+    }
+</ul>

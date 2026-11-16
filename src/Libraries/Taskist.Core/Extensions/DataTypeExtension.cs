@@ -72,16 +72,24 @@ public static class DataTypeExtension
         return outValue.ToString(format, CultureInfo.InvariantCulture);
     }
 
-    public static string ToFileSizeString(this object value)
+    public static string ToAge(this object value)
     {
-        var byteCount = Convert.ToInt64(value);
-        string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
-        if (byteCount == 0)
-            return "0" + suf[0];
-        long bytes = Math.Abs(byteCount);
-        int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
-        double num = Math.Round(bytes / Math.Pow(1024, place), 1);
-        return (Math.Sign(byteCount) * num).ToString() + suf[place];
+        DateTime.TryParse(value.ToString(), out DateTime outValue);
+
+        var now = DateTime.UtcNow;
+        var span = now - outValue;
+
+        if (span.TotalDays >= 365)
+            return $"{(int)(span.TotalDays / 365)} year(s) ago";
+        if (span.TotalDays >= 30)
+            return $"{(int)(span.TotalDays / 30)} month(s) ago";
+        if (span.TotalDays >= 1)
+            return $"{(int)span.TotalDays} day(s) ago";
+        if (span.TotalHours >= 1)
+            return $"{(int)span.TotalHours} hour(s) ago";
+        if (span.TotalMinutes >= 1)
+            return $"{(int)span.TotalMinutes} minute(s) ago";
+        return "just now";
     }
 
     #endregion
@@ -110,6 +118,18 @@ public static class DataTypeExtension
     {
         long.TryParse(value.ToString(), out var outValue);
         return outValue;
+    }
+
+    public static string ToFileSizeString(this object value)
+    {
+        var byteCount = Convert.ToInt64(value);
+        string[] suf = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+        if (byteCount == 0)
+            return "0" + suf[0];
+        long bytes = Math.Abs(byteCount);
+        int place = Convert.ToInt32(Math.Floor(Math.Log(bytes, 1024)));
+        double num = Math.Round(bytes / Math.Pow(1024, place), 1);
+        return (Math.Sign(byteCount) * num).ToString() + suf[place];
     }
 
     #endregion

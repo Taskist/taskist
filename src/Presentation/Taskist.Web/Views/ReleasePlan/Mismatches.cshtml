@@ -1,0 +1,67 @@
+@model IList<ReleaseMismatchGroupModel>
+
+<div class="release-mismatch"
+     data-clear-url="@Url.Action("ClearMismatchedReleases")"
+     data-add-url="@Url.Action("AddProjectToRelease")"
+     data-confirm-clear="@Localize("ReleaseMismatch.ConfirmClear").Text"
+     data-confirm-add="@Localize("ReleaseMismatch.ConfirmAdd").Text">
+    <p class="release-mismatch-intro">@Localize("ReleaseMismatch.Intro")</p>
+
+    @if (Model.Any())
+    {
+        foreach (var group in Model)
+        {
+            <div class="release-mismatch-group" data-release-id="@group.ReleaseId" data-project-id="@group.ProjectId"
+                 data-release="@group.Release" data-project="@group.Project">
+                <div class="release-mismatch-head">
+                    <div class="release-mismatch-title">
+                        <i class="fas fa-triangle-exclamation text-warning me-2"></i>
+                        <strong>@group.Release</strong>
+                    </div>
+                    <div class="release-mismatch-meta">
+                        @Localize("ReleaseMismatch.MappedTo") <span>@(string.IsNullOrEmpty(group.MappedProjects) ? "-" : group.MappedProjects)</span>
+                    </div>
+                    <div class="release-mismatch-summary">
+                        <span class="badge bg-warning text-dark">@group.Tasks.Count</span>
+                        @Localize("ReleaseMismatch.TasksFrom") <strong>@group.Project</strong>
+                    </div>
+                </div>
+
+                <div class="release-mismatch-actions">
+                    @if (group.CanAddProject)
+                    {
+                        <button type="button" class="btn btn-sm btn-primary release-mismatch-add">
+                            <i class="fas fa-plus me-1"></i>@string.Format(Localize("ReleaseMismatch.AddProject").Text, group.Project)
+                        </button>
+                    }
+                    <button type="button" class="btn btn-sm btn-outline-danger release-mismatch-clear">
+                        <i class="fas fa-eraser me-1"></i><span class="release-mismatch-clear-label" data-all="@Localize("ReleaseMismatch.ClearAll").Text" data-some="@Localize("ReleaseMismatch.ClearSelected").Text">@Localize("ReleaseMismatch.ClearAll")</span>
+                    </button>
+                    <a href="#" class="release-mismatch-toggle ms-auto">
+                        <span class="release-mismatch-toggle-text" data-show="@Localize("ReleaseMismatch.ShowTasks").Text" data-hide="@Localize("ReleaseMismatch.HideTasks").Text">@Localize("ReleaseMismatch.ShowTasks")</span>
+                        <i class="fas fa-chevron-down ms-1"></i>
+                    </a>
+                </div>
+
+                <div class="release-mismatch-tasks d-none">
+                    @foreach (var task in group.Tasks)
+                    {
+                        <label class="release-mismatch-task">
+                            <input type="checkbox" class="form-check-input release-mismatch-row" value="@task.TaskId" />
+                            <a href="@Url.Action("Edit", "Backlog", new { id = task.TaskId })" target="_blank" class="release-mismatch-id">#@task.TaskId</a>
+                            <span class="release-mismatch-task-title" title="@task.Title">@task.Title</span>
+                            <span class="release-mismatch-status">@task.Status</span>
+                        </label>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="files-empty">
+            <i class="far fa-circle-check"></i>
+            <div>@Localize("ReleaseMismatch.Empty")</div>
+        </div>
+    }
+</div>

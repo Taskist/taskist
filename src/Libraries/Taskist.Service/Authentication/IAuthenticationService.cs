@@ -6,6 +6,8 @@ public interface IAuthenticationService
 {
     Task SignInAsync(User entity, bool isPersistent);
 
+    Task SignInAsync(User entity, bool isPersistent, string authMethod);
+
     Task SignOutAsync();
 
     Task<User> GetAuthenticatedUserAsync();

@@ -1,0 +1,91 @@
+@model GitConnectionModel
+@{
+    var saved = Localize("GitConnectionModel.SecretSaved").Text;
+    var gitLab = ((int)GitProviderType.GitLab).ToString();
+    var gitHub = ((int)GitProviderType.GitHub).ToString();
+    var accessToken = ((int)GitAuthMode.AccessToken).ToString();
+    var gitHubApp = ((int)GitAuthMode.GitHubApp).ToString();
+}
+<input type="hidden" asp-for="Id" />
+<div class="validation-errors"></div>
+@if (!string.IsNullOrEmpty(Model.ServiceAccountUserName))
+{
+    <div class="alert alert-success small py-2"><i class="fas fa-circle-check me-1"></i>@Localize("GitConnectionModel.ServiceAccount") <strong>@Model.ServiceAccountUserName</strong></div>
+}
+<div class="mb-3">
+    <wc-label asp-for="Name" />
+    <input asp-for="Name" class="form-control" maxlength="100" />
+    <span asp-validation-for="Name" class="text-danger"></span>
+</div>
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <wc-label asp-for="ProviderType" />
+        <select asp-for="ProviderType" asp-items="Model.AvailableProviders" class="form-control js-git-provider"></select>
+    </div>
+    <div class="col-md-6 mb-3">
+        <wc-label asp-for="AuthMode" />
+        <select asp-for="AuthMode" asp-items="Model.AvailableAuthModes" class="form-control js-git-auth-mode" data-github-app="@gitHubApp" data-access-token="@accessToken"></select>
+    </div>
+</div>
+<div class="mb-3">
+    <wc-label asp-for="BaseUrl" />
+    <input asp-for="BaseUrl" class="form-control js-git-base-url" maxlength="500" data-gitlab-placeholder="https://gitlab.example.com" data-github-placeholder="https://github.com" />
+    <span asp-validation-for="BaseUrl" class="text-danger"></span>
+</div>
+<div class="mb-3">
+    <wc-label asp-for="ApiUrl" />
+    <input asp-for="ApiUrl" class="form-control" maxlength="500" />
+    <div class="form-text" data-git-provider="@gitLab">@Localize("GitConnectionModel.ApiUrl.Hint.GitLab")</div>
+    <div class="form-text" data-git-provider="@gitHub">@Localize("GitConnectionModel.ApiUrl.Hint.GitHub")</div>
+</div>
+<div class="mb-3" data-git-auth="@accessToken">
+    <wc-label asp-for="ServiceToken" />
+    <input asp-for="ServiceToken" type="password" class="form-control" autocomplete="new-password" placeholder="@(Model.HasServiceToken ? saved : string.Empty)" />
+    <div class="form-text" data-git-provider="@gitLab">@Localize("GitConnectionModel.ServiceToken.Hint.GitLab")</div>
+    <div class="form-text" data-git-provider="@gitHub">@Localize("GitConnectionModel.ServiceToken.Hint.GitHub")</div>
+</div>
+<div class="row" data-git-auth="@gitHubApp">
+    <div class="col-md-4 mb-3">
+        <wc-label asp-for="AppId" />
+        <input asp-for="AppId" class="form-control" maxlength="50" />
+    </div>
+    <div class="col-md-8 mb-3">
+        <wc-label asp-for="AppPrivateKey" />
+        <textarea asp-for="AppPrivateKey" class="form-control font-monospace" rows="3" autocomplete="off" spellcheck="false" placeholder="@(Model.HasAppPrivateKey ? saved : "-----BEGIN RSA PRIVATE KEY-----")"></textarea>
+        <div class="form-text">@Localize("GitConnectionModel.AppPrivateKey.Hint")</div>
+    </div>
+</div>
+<hr />
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <wc-label asp-for="OAuthClientId" />
+        <input asp-for="OAuthClientId" class="form-control" maxlength="200" />
+    </div>
+    <div class="col-md-6 mb-3">
+        <wc-label asp-for="OAuthClientSecret" />
+        <input asp-for="OAuthClientSecret" type="password" class="form-control" autocomplete="new-password" placeholder="@(Model.HasOAuthClientSecret ? saved : string.Empty)" />
+    </div>
+</div>
+<div class="form-text mb-3" data-git-provider="@gitLab">@Localize("GitConnectionModel.OAuth.Hint.GitLab") <code>@Model.OAuthCallbackUrl</code></div>
+<div class="form-text mb-3" data-git-provider="@gitHub">@Localize("GitConnectionModel.OAuth.Hint.GitHub") <code>@Model.OAuthCallbackUrl</code></div>
+@if (Model.HasOAuthClientSecret)
+{
+    <div class="form-check mb-3">
+        <input asp-for="ClearOAuth" class="form-check-input" type="checkbox" />
+        <label class="form-check-label small" asp-for="ClearOAuth">@Localize("GitConnectionModel.ClearOAuth")</label>
+    </div>
+}
+<div class="mb-3">
+    <label class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="IsDefault" />
+        <wc-label asp-for="IsDefault" />
+    </label>
+    <label class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="Active" />
+        <wc-label asp-for="Active" />
+    </label>
+    <label class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" asp-for="AllowInsecureHttp" />
+        <wc-label asp-for="AllowInsecureHttp" />
+    </label>
+</div>

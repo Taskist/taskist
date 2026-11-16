@@ -1,4 +1,4 @@
-﻿using Taskist.Web.Models.Common;
+using Taskist.Web.Models.Common;
 
 namespace Taskist.Web.Models.Masters
 {
@@ -17,5 +17,11 @@ namespace Taskist.Web.Models.Masters
         public int ColumnClass { get; set; }
 
         public int Placement { get; set; }
+
+        public int ResolvedSlot { get; set; }
+
+        public int Index { get; set; }
+
+        public string Value { get; set; } = "";
     }
 }

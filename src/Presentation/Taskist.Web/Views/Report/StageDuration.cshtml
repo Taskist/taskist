@@ -1,0 +1,83 @@
+@model StageDurationPageModel
+@{
+	ViewData["Title"] = Localize("StageDurationPage.Title");
+}
+
+@section PageStyles {
+	<link href="~/css/pages/report.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<div class="container-fluid mt-3">
+	<wp-filter-panel id="stageFilter">
+		<div class="row g-3 align-items-end">
+			<div class="col-sm-6 col-md-3">
+				<label class="form-label small text-muted mb-1">Project</label>
+				<select class="form-control form-control-sm" id="fltProject" asp-items="Model.AvailableProjects">
+					<option value="">All projects</option>
+				</select>
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<label class="form-label small text-muted mb-1">From (completed)</label>
+				<input type="text" class="form-control form-control-sm datepicker" id="fltFrom" autocomplete="off" placeholder="dd-Mon-yyyy" />
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<label class="form-label small text-muted mb-1">To (completed)</label>
+				<input type="text" class="form-control form-control-sm datepicker" id="fltTo" autocomplete="off" placeholder="dd-Mon-yyyy" />
+			</div>
+			<div class="col-sm-6 col-md-3">
+				<label class="form-label small text-muted mb-1">Task type</label>
+				<select class="form-control form-control-sm" id="fltTaskType" asp-items="Model.AvailableTaskTypes">
+					<option value="">All types</option>
+				</select>
+			</div>
+			<div class="col-12 d-flex gap-2 justify-content-end">
+				<button type="button" class="btn btn-sm btn-primary" id="btnApply"><i class="fas fa-filter me-1"></i>Apply</button>
+				<button type="button" class="btn btn-sm btn-outline-secondary" id="btnReset"><i class="fas fa-rotate-left me-1"></i>Reset</button>
+				<a class="btn btn-sm btn-outline-success" id="btnExport" title="Export to Excel"><i class="fa-solid fa-file-excel me-1"></i>Excel</a>
+			</div>
+		</div>
+	</wp-filter-panel>
+
+	<div class="card">
+		<div class="card-header fw-semibold"><i class="fas fa-stopwatch me-2"></i>Stage durations (first pass)</div>
+		<div class="card-body">
+			<div class="table-responsive">
+				<table class="table table-hover align-middle mb-0" id="stageTable">
+					<thead>
+						<tr>
+							<th>Metric</th>
+							<th>From → To</th>
+							<th class="text-end">Tasks</th>
+							<th class="text-end">Avg</th>
+							<th class="text-end">Median</th>
+							<th class="text-end">Min</th>
+							<th class="text-end">Max</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="stageTableBody">
+						<tr><td colspan="8" class="text-center text-muted py-4">Loading…</td></tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="stageTasksModal" tabindex="-1" aria-hidden="true">
+	<div class="modal-dialog modal-lg modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title"><i class="fas fa-list me-2"></i><span id="stageTasksTitle"></span></h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<div class="stage-rank" id="stageTasksBody"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section PageScripts {
+	<script src="~/js/pages/report/stage-duration.js" asp-append-version="true"></script>
+}

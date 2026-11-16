@@ -1,6 +1,6 @@
-﻿using Taskist.Core.Common;
-using Taskist.Core.Domain.Users;
+using Taskist.Core.Common;
 using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
 
 namespace Taskist.Service.Masters;
 

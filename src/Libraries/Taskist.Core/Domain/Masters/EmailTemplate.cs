@@ -2,7 +2,7 @@ using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Masters;
 
-public class EmailTemplate : BaseEntity
+public class EmailTemplate : BaseEntity, IAuditableEntity
 {
     public string Name { get; set; }
 

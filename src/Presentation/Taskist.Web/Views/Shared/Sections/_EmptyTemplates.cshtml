@@ -1,0 +1,8 @@
+<template id="wpGridEmptyTpl">
+    <wp-empty-state icon="fas fa-inbox" size="compact" heading="@Localize("EmptyState.Grid.Empty.Title").Text" text="@Localize("EmptyState.Grid.Empty.Text").Text"></wp-empty-state>
+</template>
+<template id="wpGridNoMatchTpl">
+    <wp-empty-state icon="fas fa-magnifying-glass" size="compact" tone="info" heading="@Localize("EmptyState.Grid.NoMatch.Title").Text" text="@Localize("EmptyState.Grid.NoMatch.Text").Text">
+        <button type="button" class="btn btn-sm btn-outline-primary js-grid-clear-search"><i class="fas fa-xmark me-1"></i>@Localize("EmptyState.Grid.ClearSearch").Text</button>
+    </wp-empty-state>
+</template>

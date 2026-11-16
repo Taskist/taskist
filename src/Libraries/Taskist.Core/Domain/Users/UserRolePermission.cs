@@ -1,8 +1,8 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Users;
 
-public class UserRolePermission : BaseEntity
+public class UserRolePermission : BaseEntity, IAuditableEntity
 {
     private ICollection<UserRolePermissionMap> _userRolePermissionMaps;
 

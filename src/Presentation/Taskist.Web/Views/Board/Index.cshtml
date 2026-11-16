@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model BoardModel
+@{
+    ViewData["Title"] = Localize("BoardPage.Title");
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/pages/board.css" asp-append-version="true" />
+}
+
+@section PageScripts {
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/js/pages/board/board.js" asp-append-version="true"></script>
+}
+
+@* Relocated into the page header (#pageButtons) by board.js on load. *@
+<div id="boardHeaderControls" class="d-none align-items-center gap-2">
+    <div class="board-header-project">
+        <select id="boardProject" class="form-control form-control-sm select2" data-url="@Url.Action("Index")" data-placeholder="@Localize("Board.Project").Text">
+            @foreach (var p in Model.Projects)
+            {
+                <option value="@p.Value" selected="@p.Selected">@p.Text</option>
+            }
+        </select>
+    </div>
+    @if (Model.HasProject)
+    {
+        <button type="button" id="btnBoardColumns" class="btn btn-sm btn-primary no-ladda"
+                data-url="@Url.Action("Columns")?project=@Model.ProjectId"
+                data-label="@Localize("Board.Columns").Text">
+            <i class="fas fa-table-columns me-1"></i>@Localize("Board.Columns").Text
+        </button>
+    }
+</div>
+
+@if (!Model.HasProject)
+{
+    <wp-empty-state icon="fas fa-folder-open" heading="@Localize("EmptyState.NoProject.Title").Text" text="@Localize("EmptyState.NoProject.Text").Text"
+                    action-text="@Localize("EmptyState.NoProject.Action").Text" action-url="@Url.Action("Create", "Project")" action-permission="ManageProject"></wp-empty-state>
+}
+else
+{
+    <div id="kanban" class="board-wrap"
+         data-project="@Model.ProjectId"
+         data-cards-url="@Url.Action("Cards")"
+         data-update-url="@Url.Action("UpdateStatus", "Backlog")"
+         data-closing-check-url="@Url.Action("GetClosingCommentStatus", "Backlog")"
+         data-closing-url="@Url.Action("ClosingComment", "Backlog")"
+         data-closing-label="@Localize("Board.ClosingComment").Text"
+         data-edit-url="@Url.Action("Edit", "Backlog")">
+        @foreach (var column in Model.Columns)
+        {
+            var accent = string.IsNullOrWhiteSpace(column.BackgroundColor) ? "#6f78e6" : column.BackgroundColor;
+            <div class="board-column">
+                <div class="board-column__header" style="border-top-color:@accent">
+                    <span class="board-column__name">
+                        @if (!string.IsNullOrWhiteSpace(column.IconClass))
+                        {
+                            <i class="@column.IconClass me-1" style="color:@accent"></i>
+                        }
+                        @column.Name
+                    </span>
+                    <span class="board-column__count">@column.Total</span>
+                </div>
+                <div class="board-column__cards" data-status-id="@column.StatusId" data-loaded="@column.Loaded" data-total="@column.Total">
+                    @await Html.PartialAsync("_BoardCards", column.Cards)
+                </div>
+            </div>
+        }
+    </div>
+}

@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using System.Net;
+using System.Security.Claims;
 
 namespace Taskist.Core.Common;
 
@@ -28,6 +29,9 @@ public class HttpHelper : IHttpHelper
 
     public string GetBaseURL()
     {
+        if (_httpContextAccessor?.HttpContext?.Request == null)
+            return string.Empty;
+
         var request = _httpContextAccessor.HttpContext.Request;
         return $"{request.Scheme}://{request.Host.Value}{request.PathBase.Value}";
     }
@@ -67,6 +71,13 @@ public class HttpHelper : IHttpHelper
         return result;
     }
 
+    public int? GetCurrentUserId()
+    {
+        var idClaim = _httpContextAccessor?.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier);
+
+        return idClaim != null && int.TryParse(idClaim.Value, out var id) ? id : null;
+    }
+
     public bool IsCurrentConnectionSecured()
     {
         if (!IsRequestAvailable())
@@ -80,7 +91,6 @@ public class HttpHelper : IHttpHelper
         if (!IsRequestAvailable())
             return string.Empty;
 
-        //URL referrer is null in some case (for example, in IE 8)
         return _httpContextAccessor.HttpContext.Request.Headers[HeaderNames.Referer];
     }
 

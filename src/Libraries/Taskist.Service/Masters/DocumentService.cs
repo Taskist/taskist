@@ -1,6 +1,9 @@
-﻿using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Masters;
+using Taskist.Core.Domain.Users;
+using Taskist.Core.Domain.WorkItems;
 using Taskist.Data.Repository;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace Taskist.Service.Masters;
 
@@ -9,13 +12,19 @@ public class DocumentService : IDocumentService
     #region Fields
 
     protected readonly IRepository<Document> _documentRepository;
+    protected readonly IRepository<BacklogDocument> _backlogDocumentRepository;
+    protected readonly IRepository<User> _userRepository;
 
     #endregion
 
     #region Ctor
-    public DocumentService(IRepository<Document> documentRepository)
+    public DocumentService(IRepository<Document> documentRepository,
+        IRepository<BacklogDocument> backlogDocumentRepository,
+        IRepository<User> userRepository)
     {
         _documentRepository = documentRepository;
+        _backlogDocumentRepository = backlogDocumentRepository;
+        _userRepository = userRepository;
     }
     #endregion
 
@@ -24,6 +33,16 @@ public class DocumentService : IDocumentService
     public async Task<Document> GetByIdAsync(int id)
     {
         return id == 0 ? null : await _documentRepository.GetByIdAsync(id);
+    }
+
+    public async Task<bool> IsTaskAttachmentAsync(int documentId)
+    {
+        return await _backlogDocumentRepository.Table.AnyAsync(x => x.DocumentId == documentId);
+    }
+
+    public async Task<bool> IsProfilePhotoAsync(int documentId)
+    {
+        return await _userRepository.Table.AnyAsync(x => x.PhotoDocumentId == documentId);
     }
 
     public async Task<Document> InsertAsync(IFormFile file)
@@ -48,6 +67,23 @@ public class DocumentService : IDocumentService
         }
 
         return new Document();
+    }
+
+    public async Task<Document> InsertAsync(byte[] data, string fileName, string contentType)
+    {
+        if (data == null || data.Length == 0)
+            throw new ArgumentNullException(nameof(data));
+
+        var entity = new Document
+        {
+            FileName = Path.GetFileNameWithoutExtension(fileName),
+            FileData = data,
+            ContentType = contentType,
+            FileSize = data.Length,
+            Extension = Path.GetExtension(fileName)
+        };
+
+        return await _documentRepository.InsertAndGetAsync(entity);
     }
 
     public async Task UpdateAsync(int documentId, IFormFile file)

@@ -1,0 +1,232 @@
+@model ReleasePlanIndexModel
+@using Taskist.Core.Domain.Masters
+@inject GeneralSettings GeneralSettings
+@{
+    ViewData["Title"] = Localize("ReleasePage.Title");
+
+    var pageLength = GeneralSettings.ItemsPerPage > 0 ? GeneralSettings.ItemsPerPage : 10;
+    var lengthOptions = new List<int> { 10, 25, 50, 100 };
+    if (!lengthOptions.Contains(pageLength))
+        lengthOptions.Add(pageLength);
+    lengthOptions = lengthOptions.Distinct().OrderBy(x => x).ToList();
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/pages/release-plan.css" asp-append-version="true" />
+}
+
+@section PageScripts {
+    <script src="~/js/pages/release-plan.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+    <script src="~/js/report-column-editor.js" asp-append-version="true"></script>
+}
+
+<wp-filter-panel id="releaseFilter">
+        <div class="row g-3 align-items-end">
+            <div class="col-sm-6 col-lg">
+                <label class="form-label small text-muted mb-1">@Localize("ReleaseGrid.Project")</label>
+                <select id="releaseProject" class="form-control form-control-sm">
+                    <option value="">All Projects</option>
+                    @foreach (var p in Model.Projects)
+                    {
+                        <option value="@p.Id">@p.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg">
+                <label class="form-label small text-muted mb-1">@Localize("ReleaseGrid.Status")</label>
+                <select id="releaseStatus" class="form-control form-control-sm select2" multiple="multiple" data-width="100%" data-placeholder="@Localize("ReleaseGrid.Status")">
+                    @foreach (ReleaseStatus s in Enum.GetValues(typeof(ReleaseStatus)))
+                    {
+                        <option value="@((int)s)">@s</option>
+                    }
+                    <option value="-1">@Localize("ReleaseGrid.Overdue")</option>
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg">
+                <label class="form-label small text-muted mb-1">@Localize("ReleaseGrid.ReleaseType")</label>
+                <select id="releaseTypeFilter" class="form-control form-control-sm select2" multiple="multiple" data-width="100%" data-placeholder="@Localize("ReleaseGrid.ReleaseType")">
+                    @foreach (ReleaseType t in Enum.GetValues(typeof(ReleaseType)))
+                    {
+                        <option value="@((int)t)">@t</option>
+                    }
+                </select>
+            </div>
+            <div class="col-sm-6 col-lg">
+                <label class="form-label small text-muted mb-1">@Localize("ReleaseFilter.FromDate")</label>
+                <input type="text" id="releaseFromDate" class="form-control form-control-sm datepicker" autocomplete="off" placeholder="dd-Mon-yyyy" />
+            </div>
+            <div class="col-sm-6 col-lg">
+                <label class="form-label small text-muted mb-1">@Localize("ReleaseFilter.ToDate")</label>
+                <input type="text" id="releaseToDate" class="form-control form-control-sm datepicker" autocomplete="off" placeholder="dd-Mon-yyyy" />
+            </div>
+            <div class="col-12 d-flex gap-2 justify-content-end">
+                <button type="button" class="btn btn-sm btn-primary" id="btnReleaseApply"><i class="fas fa-filter me-1"></i>@Localize("Button.Apply")</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="btnReleaseReset"><i class="fas fa-rotate-left me-1"></i>@Localize("Button.Reset")</button>
+            </div>
+        </div>
+</wp-filter-panel>
+<div class="card">
+    <div class="card-body p-3">
+        <table class="table table-bordered table-condensed table-striped nowrap" id="ReleaseGrid"></table>
+    </div>
+</div>
+<script>
+    let filterLoaded = false;
+    $(document).ready(function () {
+        JSManager.setPageTitle('@Localize("BacklogRelease.Title").Text');
+        $('#pageButtons').append(`<button type="button" class="btn btn-sm btn-outline-success me-2" data-report-layout="@ReportExportKey.ReleaseTasks" data-title="@Localize("ReportLayout.Title").Text" data-editor-url="@Url.Action("Editor", "ReportLayout")" data-save-url="@Url.Action("Save", "ReportLayout")" data-reset-url="@Url.Action("Reset", "ReportLayout")" data-save-text="@Localize("ReportLayout.SaveMine").Text" data-reset-text="@Localize("ReportLayout.ResetToDefault").Text" data-cancel-text="@Localize("Button.Cancel").Text" title="@Localize("ReportLayout.Button").Text"><i class="fas fa-table-columns me-1"></i>@Localize("ReportLayout.Button")</button>`);
+        $('#pageButtons').append(`<a id="" href="javascript:JSManager.openOffCanvas('@Url.Action("Create")','@Localize("BacklogRelease.Title")');" class="btn btn-sm btn-primary me-2"><i class="fas fa-plus me-1"></i>@Localize("Button.AddNew")</a>`);
+        if (parseInt('@Model.MismatchCount') > 0) {
+            $('#pageButtons').prepend(`<a href="javascript:JSManager.openOffCanvas('@Url.Action("Mismatches")','@Localize("ReleaseMismatch.Title")');" class="btn btn-sm btn-outline-warning me-2" title="@Localize("ReleaseMismatch.Title")"><i class="fas fa-triangle-exclamation me-1"></i>@Localize("ReleaseMismatch.Button") <span class="badge bg-warning text-dark">@Model.MismatchCount</span></a>`);
+        }
+        filterLoaded = true;
+
+        $('#btnReleaseApply').on('click', function () {
+            WpFilter.refresh('releaseFilter');
+            table.ajax.reload();
+        });
+        $('#btnReleaseReset').on('click', function () {
+            $('#releaseProject').val('');
+            $('#releaseStatus, #releaseTypeFilter').val(null).trigger('change.select2');
+            $('#releaseFromDate, #releaseToDate').datepicker('clearDates');
+            WpFilter.refresh('releaseFilter');
+            table.ajax.reload();
+        });
+
+        var table = $("#ReleaseGrid").DataTable({
+            processing: true,
+            serverSide: true,
+            stateSave: false,
+            info: true,
+            autoWidth: false,
+            filter: true,
+            lengthChange: true,
+            pageLength: @pageLength,
+            lengthMenu: [@string.Join(", ", lengthOptions)],
+            searching: true,
+            ordering: true,
+            rowGroup: {
+                dataSrc: [],
+                enable: false,
+                startRender: function (rows, group, level) {
+                    var count = rows.count();
+                    var indent = "&nbsp;&nbsp;&nbsp;".repeat(level);
+                    return $(`<tr class="group-header"><td colspan="4">${indent}<strong>${group} (${count})</strong></td></tr>`);
+                },
+                endRender: function(){
+                    $('#columnToggleMenu input[type="checkbox"]').trigger('change');
+                }
+            },
+            initComplete: function (settings, json) {
+            },
+            language: {
+                search: '<span>@Localize("Grid.SearchLabel").Text</span> _INPUT_',
+                searchPlaceholder: '@Localize("Grid.SearchPlaceholder").Text',
+                lengthMenu: '_MENU_ @Localize("Grid.LengthChangeLabel").Text',
+                paginate: { 'first': 'First', 'last': 'Last', 'next': '&rarr;', 'previous': '&larr;' },
+                zeroRecords: '@Localize("Grid.ZeroRecords").Text',
+                info: '@Localize("Grid.FooterInfo").Text',
+                infoEmpty: '@Localize("Grid.FooterInfoWhenEmpty").Text'
+            },
+            ajax: {
+                url: "@Url.Action("DataRead")",
+                type: "POST",
+                datatype: "json",
+                data: function (dto) {
+                    dto.projectId = $('#releaseProject').val() || 0;
+                    dto.status = $('#releaseStatus').val() || [];
+                    dto.releaseType = $('#releaseTypeFilter').val() || [];
+                    dto.fromDate = $('#releaseFromDate').val() || '';
+                    dto.toDate = $('#releaseToDate').val() || '';
+                    JSManager.addAntiForgeryToken(dto);
+                }
+            },
+            columns: [{
+                title: '@Localize("ReleaseGrid.Name")',
+                data: 'Name',
+                sortable: true
+            },
+            {
+                title: '@Localize("ReleaseGrid.ReleaseType")',
+                data: 'ReleaseType',
+                sortable: true
+            },
+            {
+                title: '@Localize("ReleaseGrid.Progress")',
+                sortable: true,
+                render: function (data, type, row) {
+                    const url = '@Url.Action("Index", "Backlog")?filter=4&filterValue=' + row.Id;
+                    return ReleasePlan.renderProgress(row, url);
+                }
+            },
+            {
+                title: '@Localize("ReleaseGrid.Project")',
+                data: 'Project',
+                sortable: false,
+                render: function (data, type, row) {
+                    return ReleasePlan.renderProjects(row);
+                }
+            },
+            {
+                title: '@Localize("ReleaseGrid.ReleaseDate")',
+                data: 'ReleaseDate',
+                sortable: true,
+                render: function (data, type, row) {
+                    if(JSManager.hasValue(data)) {
+                          const today = moment();
+                          const targetDate = moment(data);
+                          const dayDifference = targetDate.diff(today, "days");
+                          if (dayDifference < 0) {
+                              return `<i class="far fa-calendar-times text-danger me-1" title="Overdue by ${Math.abs(dayDifference)} days"></i>${moment(data).format('DD-MMM-YYYY')}`;
+                          } else if (dayDifference === 0) {
+                              return `<i class="far fa-calendar-check text-success me-1" title="${dayDifference} Due today!"></i>${moment(data).format('DD-MMM-YYYY')}`;
+                          } else {
+                              return `<i class="far fa-calendar-plus text-primary me-1" title="${dayDifference} days remaining"></i>${moment(data).format('DD-MMM-YYYY')}`;
+                          }
+                    }
+                    else
+                        return 'Not set';
+                }
+            },
+            {
+                title: '@Localize("ReleaseGrid.Status")',
+                data: 'Status',
+                sortable: true,
+                render: function (data, type, row) {
+                    let html = '';
+                    switch(data){
+                        case 'Planning': {
+                        html = `<span class="badge bg-primary"><i class="far fa-calendar me-1"></i>${data}</span>`;
+                        const overdueDays = moment().startOf('day').diff(moment(row.ReleaseDate).startOf('day'), 'days');
+                        if (overdueDays > 0) html += ` <span class="badge bg-danger" title="@Localize("ReleaseGrid.Overdue")"><i class="fas fa-clock me-1"></i>${overdueDays}d overdue</span>`;
+                        break;
+                        }
+                        case 'Released':
+                        html = `<span class="badge bg-success"><i class="far fa-circle-check me-1"></i>${data}</span>`;
+                        break;
+                        case 'Archived':
+                        html = `<span class="badge bg-danger"><i class="fas fa-box-archive me-1"></i>${data}</span>`;
+                        break;
+                    }
+                    return html;
+                }
+            },
+            {
+                title: '@Localize("Grid.Actions")',
+                data: 'Id',
+                sortable: true,
+                render: function (data, type, row) {
+                    const editUrl = `@Url.Action("Edit")?Id=${data}`;
+                    const downloadUrl = `@Url.Action("ExportReleaseToExcel", "Backlog")?releaseId=${data}`;
+
+                    let html = `<a title="@Localize("Button.Edit")" href="javascript:JSManager.openOffCanvas('${editUrl}','@Localize("Button.Edit")')" class="me-1"><i class="far fa-edit"></i> @Localize("Button.Edit")</a>`;
+                    html+=`<a href="${downloadUrl}" target="_blank"><i class="fas fa-download"></i> Download</a>`;
+                    return html;
+                }
+            }]
+        });
+
+        $("#ReleaseGrid").closest('div').addClass("table-responsive");
+    });
+</script>

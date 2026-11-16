@@ -1,0 +1,29 @@
+@model DashboardModel
+
+<div class="wp-filterbar">
+    <div class="wp-filterbar__title"><i class="fas fa-gauge-high me-2"></i>@Localize("Dashboard.Overview").Text</div>
+    <div class="wp-filterbar__filters">
+        <div class="wp-filterbar__field">
+            <i class="fas fa-briefcase"></i>
+            <select id="dashProject" class="form-select form-select-sm">
+                <option value="0">@Localize("Dashboard.AllProjects").Text</option>
+                @foreach (var p in Model.AvailableProjects)
+                {
+                    <option value="@p.Value" selected="@p.Selected">@p.Text</option>
+                }
+            </select>
+        </div>
+        <div class="wp-filterbar__field">
+            <i class="fas fa-clock-rotate-left"></i>
+            <select id="dashPeriod" class="form-select form-select-sm">
+                <option value="30" selected="@(Model.Days == 30)">@Localize("Dashboard.Last30").Text</option>
+                <option value="90" selected="@(Model.Days == 90)">@Localize("Dashboard.Last90").Text</option>
+                <option value="180" selected="@(Model.Days == 180)">@Localize("Dashboard.Last180").Text</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<div id="dashboardContent">
+    @await Html.PartialAsync("_DashboardContent", Model)
+</div>

@@ -1,0 +1,89 @@
+# Changelog
+
+All notable changes to Taskist are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
+
+Each release lists **Upgrade notes** when an install needs action beyond the steps in [UPGRADING.md](UPGRADING.md).
+
+## [Unreleased]
+
+## [1.1.0] - 2026-11-16
+
+The first tagged release of Taskist as an open-source project, including single sign-on and two-factor sign-in from the 1.1 roadmap.
+
+### Added
+
+- **GitHub support** alongside GitLab: multiple Git connections, several repositories per project, webhooks per repository, user accounts connected by token or OAuth, and two-way issue sync. See [docs/git-integration.md](docs/git-integration.md).
+- **Merge request reviews** (Work Items → Reviews): approve, comment, reject with a reason, rebase and merge under the reviewer's own account.
+- **Chat notifications** to Microsoft Teams (channel or Power Automate flow), Slack, Google Chat, Discord, Mattermost or any JSON webhook (optionally HMAC-signed), chosen per project and event.
+- **Release version auto-generation** from a per-project format, with "patch of" a chosen release and live hints for manual names.
+- **Closing checklist**: statuses can require root cause, resolution details or a closing merge request.
+- **Appearance**: light, dark or system theme and an accent colour per user.
+- **Per-user export column layouts** on top of the administrator's default.
+- **Tags** for the backlog, with inline create and merge.
+- **Custom field positions**: a project's custom fields can be placed anywhere on the task form (after Title, Description, Attachments, or after any field in the right panel, such as Status, Module or Developer), with an order number within each position. Existing fields stay at the bottom of their section until moved.
+- **Two-factor sign-in** with any authenticator app (TOTP), turned on per user under My profile → Security: QR-code setup, ten one-time recovery codes, an optional "don't ask again on this device" (`Authentication:TwoFactor:RememberDeviceDays`, default 30), and administrator reset on the user's page. `Authentication:TwoFactor:RequireForAdministrators` (off by default) makes it mandatory for administrators who sign in with a password. Single sign-on users are not asked, since their identity provider handles it. See [docs/two-factor.md](docs/two-factor.md). ([#12](https://github.com/Taskist/taskist/issues/12))
+- **Single sign-on with OpenID Connect** (`Authentication:Oidc`, off by default): Keycloak, Authentik, Entra ID, Google, Okta and other providers. Existing users are linked by verified e-mail; optional account creation on first sign-in (*Registered* role only), optional group → role mapping (adds roles only), and an SSO-only mode that keeps password sign-in for administrators at `/Login?local=1`. Linked sign-ins are listed under My profile → Security and on the user's admin page. See [docs/sso.md](docs/sso.md). ([#11](https://github.com/Taskist/taskist/issues/11))
+- **Optional Sentry error tracking** (`Sentry:Enabled` + `Sentry:Dsn`, off by default): unhandled exceptions and logged errors, with request bodies, cookies, query strings, auth headers and personal data filtered out.
+- `Security:RequireHttpsCookies` and `Security:ForwardedHeaders:*` settings for plain-HTTP and reverse-proxy deployments.
+- Startup checks: the Data Protection key folder must be writable; Production logs warnings for plain-HTTP cookies and an unprotected key ring.
+- Test project (`src/Tests/Taskist.Tests`) and GitHub Actions CI.
+
+### Changed
+
+- Upgraded to **.NET 10** and EF Core 10.
+- Passwords are hashed with PBKDF2-HMAC-SHA512 (210,000 iterations).
+- All stored secrets are protected with ASP.NET Core Data Protection.
+- Renamed *Employee* → *User* and *BacklogTask* → *Backlog* throughout.
+- Backlog filters use select2; Kendo UI was removed.
+- Excel export uses ClosedXML instead of EPPlus; object mapping uses Mapperly.
+- Seed data moved from the install wizard to four idempotent scripts in `sql-scripts/`: schema, defaults, translations and optional sample data. A fresh install now also gets the email templates, using an inactive placeholder email account.
+- Docker images target .NET 10; the migrate container runs `sql-scripts/02`–`04`.
+- E-mails fill `%company%` from **Configuration → Settings → Company name** (falls back to "Taskist").
+- Custom fields: checkbox and radio fields now have a label and save on the edit page, every field saves when changed (previously only mandatory ones did), dropdowns start empty instead of preselecting the first option, a field without a translation shows its label instead of its resource key, and values typed on Create are kept when the form returns with an error.
+
+### Security
+
+- Saving a single custom field value (`Backlog/UpdateCustomField`) now requires edit rights on the task, like the rest of the task form.
+- Wiki reads (content, tree, history, linked tasks, Word export) are limited to members of the page's project; previously any signed-in user could read any project's pages by id. Restoring a version now requires the version to belong to the page, and pages and folders can no longer be moved into another project or into their own sub-folders.
+- Wiki images are recorded against their page's project at upload and served only to the uploader and that project's members; previously any user with the Wiki permission could fetch any stored image (including other projects' wiki images, profile photos and unsaved task uploads) by id.
+- Task attachments are access-checked on download, upload and delete, uploads require the antiforgery token, and files are served as downloads with `nosniff`.
+- Uploads are limited to an allow-list of file types and a size cap; wiki images and profile photos accept raster images only.
+- Files uploaded before a task is saved are linked through a signed, user-bound token instead of a raw document ID.
+- The seeded administrator is only created in an empty user table, so re-running the seed scripts can never restore the default account.
+
+### Fixed
+
+- "Open tasks by project" on the dashboard no longer counts closed or deleted tasks.
+- Missing "Reporter" label on the task form.
+- Branch names from accented titles no longer split words ("déjà" → `deja`).
+- Malformed wiki page or category ids no longer cause a server error; the action returns its normal "not found" response.
+- Word export of a wiki page now includes its images (image links were not recognised before).
+- Wiki pages now open read-only for users without edit rights (the editor call that set the mode had been removed in TinyMCE 5).
+
+### Removed
+
+- HR module (leave, work from home, attendance, holidays, approvals), the desktop quick-capture app, and the organisation structure (departments, designations, org chart, country/state masters).
+- Issue Tracker module.
+- Developer notes and QA notes fields.
+- Reporting fields on tasks (reported via / on / by / to) and the generic Lookup master.
+- Dev, Test and Release status fields on tasks; release tracking uses the Release Plan.
+- The Client User role; signing in requires the Registered role.
+- The unused "Form Name" column in the release export.
+- The Configuration → Notifications tab: its daily-digest switches no longer controlled anything (the digest jobs were removed with the HR module).
+- The built-in encryption key and the legacy `enc:` secret format.
+
+### Upgrade notes
+
+- The schema was re-baselined into a single `InitialCreate` migration. Databases from earlier releases cannot be upgraded in place — see [UPGRADING.md](UPGRADING.md).
+- Environment variables are no longer prefixed: use `ConnectionStrings__AppContext`, not `TASKIST_ConnectionStrings__AppContext`.
+- The Docker `uploads` volume is no longer used; attachments are stored in the database.
+- New additive migrations, all applied automatically by Docker; manual installs run `dotnet ef database update` or the regenerated `sql-scripts/01_schema.sql`:
+  - `AddWikiImage`: new table `WikiImage`.
+  - `AddUserExternalLogin`: new table `UserExternalLogin` (single sign-on links).
+  - `AddUserTwoFactor`: new tables `UserTwoFactor` and `UserRecoveryCode`.
+  - `AddCustomFieldSlot`: two nullable columns on `CustomField` (`Slot`, `DisplayOrder`); existing values are not changed.
+- Re-run `sql-scripts/03_locale.sql` (Docker does this when `SEED_DATA` is on) so the new sign-in, two-factor and custom field labels appear.
+- Single sign-on, two-factor enforcement for administrators and Sentry are all off until configured.
+
+[Unreleased]: https://github.com/Taskist/taskist/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Taskist/taskist/releases/tag/v1.1.0

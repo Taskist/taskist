@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json;
-using Taskist.Core.Common;
+using Taskist.Core.Enums;
+using Newtonsoft.Json;
 
 namespace Taskist.Web.Models.Common;
 
@@ -12,7 +12,7 @@ public class JsonResponseModel
     }
 
     [JsonProperty("status")]
-    public HttpStatusCodeEnum Status { get; set; }
+    public HttpStatusCode Status { get; set; }
 
     [JsonProperty("message")]
     public string Message { get; set; }

@@ -1,0 +1,49 @@
+{
+  "name": "Taskist",
+  "short_name": "Taskist",
+  "description": "Taskist — task tracker, HR and team wiki.",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#1cc7c9",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": ["productivity", "business"],
+  "icons": [
+    {
+      "src": "/images/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/brand/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/brand/screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Taskist on desktop"
+    },
+    {
+      "src": "/images/brand/screenshot-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "label": "Taskist on mobile"
+    }
+  ]
+}

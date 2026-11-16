@@ -1,223 +1,243 @@
+<div align="center">
 
-# 📝 Task / CR / Bug Management System
+<img src="src/Presentation/Taskist.Web/wwwroot/images/brand/logo.png" alt="Taskist" height="72">
 
-A web-based **Task, Change Request (CR), and Bug Management System** built with **ASP.NET Core MVC (.NET 8)**, using **MS SQL Server or MySQL** as the database.
+### Open-source task & bug tracking for software teams
 
-This system helps teams manage tasks, track bugs, handle change requests, and organize projects efficiently.
+Backlog · Board · Releases · Code reviews · Wiki — self-hosted on .NET and SQL Server
 
+[![CI](https://github.com/Taskist/taskist/actions/workflows/ci.yml/badge.svg)](https://github.com/Taskist/taskist/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/github/license/taskist/taskist)](LICENSE)
+![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4)
+[![GitHub Discussions](https://img.shields.io/github/discussions/taskist/taskist?logo=github)](https://github.com/Taskist/taskist/discussions)
+[![Stars](https://img.shields.io/github/stars/taskist/taskist?style=social)](https://github.com/Taskist/taskist/stargazers)
 
-![License](https://img.shields.io/github/license/taskist/taskist)
-![Issues](https://img.shields.io/github/issues/taskist/taskist)
-![Stars](https://img.shields.io/github/stars/taskist/taskist) 
+**[Live demo](https://demo.taskist.org)** · **[Documentation](https://docs.taskist.org)** · **[Quick start](#-quick-start)** · **[Changelog](CHANGELOG.md)** · **[Discussions](https://github.com/Taskist/taskist/discussions)**
 
-## 📑 Table of Contents
+<br>
 
-1. [✨ Features](#-features)  
-2. [🏛 Master Modules](#-master-modules)  
-3. [⚡ Transaction Modules](#-transaction-modules)  
-4. [🗂 Module Hierarchy](#-module-hierarchy)  
-5. [🛠 Technology Stack](#-technology-stack)  
-6. [🚀 Project Setup](#-project-setup)  
-7. [💾 Database Migrations](#-database-migrations)  
-8. [▶️ Running the Project](#-running-the-project)  
-9. [🐛 GitHub Issues & Contribution](#-github-issues--contribution)  
-10. [📄 License](#-license)  
+<img src="docs/images/backlog.png" alt="Taskist backlog with tasks, change requests and bugs across projects" width="100%">
+
+</div>
+
+<br>
+
+Taskist is a self-hosted **task, change request and bug tracker** built with ASP.NET Core MVC and Microsoft SQL Server. Plan work on a backlog and board, ship it in versioned releases, review merge requests from GitHub or GitLab, and keep your team's knowledge in a built-in wiki — without per-seat pricing.
+
+**Why Taskist?**
+
+- **Yours to run** — MIT-licensed and self-hosted; your data stays in your own SQL Server.
+- **Code-aware** — branches, merge/pull requests, reviews and issue sync for GitHub and GitLab, cloud or self-hosted.
+- **Ready in minutes** — one `docker compose up` gives you the app, the database and a seeded admin.
+- **Secure by default** — PBKDF2 passwords, encrypted secrets, permission-checked attachments and hardened outbound requests ([SECURITY.md](SECURITY.md)).
+
+## 📸 Screenshots
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/dashboard.png" alt="Dashboard with task overview, due tasks and charts"><br><sub><b>Dashboard</b> — due tasks, workload and trends at a glance</sub></td>
+    <td width="50%"><img src="docs/images/backlog_form.png" alt="Task editor with rich-text description and status timeline"><br><sub><b>Task editor</b> — status timeline, rich text, sub-tasks and attachments</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/wiki.png" alt="Project wiki with page tree and editor"><br><sub><b>Wiki</b> — per-project pages with categories and history</sub></td>
+    <td width="50%"><img src="docs/images/login.png" alt="Sign-in page"><br><sub><b>Sign-in</b> — branded with your company name</sub></td>
+  </tr>
+</table>
 
 ## ✨ Features
 
-- 👤 User authentication and authorization with roles & permissions.  
-- 🏢 Client and project management.  
-- 🐞 Task, Change Request, and Bug tracking with status, severity, and reporter.  
-- 📆 Sprint and backlog management.  
-- 🧩 Modular system design with configurable menus and settings.  
-- 📊 Full audit and tracking for project activities.  
+<table>
+  <tr>
+    <td width="50%" valign="top">
 
-## 🏛 Master Modules
+**📋 Work items**
+- **Backlog** of tasks, change requests and bugs — severity, reporter, tags, attachments, comments, history and a full filter panel
+- **Board** and **Timeline** views of the same work
+- **Releases** with auto-generated versions from a per-project format (`{major}.{minor}.{patch}`, `{yyyy}.{MM}.{seq}`, …)
+- **Closing checklist** — a status can require root cause, resolution or a merge request
 
-| Module               | Description |
-|----------------------|-------------|
-| 👤 User              | System users who can create or manage tasks. |
-| 🔑 User Roles & Permissions | Define roles (Admin, Manager, Developer, Tester) and access rights. |
-| 🏢 Client            | Organizations or clients associated with projects. |
-| 📁 Project           | Projects under a client. |
-| 🧩 Module            | Main functional modules of a project. |
-| 🔹 SubModule         | Sub-divisions under each module. |
-| 📝 Reporter          | Person reporting a task, bug, or CR. |
-| ⚠️ Severity          | Priority/impact of tasks/bugs (High, Medium, Low). |
-| 🔄 Status            | Current status of a task (Open, In Progress, Closed, etc.). |
-| 🗂 TaskType           | Type of work (Task, Bug, CR). |
-| 📜 Menu              | Configurable navigation menu items. |
-| ⚙️ Setting           | Application or system-wide settings. |
+</td>
+    <td width="50%" valign="top">
 
-## ⚡ Transaction Modules
+**🔗 Code**
+- **GitHub and GitLab**, cloud or self-hosted — create branches and merge/pull requests from a task
+- **Webhooks** move tasks when merge requests open, merge or close
+- **Reviews** — approve, comment, rebase and merge under the reviewer's own account
+- **Issue sync** — import, export or two-way
 
-| Module     | Description |
-|------------|-------------|
-| 📋 Backlog | Manage pending tasks, CRs, and bugs. |
-| 🏃 Sprint  | Plan, track, and close sprints. |
+</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
 
-## 🗂 Module Hierarchy
+**👥 Team**
+- **Wiki** with categories and version history
+- **Announcements** with read acknowledgements
+- **Chat notifications** to Teams, Slack, Google Chat, Discord, Mattermost or any JSON webhook
+- **Reports** — task explorer, resource load, stage duration and Excel export
 
-```
-Master Modules
-├─ User
-├─ User Roles & Permissions
-├─ Client
-├─ Project
-├─ Module
-│  └─ SubModule
-├─ Reporter
-├─ Severity
-├─ Status
-├─ TaskType
-├─ Menu
-└─ Setting
+</td>
+    <td width="50%" valign="top">
 
-Transaction Modules
-├─ Backlog
-└─ Sprint
-```
+**⚙️ Administration**
+- Users, roles and fine-grained permissions; two-factor sign-in with an authenticator app; optional single sign-on with any OpenID Connect provider
+- Masters for clients, projects, modules, statuses, task types, severities, tags and reporters — shared or per project
+- Database-driven translations, e-mail templates and settings
+- Light, dark and system themes with an accent colour per user; activity log; background-jobs dashboard
 
-💡 **Note:** Master modules define core entities. Transaction modules handle activities/records based on master data.
+</td>
+  </tr>
+</table>
 
-## 🛠 Technology Stack
+**Built with** ASP.NET Core MVC (.NET 10) · EF Core 10 · SQL Server 2019+ · Hangfire · Mapperly · FluentValidation · CoreUI + Bootstrap 5 · ClosedXML — every front-end library vendored locally, no CDN.
 
-- **Backend:** ASP.NET Core MVC (.NET 8)  
-- **Frontend:** Razor Views, Bootstrap (optional)  
-- **Database:** MS SQL Server or MySQL  
-- **ORM:** Entity Framework Core  
-- **Version Control:** Git & GitHub  
+## 🚀 Quick start
 
-## 🚀 Project Setup
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/) or Docker Engine with Compose v2.
 
-1. Clone the repository:
-
-```powershell
+```bash
 git clone https://github.com/Taskist/taskist.git
-cd Taskist
+cd taskist
+cp .env.example .env        # then set a strong MSSQL_SA_PASSWORD
+docker compose up -d
 ```
 
-2. Open the solution in **Visual Studio 2022+** or VS Code.  
+Open **http://localhost:8080** and sign in as **`admin@taskist.org`** / **`Admin@123`**.
 
-3. Restore NuGet packages:
+> [!WARNING]
+> Change the admin password right after the first sign-in, and never expose the seeded account on a reachable network.
+
+- Set `SEED_DUMMY_DATA=true` in `.env` before the first start for a sample client, project and modules.
+- `docker compose logs -f web` follows the logs; `docker compose down -v` deletes everything, including the encryption keys.
+- The sample stack serves plain HTTP (`TASKIST_REQUIRE_HTTPS_COOKIES=false`). Put it behind TLS before exposing it — see [Configuration](#configuration).
+
+<a name="local-development"></a>
+
+## 🛠 Local development
+
+**Prerequisites:** [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0), SQL Server (Express, LocalDB or Docker), and the EF Core tools (`dotnet tool install --global dotnet-ef`).
+
+1. Clone and restore:
+
+   ```powershell
+   git clone https://github.com/Taskist/taskist.git
+   cd taskist
+   dotnet restore src/Taskist.sln
+   ```
+
+2. Create `src/Presentation/Taskist.Web/appsettings.Development.json` (git-ignored):
+
+   ```json
+   {
+     "ConnectionStrings": {
+       "AppContext": "Server=.\\SQLEXPRESS;Database=Taskist;Integrated Security=True;TrustServerCertificate=True;"
+     }
+   }
+   ```
+
+3. Create the schema:
+
+   ```powershell
+   dotnet ef database update --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
+   ```
+
+4. Run `sql-scripts/02_defaults.sql`, then `03_locale.sql` (see [Database](#database)).
+
+5. Start the app and browse to **https://localhost:7025**:
+
+   ```powershell
+   dotnet run --project src/Presentation/Taskist.Web
+   ```
+
+In Development, background jobs run inline instead of on a Hangfire server, so webhooks and notifications work without extra setup. Run the tests with `dotnet test src/Taskist.sln` — no database needed.
+
+
+<a name="configuration"></a>
+## ⚙️ Configuration
+
+Taskist reads `appsettings.json`, `appsettings.{Environment}.json`, user-secrets and environment variables; environment variables win. Nested keys use a double underscore: `Security:RequireHttpsCookies` → `Security__RequireHttpsCookies`.
+
+| Setting | Default | Description |
+| ------- | ------- | ----------- |
+| `ConnectionStrings:AppContext` | — | **Required.** SQL Server connection string |
+| `App:BaseUrl` | `https://localhost:7025/` | Public address, used in e-mail links, OAuth callbacks and webhook URLs |
+| `Security:RequireHttpsCookies` | `true` | Sign-in cookie over HTTPS only. `false` is for deliberate plain-HTTP setups and also skips HTTPS redirection and HSTS |
+| `Security:ForwardedHeaders:Enabled` | `false` | Trust `X-Forwarded-For` / `X-Forwarded-Proto` from a reverse proxy |
+| `Security:ForwardedHeaders:KnownProxies` | `[]` | Proxy IP addresses to trust (loopback is always trusted) |
+| `Security:ForwardedHeaders:KnownNetworks` | `[]` | Proxy networks in CIDR form, e.g. `172.16.0.0/12` |
+| `DataProtection:KeysPath` | `App_Data/DataProtectionKeys` | Encryption key ring folder; must be writable |
+| `DataProtection:CertificatePath` / `CertificatePassword` | — | Encrypt the key ring at rest with a PFX certificate |
+| `DataProtection:CertificateThumbprint` | — | …or with a certificate from the machine store |
+| `DataProtection:ProtectWithDpapi` / `DpapiLocalMachine` | `false` | …or with Windows DPAPI |
+| `App:IsBeta` / `App:BetaMessage` | `true` / text | Beta banner |
+| `Sentry:Enabled` / `Sentry:Dsn` | `false` / — | Optional error tracking with [Sentry](https://sentry.io): unhandled exceptions and logged errors. Needs both; see [SECURITY.md](SECURITY.md#error-tracking-optional) for what is sent |
+| `Sentry:Environment` / `Sentry:TracesSampleRate` | environment name / `0` | Sentry environment label; share of requests sent as performance traces (`0` = errors only) |
+| `Authentication:Oidc:Enabled` | `false` | Single sign-on with an OpenID Connect provider (Keycloak, Authentik, Entra ID, Google, Okta…). Needs `Authority` and `ClientId`; see [docs/sso.md](docs/sso.md) |
+| `Authentication:Oidc:Authority` / `ClientId` / `ClientSecret` | — | Provider address and the client registered there. Redirect URI to register: `{App:BaseUrl}signin-oidc` |
+| `Authentication:Oidc:AutoProvision` | `false` | Create a Taskist account (*Registered* role only) on first sign-in. Off = only existing users can sign in |
+| `Authentication:Oidc:RoleClaim` / `RoleMappings` | — | Optional: add Taskist roles from provider groups, e.g. `{"taskist-leads": "TeamLead"}`. Only adds roles, never removes them |
+| `Authentication:Oidc:DisableLocalLogin` | `false` | Hide the password form. Administrators can still sign in with a password at `/Login?local=1` |
+| `Authentication:TwoFactor:RequireForAdministrators` | `false` | Administrators who sign in with a password must turn on two-factor sign-in before using Taskist; see [docs/two-factor.md](docs/two-factor.md) |
+| `Authentication:TwoFactor:RememberDeviceDays` | `30` | How long "Don't ask again on this device" lasts after a two-factor sign-in; `0` turns the option off |
+
+Everything else — password policy, lockout, session length, e-mail, Git, notifications, report layouts — lives in the app under **Configuration → Settings**.
+
+**Behind a reverse proxy** (nginx, Traefik, IIS, a cloud load balancer): keep `RequireHttpsCookies=true`, set `ForwardedHeaders:Enabled=true` and list the proxy in `KnownProxies` or `KnownNetworks`, and set `App:BaseUrl` to the public `https://` address. In Docker these are `TASKIST_REQUIRE_HTTPS_COOKIES`, `TASKIST_FORWARDED_HEADERS`, `TASKIST_PROXY_NETWORK` and `APP_BASE_URL` in `.env`; Sentry uses `SENTRY_ENABLED`, `SENTRY_DSN`, `SENTRY_ENVIRONMENT` and `SENTRY_TRACES_SAMPLE_RATE`; single sign-on uses the `SSO_*` variables and two-factor sign-in the `TWO_FACTOR_*` ones.
+
+
+<a name="database"></a>
+## 💾 Database
+
+**Schema = EF Core migrations:**
 
 ```powershell
-dotnet restore
+dotnet ef database update --project src/Libraries/Taskist.Data --startup-project src/Libraries/Taskist.Data
 ```
 
-## 💾 Database Migrations
+`Taskist.Data` is its own startup project; add `--connection "<connection string>"` to target another database.
 
-**Run EF Core commands from the `Task.Data` folder**:
+**Seed data** lives in [`sql-scripts/`](sql-scripts/) as idempotent scripts, matched on business keys, so re-running them is safe. Run them in numeric order (with `sqlcmd`, pass `-f 65001`):
 
-1. Open terminal/powershell in the `Task.Data` folder:
+| Script | Required | Contents |
+| ------ | -------- | -------- |
+| `01_schema.sql` | Alternative | Full idempotent schema, for when you can't run `dotnet ef` |
+| `02_defaults.sql` | ✅ | Language, roles and permissions, menu, task types / severities / statuses, settings, email templates, administrator account (only into an empty user table) |
+| `03_locale.sql` | ✅ | English (India) translations |
+| `04_demo.sql` | Optional | Sample client, project and modules |
 
-```powershell
-cd Task.Data
-```
+Upgrading? See [UPGRADING.md](UPGRADING.md) and the [changelog](CHANGELOG.md).
 
-2. Add a new migration:
 
-```powershell
-dotnet ef migrations add InitialCreate --startup-project ..\..\Presentation\Taskist.Web
-```
+## 🔐 Security
 
-3. Update the database:
+Please report vulnerabilities privately as described in **[SECURITY.md](SECURITY.md)**, not as public issues.
 
-```powershell
-dotnet ef database update --startup-project ..\..\Presentation\Taskist.Web
-```
+Before going live: serve over HTTPS, change the seeded admin password, use a least-privilege SQL login, and **back up the Data Protection key folder** — losing it signs everyone out and makes stored Git tokens, webhook secrets and notification URLs unreadable. SECURITY.md has the full deployment checklist.
 
-4. Remove the last migration (if needed):
+## 💬 Community & contributing
 
-```powershell
-dotnet ef migrations remove --startup-project ..\..\Presentation\Taskist.Web
-```
+| | |
+| --- | --- |
+| 🙏 **Questions** | [Discussions → Q&A](https://github.com/Taskist/taskist/discussions/categories/q-a) |
+| 💡 **Ideas** | [Discussions → Ideas](https://github.com/Taskist/taskist/discussions/categories/ideas) |
+| 🗺 **Roadmap** | [ROADMAP.md](ROADMAP.md) — what's planned for 1.1 to 2.0 |
+| 🐛 **Bugs** | [Open an issue](https://github.com/Taskist/taskist/issues/new/choose) |
+| 🛠 **Code** | [CONTRIBUTING.md](CONTRIBUTING.md) — setup, conventions and what CI checks |
+| 📖 **Docs** | [docs.taskist.org](https://docs.taskist.org) · [Git integration](docs/git-integration.md) |
 
-**Tip:** Make sure your `appsettings.json` connection string in the Web project points to **SQL Server or MySQL**.
+By participating, you agree to uphold our [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## ▶️ Running the Project
+## 💖 Sponsors & partners
 
-```powershell
-cd Presentation\Taskist.Web
-dotnet run
-```
+Thanks to the providers who support this project with free licenses and services:
 
-- Open your browser and navigate to `https://localhost:5001` (or the port shown in console).  
-- Admin user can be seeded in the database using initial migration or `SeedData` class.
+[![Sentry](https://img.shields.io/badge/Sentry-error%20tracking-362D59?logo=sentry&logoColor=white&style=for-the-badge)](https://sentry.io/for/open-source/)
+[![Confluence](https://img.shields.io/badge/Confluence-docs-172B4D?logo=confluence&logoColor=white&style=for-the-badge)](https://www.atlassian.com/software/confluence)
+[![MonsterASP.NET](https://img.shields.io/badge/MonsterASP.NET-hosting-0A66C2?style=for-the-badge)](https://monsterasp.net)
+[![GitBook](https://img.shields.io/badge/GitBook-documentation-3884FF?logo=gitbook&logoColor=white&style=for-the-badge)](https://gitbook.com)
 
-## 🐛 GitHub Issues & Contribution
-
-### Raising an Issue
-
-1. Go to the [Issues](https://github.com/Taskist/taskist/issues) tab.  
-2. Click **New Issue**.  
-3. Provide:
-   - **Title**  
-   - **Description**  
-   - **Steps to reproduce** (for bugs) or expected feature description  
-
-### Contribution Rules
-
-- 🍴 Fork the repository.  
-- 🌿 Create a feature branch:  
-
-```powershell
-git checkout -b feature/YourFeatureName
-```
-
-- 📝 Make changes and commit:
-
-```powershell
-git add .
-git commit -m "Description of your changes"
-```
-
-- ⬆️ Push to your fork:
-
-```powershell
-git push origin feature/YourFeatureName
-```
-
-- 🔀 Create a **Pull Request** to the `main` branch.  
-
-**Code Guidelines**
-
-- Follow C# naming conventions.  
-- Keep methods short and modular.  
-- Use Entity Framework migrations for DB changes.  
+If Taskist helps you, ⭐ star the repository and share it with your team.
 
 ## 📄 License
 
-This project is licensed under the **MIT License** – see the [LICENSE](LICENSE) file for details.  
-
-## 💖 Open Source Sponsors & Partners
-
-We gratefully acknowledge the generous support of the following providers who offer free licenses or services to our open-source project:
-<table>
-<tbody>
-<tr>
-<td>
-    <a href="https://sentry.io/for/open-source/" target="_blank" title="Sentry – Free error tracking for open-source projects">
-        <img src="assets/sentry.png" alt="Sentry" />
-    </a>
-</td>
-<td>
-    <a href="https://www.atlassian.com/software/confluence" target="_blank" title="Atlassian Confluence">
-        <img src="assets/confluence.png" alt="Atlassian Confluence" />
-    </a>
- </td>
-</tr>
-</tbody>
-</table>
-
-## 🌟 Support the Project
-
-If you find **Taskist** helpful, please consider supporting it! ❤️ 
-Your support helps keep the project growing and maintained.
-### 🪙 Ways to Support
-- ⭐ **Star this repository** on GitHub to show appreciation  
-- 🪙 **Share it** with other developers or teams  
-- ☕ **Buy Me a Coffee** to support ongoing development  
-<p>
-  <a href="https://www.buymeacoffee.com/somaraj" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
-</p>
+[MIT](LICENSE) © 2025-2026 Somaraj and Taskist contributors. Bundled third-party libraries keep their own licences — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

@@ -1,8 +1,8 @@
-﻿using Taskist.Core.Domain.Common;
+using Taskist.Core.Domain.Common;
 
 namespace Taskist.Core.Domain.Users;
 
-public class UserRoleMap : BaseEntity
+public class UserRoleMap : BaseEntity, IAuditableEntity
 {
     public int UserId { get; set; }
 

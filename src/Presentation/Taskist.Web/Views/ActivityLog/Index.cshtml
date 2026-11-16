@@ -1,0 +1,142 @@
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using Taskist.Web.Models.Logging
+@model LogViewModel
+@{
+    ViewData["Title"] = Localize("ActivityLogPage.Title");
+}
+
+@section PageStyles {
+    <link rel="stylesheet" href="~/css/pages/log.css" asp-append-version="true" />
+}
+
+<wp-filter-panel id="logFilter">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label">@Localize("Log.From").Text</label>
+                <input id="logFrom" value="@(Model.From?.ToString("dd-MMM-yyyy"))" class="form-control datepicker" autocomplete="off" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@Localize("Log.To").Text</label>
+                <input id="logTo" value="@(Model.To?.ToString("dd-MMM-yyyy"))" class="form-control datepicker" autocomplete="off" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@Localize("Log.User").Text</label>
+                <select id="logUser" class="form-control select2" data-placeholder="@Localize("Log.All").Text">
+                    <option value="">@Localize("Log.All").Text</option>
+                    @foreach (var e in Model.Users)
+                    {
+                        <option value="@e.Value">@e.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@Localize("Log.ActivityTab").Text</label>
+                <select id="logType" class="form-control select2" data-placeholder="@Localize("Log.All").Text">
+                    <option value="">@Localize("Log.All").Text</option>
+                    @foreach (var t in Model.Types)
+                    {
+                        <option value="@t.Value">@t.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">@Localize("Log.Action").Text</label>
+                <select id="logAction" class="form-control select2" data-placeholder="@Localize("Log.All").Text">
+                    <option value="">@Localize("Log.All").Text</option>
+                    @foreach (var a in Model.Actions)
+                    {
+                        <option value="@a.Value">@a.Text</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button type="button" id="logApply" class="btn btn-primary flex-grow-1"><i class="fas fa-filter me-1"></i>@Localize("Button.Filter").Text</button>
+                <button type="button" id="logReset" class="btn btn-outline-secondary" title="@Localize("Button.Reset").Text"><i class="fas fa-rotate-left"></i></button>
+            </div>
+        </div>
+</wp-filter-panel>
+
+<ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item"><button class="nav-link active" data-coreui-toggle="tab" data-coreui-target="#tabActivity" type="button">@Localize("Log.ActivityTab").Text</button></li>
+    <li class="nav-item"><button class="nav-link" data-coreui-toggle="tab" data-coreui-target="#tabAudit" type="button">@Localize("Log.AuditTab").Text</button></li>
+</ul>
+
+<div class="tab-content border border-top-0 p-3 bg-white">
+    <div class="tab-pane fade show active" id="tabActivity" role="tabpanel">
+        @await Html.PartialAsync("DataTable", new DataTableModel
+        {
+            Name = "ActivityGrid",
+            Title = Localize("Log.ActivityTab").Text,
+            Searching = false,
+            LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+            SearchLabel = Localize("Grid.SearchLabel").Text,
+            ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+            FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+            FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+            UrlRead = Url.Action("ActivityDataRead"),
+            FilterParameters = new List<FilterModel>
+            {
+                new FilterModel { Parameter = "from", Element = "logFrom" },
+                new FilterModel { Parameter = "to", Element = "logTo" },
+                new FilterModel { Parameter = "userId", Element = "logUser" },
+                new FilterModel { Parameter = "type", Element = "logType" }
+            },
+            Columns = new List<ColumnModel>
+            {
+                new ColumnModel { Title = Localize("Log.When").Text, DataColumn = "When", Sorting = false },
+                new ColumnModel { Title = Localize("Log.User").Text, DataColumn = "User", Sorting = false },
+                new ColumnModel { Title = Localize("Log.ActivityTab").Text, DataColumn = "Type", Sorting = false },
+                new ColumnModel { Title = Localize("Log.Comment").Text, DataColumn = "Comment", Sorting = false },
+                new ColumnModel { Title = Localize("Log.Entity").Text, DataColumn = "Entity", Sorting = false },
+                new ColumnModel { Title = "IP", DataColumn = "Ip", Sorting = false }
+            }
+        })
+    </div>
+
+    <div class="tab-pane fade" id="tabAudit" role="tabpanel">
+        @await Html.PartialAsync("DataTable", new DataTableModel
+        {
+            Name = "AuditGrid",
+            Title = Localize("Log.AuditTab").Text,
+            Searching = false,
+            LengthChangeLabel = Localize("Grid.LengthChangeLabel").Text,
+            SearchLabel = Localize("Grid.SearchLabel").Text,
+            ZeroRecordsLabel = Localize("Grid.ZeroRecords").Text,
+            FooterInfoLabel = Localize("Grid.FooterInfo").Text,
+            FooterInfoWhenEmptyLabel = Localize("Grid.FooterInfoWhenEmpty").Text,
+            UrlRead = Url.Action("AuditDataRead"),
+            FilterParameters = new List<FilterModel>
+            {
+                new FilterModel { Parameter = "from", Element = "logFrom" },
+                new FilterModel { Parameter = "to", Element = "logTo" },
+                new FilterModel { Parameter = "userId", Element = "logUser" },
+                new FilterModel { Parameter = "action", Element = "logAction" }
+            },
+            ColumnActions = new List<ActionModel>
+            {
+                new ActionModel {
+                    Title = Localize("Log.ViewChanges").Text,
+                    Url = Url.Action("AuditDetail"),
+                    Text = Localize("Log.ViewChanges").Text,
+                    Icon = "fas fa-list-ul",
+                    ReferenceParameter = "Id",
+                    HyperLinkType = HyperLinkType.HYPERLINK_TEXT_ICON,
+                    NavigationType = NavigationType.OFFCANVAS,
+                    ButtonColor = ButtonColor.PRIMARY
+                }
+            },
+            Columns = new List<ColumnModel>
+            {
+                new ColumnModel { Title = Localize("Log.When").Text, DataColumn = "When", Sorting = false },
+                new ColumnModel { Title = Localize("Log.User").Text, DataColumn = "User", Sorting = false },
+                new ColumnModel { Title = Localize("Log.Action").Text, DataColumn = "Action", Sorting = false },
+                new ColumnModel { Title = Localize("Log.Entity").Text, DataColumn = "Entity", Sorting = false },
+                new ColumnModel { Title = "IP", DataColumn = "Ip", Sorting = false }
+            }
+        })
+    </div>
+</div>
+
+@section PageScripts {
+    <script src="~/js/pages/activity-log.js" asp-append-version="true"></script>
+}

@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using Taskist.Service.Localization;
 using Taskist.Service.Users;
 using Taskist.Web.Models.Users;
@@ -11,5 +11,6 @@ public class RegistrationValidator : AbstractValidator<UserRegistrationModel>
         IUserService userService)
     {
         RuleFor(r => r.User).SetValidator(new UserValidator(localizationService, userService));
+        RuleFor(r => r.Address).SetValidator(new AddressValidator(localizationService));
     }
 }

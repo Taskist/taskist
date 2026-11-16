@@ -1,0 +1,16 @@
+@model ReportLayoutEditorModel
+
+<div class="report-layout report-layout-editor" data-report="@Model.Layout.Key" data-custom="@(Model.IsCustom ? "true" : "false")">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+        <p class="text-muted small mb-0"><i class="fas fa-circle-info me-1"></i>@Localize("ReportLayout.Hint")</p>
+        @if (Model.IsCustom)
+        {
+            <span class="badge bg-info-subtle text-info-emphasis"><i class="fas fa-user me-1"></i>@Localize("ReportLayout.Custom")</span>
+        }
+        else
+        {
+            <span class="badge bg-secondary-subtle text-secondary-emphasis"><i class="fas fa-users me-1"></i>@Localize("ReportLayout.Default")</span>
+        }
+    </div>
+    <partial name="~/Views/Shared/Reports/_ReportColumnList.cshtml" model="Model.Layout" />
+</div>

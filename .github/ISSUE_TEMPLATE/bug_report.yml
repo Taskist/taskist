@@ -1,0 +1,63 @@
+name: Bug report
+description: Something in Taskist doesn't work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+        **Security issues:** please don't file them here — follow [SECURITY.md](https://github.com/Taskist/taskist/blob/main/SECURITY.md) instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you see, and what did you expect to see instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Work Items → Backlog
+        2. …
+        3. See error
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Taskist version or commit
+      description: Shown under the sign-in form (e.g. "v 1.0.1"), or the commit hash you built from.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: How do you run Taskist?
+      options:
+        - Docker Compose (this repository)
+        - IIS
+        - Linux / Kestrel behind a reverse proxy
+        - dotnet run (development)
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: SQL Server version, operating system, browser.
+      placeholder: SQL Server 2022, Windows Server 2022, Edge 130
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant log output
+      description: Application log or browser console errors. Remove any secrets, tokens or personal data first.
+      render: text

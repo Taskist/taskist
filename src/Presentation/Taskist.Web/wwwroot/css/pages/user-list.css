@@ -1,0 +1,3 @@
+.emp-filter .select2-container { font-size: .875rem; }
+.emp-filter .select2-container--default .select2-selection--multiple { min-height: calc(1.5em + .5rem + 2px); border-color: #d8dbe0; }
+.emp-filter label { font-weight: 500; }

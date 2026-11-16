@@ -1,113 +1,46 @@
-﻿@{
-    ViewData["Title"] = "Dashboard";
-Layout = "~/Views/Shared/_LayoutHome.cshtml";
+@model DashboardModel
+@{
+    ViewData["Title"] = Localize("DashboardPage.Title");
+    Layout = "~/Views/Shared/_LayoutHome.cshtml";
 }
 
-@await Html.PartialAsync("Sections/_WelcomeCard")
+@section PageStyles {
+    <link href="~/css/pages/dashboard.css" rel="stylesheet" asp-append-version="true" />
+}
 
-@await Component.InvokeAsync("CardWithCounts")
+<div id="dashConfig" class="d-none" data-content-url="@Url.Action("Content", "Home")"></div>
 
-<div class="row row-cols-2">
-    <div class="col">
-        <div class="card mt-4 mb-4">
-            <div class="card-body">
-                <canvas id="canvas-1"></canvas>
+@if (Model.IsExecutive)
+{
+    <ul class="nav nav-tabs mb-3" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a href="#tabMyDash" class="nav-link active" data-bs-toggle="tab" role="tab">
+                <i class="fas fa-gauge-high me-2"></i>@Localize("Dashboard.MyDashboard").Text
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a href="#tabOrgDash" class="nav-link" data-bs-toggle="tab" role="tab">
+                <i class="fas fa-building me-2"></i>@Localize("Dashboard.OrgDashboard").Text
+            </a>
+        </li>
+    </ul>
+    <div class="tab-content">
+        <div class="tab-pane active show" id="tabMyDash" role="tabpanel">
+            @await Html.PartialAsync("_DashboardMain", Model)
+        </div>
+        <div class="tab-pane" id="tabOrgDash" role="tabpanel">
+            <div id="orgDashboardContent" data-url="@Url.Action("OrgContent", "Home")">
+                <div class="text-center text-muted py-5"><span class="spinner-border" role="status"></span></div>
             </div>
         </div>
     </div>
-    <div class="col">
-        <div class="card mt-4 mb-4">
-            <div class="card-body">
-                <canvas id="canvas-3"></canvas>
-            </div>
-        </div>
-    </div>
-</div>
+}
+else
+{
+    @await Html.PartialAsync("_DashboardMain", Model)
+}
 
-<script>
-    $(function(){
-        const random = () => Math.round(Math.random() * 100);
-
-        // eslint-disable-next-line no-unused-vars
-        const lineChart = new Chart(document.getElementById('canvas-1'), {
-            type: 'line',
-            data: {
-                labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-                datasets: [{
-                    label: 'My First dataset',
-                    backgroundColor: 'rgba(220, 220, 220, 0.2)',
-                    borderColor: 'rgba(220, 220, 220, 1)',
-                    pointBackgroundColor: 'rgba(220, 220, 220, 1)',
-                    pointBorderColor: '#fff',
-                    data: [random(), random(), random(), random(), random(), random(), random()]
-                }, {
-                    label: 'My Second dataset',
-                    backgroundColor: 'rgba(151, 187, 205, 0.2)',
-                    borderColor: 'rgba(151, 187, 205, 1)',
-                    pointBackgroundColor: 'rgba(151, 187, 205, 1)',
-                    pointBorderColor: '#fff',
-                    data: [random(), random(), random(), random(), random(), random(), random()]
-                }]
-            },
-            options: {
-                responsive: true
-            }
-        });
-
-        // const doughnutChart = new Chart(document.getElementById('canvas-3'), {
-        //     type: 'doughnut',
-        //     data: {
-        //         labels: ['Red', 'Green', 'Yellow'],
-        //         datasets: [{
-        //             data: [300, 50, 100],
-        //             backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
-        //             hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
-        //         }]
-        //     },
-        //     options: {
-        //         responsive: true
-        //     }
-        // });
-        const ctx = document.getElementById('canvas-3').getContext('2d');
-        const myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow'],
-                datasets: [{
-                    data: [300, 50, 100],
-                    backgroundColor: ['red', 'blue', 'yellow'],
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false
-            }
-        });
-
-        var $sked = $('#sked').skedTape({
-            caption: 'Cities',
-            start: new Date(), // Timeline starts this date-time
-            end: new Date(),       // Timeline ends this date-time
-            showEventTime: true,     // Whether to show event start-end time
-            showEventDuration: true, // Whether to show event duration
-            locations: [
-                { id: 1, name: 'San Francisco' }, // required properties only
-                {
-                    id: 'london',
-                    name: 'Sydney',
-                    order: 1, // optional sorting order
-                    tzOffset: -10 * 60, // individual timezone (notice that minus sign)
-                    userData: {} // optional some custom data to store
-                },
-            ],
-            events: [
-                {
-                    name: 'Meeting 1',
-                    location: 'london',
-                    start: new Date(),
-                    end: new Date()
-                }
-            ]
-        });
-    })
-</script>
+@section PageScripts {
+    <script src="~/js/pages/backlog/backlog-branch.js" asp-append-version="true"></script>
+    <script src="~/js/pages/dashboard.js" asp-append-version="true"></script>
+}
